@@ -21,7 +21,7 @@ currently i have like 4 ideas for heads:
 each of these attacks will have proc coefficents based on their defult rate of hit per second so any on hit effects with the laser turret arent broken af
 you upgrade the towers by placing modifiers next to their base
 (yes this means modifiers can effect multiple towers)
-the normal modifers like dmg up will only take up a 1x1 tile, bases take up 3x3
+the normal modifers like dmg up will only take up a 1x1 tile, bases take up 2x2
 some better upgrades might take up liek 2x2 or 1x2 depending on their power
 
 the two interesting things about this aside from the emergent gameplay with funny effects and tinkering with them, is how the towers attack
@@ -56,17 +56,40 @@ say if you have a 2x2 module and only half of it is in, im unsure on wether or n
 
 also modules and towers can be destroyed
 
+multiple modules of the same type are aimed to be not busted cos there is always the issue of maxing dmg and attck speed
+ranges will be based on the tower type and can be done in a bunch of ways and tower bases can be a bunch of sizes but generally they are 2x2
+
+every base will get generated wants normally 2 positives and 1 negative so all upgrades in the positive respect would be doubled (after scaling) and then the negatives would applied by a small amount per modules
+
 ** enemies
 i want enemies to naturally upgrade themselves, depending on how much valuables they steal from u by destroying your towers and time progression
 itd be fun to have like a tree wherein they can obtain properties and add them to the tree so you can easily keep track of their weaknesses
 
 ** module types
-uncommon - T1/T2/T3 (stat boosts) ie dmg up *light blue*
-exotic - T1/T2/T3 (mechanical changes) ie targeting computer or the gun head *yellow*
-rare - T1/T2/T3 (procables) ie on hit chance to make a explosion *purple*
-epic - T1/T2/T3 (really cool and fun things) ie tesla coil *fushcia*
-
 depending on their strength i will assign them enums, to dictate their y and x length
+also i want all modules to be upgradable pretty easily
+all modules and towers blow up when you destroy them, this is the only way to get rid of them, they cannot be sold
+*** uncommon - T1/T2/T3 (stat boosts) ie dmg up *light blue*
+- dmg up
+- attack speed up
+- proc chance up
+- regen up
+- dmg multiplier up
+- attack rate up
+- attack speed up
+- rotspd up
+*** exotic - T1/T2/T3 (mechanical changes aka changes how it fires) ie targeting computer or the gun head *yellow*
+- funnel shots
+- bidirirectional
+- computer
+- homing
+- rapid fire bursts
+- returning
+- polar (ie tiny planet issac)
+- single projectile (maybe)
+- spd goes up when not shooting
+*** rare - T1/T2/T3 (procables) ie on hit chance to make a explosion *purple*
+*** epic - T1/T2/T3 (really cool and fun things) ie tesla coil *fushcia*
 
 ** crafting
 i want to have like 6 bars
@@ -112,3 +135,109 @@ i am calling inventories decks like a sylladex from homestuck
 they will be similar as in there are different types based off different data structures
 i will not store resources in the deck
 because the deck is for single quantity crafted items
+
+* enemies
+so the way enemies will work is they will have a collection of modifiers to combine into a tree
+there will be multiple trees and on tree creation they will be given certain "adjectives"
+- smart -> finds flaws in your defences and targets them
+- fast -> aims entirely on speed
+- offensive -> aims on attacks and health
+- clustering -> aims on rushing through your defences in one strong mass
+- tricky -> built to dodge and be hard to hit smart+tricky would be hellish
+- flying -> able to avoid ur defences and fly through
+if adjectives cant give you anything instresting it goes by relentless
+- relentless -> focuses on health mainly and production
+
+the things that the tree could go is
+- cluster?
+- speed
+- health
+- attacks
+  - damage
+  - attack rate
+  - modifiers
+- properties
+
+you will start against a relentless tree
+then later in the game the it will generate a few more trees
+the later trees will be given more adjectives and eventually will be very difficult
+the way to figure out the amount of adjectives the new tree has is reversefib(floor(n/10))
+round 10 will change any trees created at this point to have 1 adjectives
+round 20 will change any trees created at this point to have 2 adjectives
+round 30 will change any trees created at this point to have 3 adjectives
+round 50 will change any trees created at this point to have 4 adjectives
+round 80 will change any trees created at this point to have 5 adjectives
+round 130 will change any trees created at this point to have all adjectives
+
+there would be a bunch of cost based upgrades and the tree would work out how good each would be and then choose the most cost effective ones
+there would be a pressure rating and the game would aim to keep it at a constant amount via sending certain waves and getting upgrades that would ensure it is kept high
+the upgrade based way this would work is via the game would work out a win/cost based system for every upgrade where it would generate the cost effectiveness of the tower and compare itwith (avgpressure per dollar) * time to upgrade this would work out wheter the upgrade is worth the time spend
+and each upgrade would have a cost and a pressure
+every round each tree gets some points and can spend the points on a upgrade decided by the above metric
+
+pressure it would be a combination of
+- damage player is taking
+- difficulty of enemies * qty
+
+it would slowly rise and fall in a way that when the player has been taking it easy from the enemies they will go hard
+
+the amount of points the enemy gets to apply on sending bloons is calculated by doing max(const * (const - pressure) * abs(sin(round/4)),100)
+each tree will have a cost based on not its upgrade but the number of adjectives
+then you will do sum(upgradePressure)/costFunc(adjectives) to work out the cost prossure coefficent
+the priority will have a random value
+the using priortity you work out how much cost you get on each attack and the more you buy of each type the more value you get so
+it shouldnt send many different tree attacks at one
+
+* bases
+bases can be various sizes and shit and generally have a range with at least a radius of 2 idealy
+certain ones can be smaller or like have notched edges
+each tower will generate a certain set of properties they want which will have 2 positives and 1 negative so itd be like
+"hi yes i want to be a tower that *shoots lighting*, *pulls enemies closer* but *has slow attack speed*"
+or
+"let me be a *applying flame*, *has good aiming* and *low damage*"
+i think all the properties will be based off a module
+
+** base types
+i want to cover all towers from bloons and all towers from factorio
+- raycast
+- area damage
+- single projectile
+- omnidirectional
+- bidirectional
+- multiple shots funnel  style
+- homing
+- spot based
+- landmine esc
+
+all of these will be able to go into the respective tree
+some of these can be represented as just a base with a module ie bidirectional so i am unsure about adding them
+cos like omni, bi, funnel and homing should all be modifiers in my opinion
+
+** targeting
+*** cooler but harder way
+i want each "turret" to have a rotspd which defines how fast they can rotate
+and then each head will have a like range of degress they can snap to
+so if you are aiming at an enemy at 30 degress and it dies say the next enemy is at 35 degress you can just snap to it
+multiple shots will be handled in two ways
+- funnel
+  funnel gives like a head more heads so like they are with a small degree apart
+  so one head it as -5 degrees and the other is at +5 degrees
+- bidirectional
+  this gives heads in a way that they have large coverage so like one shoots at 0 degrees and the other does so at 180 degrees
+*** medium way
+turrets have a rotspd and this can be upgraded
+- funnel shots
+  every time you shoot enemies it will shoot multiple shots with a degree of seperation
+- bidirectional
+  the closest head moves towards the enemy and the other head also shoots
+*** easy way
+turrets have no rotspd and will fix to an enemy that is being targeted
+- funnel shots
+  every time you shoot enemies it will shoot multiple shots with a degree of seperation like 1 degrees
+- bidirectional
+  every time you shoot at the front you also shoot at the back
+*** issues with non easy ways
+the targeting system would have to be done to find the best enemy that is also near, i would need to balance which to shoot out of a enemy near the player and a enemy near the turret
+though currently there is no targeting so i guess i could just ignore any factors other than how near it is to the head (possibly)
+i greatly prefer the medium and cooler ways *but* they are harder to do and i want to get the game at a demoable point
+slowing down is always bad
