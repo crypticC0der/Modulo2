@@ -28,6 +28,10 @@ public class ItemRatio{
     public static List<ItemRatio> table=new List<ItemRatio>();
     public ItemTemplate item;
     public float[] ratio;
+
+    public void GenerateItems(){
+
+    }
 }
 
 public class ItemTemplate{
@@ -37,16 +41,16 @@ public class ItemTemplate{
     public ItemTypes type;
     public float scale=1;
 
-    public ItemTemplate(string n,float w,float[] r,string p=null,ItemTypes t=ItemTypes.Defence,int s=1){
-        if(p==null){p=n;}
-        name=n;
-        weight=w;
-        graphicPath=p;
-        type=t;
-        scale=1;
+    public ItemTemplate(string itemName,float itemWeight,float[] itemRatio,string pathToGraphic=null,ItemTypes itemType=ItemTypes.Defence,int itemScale=1){
+        if(pathToGraphic==null){pathToGraphic=itemName;}
+        name=itemName;
+        weight=itemWeight;
+        graphicPath=pathToGraphic;
+        type=itemType;
+        scale=itemScale;
         ItemRatio.table.Add(new ItemRatio{
                 item=this,
-                ratio=r
+                ratio=itemRatio
             });
     }
 
@@ -67,8 +71,6 @@ public class ItemTemplate{
         return FromTemplate(p,s,t);
     }
 
-
-
     public void RenderCard(GameObject card){
         //do stuff
         GameObject ico = new GameObject("icon");
@@ -87,8 +89,6 @@ public class ItemTemplate{
         r.size = new Vector3(v.x,v.y,1);
         return r;
     }
-
-
 
     //redo
     static readonly int[] IngRatios={1,3,5,10,1,10};

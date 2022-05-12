@@ -6,12 +6,18 @@ public class EnemyFsm: Combatant{
     float speed;
 }
 
+public class SpinHit : CloseAttack{
+    public override void AtFunc(GameObject g){
+        Debug.Log("kys");
+    }
+    public SpinHit() : base(){
+        range=3;
+        timerMax=1;
+    }
+}
+
 public class SpinWheel : EnemyFsm{
     public void Start(){
-        CloseAttack spinHit = new CloseAttack();
-        spinHit.Hit = (GameObject g) => {Debug.Log("kys");};
-        spinHit.range=3;
-        spinHit.timerMax=1;
-        AddAttack(spinHit);
+        AddAttack<SpinHit>();
     }
 }

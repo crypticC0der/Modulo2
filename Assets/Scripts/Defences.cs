@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -55,14 +56,13 @@ public class StatModule : Module{
 public class Turret : Combatant{
 }
 
-public class TurretItem : Item{
-    public Attack baseAttack;
+public class TurretItem<A> : Item where A:Attack,new(){
     public Stats baseStats;
 
     public GameObject ToGameObject(Vector3 p){
         GameObject o = base.ToGameObject<Turret>(p);
         Turret t = o.GetComponent<Turret>();
-        t.AddAttack(baseAttack);
+        t.AddAttack<A>();
         t.maxHealth=baseStats.maxHealth;
         t.regen=baseStats.HpRegen;
         t.dmgPlus=baseStats.damage;
@@ -73,31 +73,18 @@ public class TurretItem : Item{
     }
 }
 
-public class TurretTemplate : ItemTemplate{
-    public Attack baseAttack;
+public class TurretTemplate<A> : ItemTemplate where A:Attack,new(){
     public Stats baseStats;
 
-    public TurretTemplate(string n,float w,Attack bA,Stats bS,float[] r,string p=null,ItemTypes t=ItemTypes.Turret,int s=1) : base(n,w,r,p,t,s){
-        baseAttack = bA;
-        baseStats = bS;
+
+    public TurretTemplate(string itemName,float itemWeight,Stats basicStats,float[] itemRatio,string pathToGraphic=null,ItemTypes itemType=ItemTypes.Defence,int itemScale=1) : base(itemName,itemWeight,itemRatio,pathToGraphic,itemType,itemScale){
+        baseStats = basicStats;
     }
 
     public TurretTemplate():base(){}
-    public TurretItem FromTemplate(float p,float s){
-        TurretItem t = (TurretItem)(base.FromTemplate(p,s,new TurretItem()));
-        t.baseAttack=baseAttack;
+    public TurretItem<A> FromTemplate(float p,float s){
+        TurretItem<A> t = (TurretItem<A>)(base.FromTemplate(p,s,new TurretItem<A>()));
         t.baseStats = baseStats;
         return t;
-    }
-}
-
-public class ProjectileTurret : Turret{
-    public ProjectileTurret(){
-        RangedAttack r = new RangedAttack();
-        r.range=100;
-        r.timerMax=1;
-        r.Hit = (GameObject o) => {
-            GameObject
-        };
     }
 }
