@@ -41,7 +41,7 @@ public class Combatant : Damageable{
 
     public void RunProc(float procCoefficent,Attack att,float dmg,GameObject hit){
         foreach(Proc p in procs){
-            if(Random.value<procCoefficent*p.chance){
+			if(Random.value<procCoefficent*p.chance){
                 (p.Go(dmg,att)).OnProc(hit);
             }
         }
