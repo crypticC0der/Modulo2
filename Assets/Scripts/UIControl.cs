@@ -9,6 +9,7 @@ public struct SpriteSize{
 }
 
 public class UIControl : MonoBehaviour{
+    public uiBar[] bars;
     public GameObject panel;
     public GameObject craftPan;
     Transform mainCanv;
@@ -52,7 +53,6 @@ public class UIControl : MonoBehaviour{
             crafting.Toggle();
         }
         if(Input.GetButton("place") && !plcDown && PlayerBehavior.holding!=null){
-            Debug.Log(!crafting.OnSlider(p) && !inventory.OnSlider(p));
             if(!crafting.OnSlider(p) && !inventory.OnSlider(p)){
                 PlayerBehavior.Place();
             }

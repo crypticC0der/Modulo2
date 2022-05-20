@@ -26,6 +26,22 @@ public abstract class Damager
 /// </summary>
 public abstract class Attack : Damager
 {
+	public static ProcOnCollsion basicBullet(Attack attack,string assetPath){
+		GameObject g = new GameObject();
+		g.layer=7;
+		g.transform.position=attack.perent.transform.position;
+		SpriteRenderer sr = g.AddComponent<SpriteRenderer>();
+        sr.sprite = Resources.Load<Sprite>(assetPath);
+        g.AddComponent<CircleCollider2D>().isTrigger=true;
+		Rigidbody2D r = g.AddComponent<Rigidbody2D>();
+		r.bodyType=RigidbodyType2D.Kinematic;
+		r.mass=1;
+		g.AddComponent<Despawn>().deathTimer=3;
+		ProcOnCollsion p = g.AddComponent<ProcOnCollsion>();
+        p.perentLayer=attack.perent.gameObject.layer;
+		return p;
+	}
+
 	abstract public void Update();
 	abstract public Collider2D Target();
 	abstract public void AtFunc(GameObject g);
@@ -33,8 +49,12 @@ public abstract class Attack : Damager
 	public AttackType t;
 	public Combatant perent;
 	public float timerMax;
-	protected float timer;
-	public float range = 0;
+	protected float timer=1;
+	public float range = 1;
+
+	public float damage(){return (dmg+perent.dmgPlus)*perent.dmgMultipler;}
+	public float attackRate(){return perent.attackSpeed + timerMax/perent.attackRate;}
+	public float attackRange(){return perent.range*range;}
 }
 
 /// <summary>
@@ -51,16 +71,35 @@ abstract public class Proc : Damager
 }
 
 /// <summary>
+/// makes a object destroy itself after a couple seconds
+/// </summary>
+public class Despawn: MonoBehaviour
+{
+	public float deathTimer=0;
+	public void FixedUpdate()
+	{
+		deathTimer-=Time.deltaTime;
+		if(deathTimer<0){
+			Destroy(gameObject);
+		}
+	}
+
+}
+
+
+/// <summary>
 /// this allows you to add the attack to an object
 /// </summary>
 public class ProcOnCollsion : MonoBehaviour
 {
 	public Proc p;
+	public int perentLayer;
 	public void OnTriggerEnter2D(Collider2D c)
 	{
-		if (c.gameObject.layer != p.perent.perent.gameObject.layer)
+		if (c.gameObject.layer != perentLayer)
 		{
 			p.OnProc(c.gameObject);
+			Destroy(this.gameObject);
 		}
 	}
 
@@ -77,7 +116,7 @@ public abstract class RangedAttack : Attack
 
 	public override Collider2D Target()
 	{
-		Collider2D[] o = Physics2D.OverlapCircleAll(perent.transform.position, range);
+		Collider2D[] o = Physics2D.OverlapCircleAll(perent.transform.position, attackRange(),~(1<<7));
 		foreach (Collider2D c in o)
 		{
 			if (Physics2D.Raycast(perent.transform.position, c.transform.position - perent.transform.position)
@@ -96,7 +135,7 @@ public abstract class RangedAttack : Attack
 			if ((c = Target()) != null)
 			{
 				AtFunc(c.gameObject);
-				timer = timerMax + perent.attackSpeed;
+				timer = attackRate()+ perent.attackSpeed;
 			}
 		}
 		timer -= Time.deltaTime * perent.attackRate;
@@ -112,17 +151,17 @@ public abstract class CloseAttack : Attack
 
 	public override Collider2D Target()
 	{
-		return Physics2D.OverlapCircle(perent.transform.position, range, ~(1 << 6));
+		return Physics2D.OverlapCircle(perent.transform.position, attackRange(), ~((1<<6) + (1<<7)));
 	}
 	public override void Update()
 	{
 		if (timer <= 0)
 		{
 			Collider2D c;
-			if (c = Target())
+			if ((c = Target()) !=null)
 			{
 				AtFunc(c.gameObject);
-				timer = timerMax + perent.attackSpeed;
+				timer = attackRate()+ perent.attackSpeed;
 			}
 		}
 		timer -= Time.deltaTime * perent.attackRate;
@@ -133,18 +172,15 @@ public class BulletAttack : RangedAttack
 {
 	public override void AtFunc(GameObject o)
 	{
-		GameObject g = new GameObject();
-		SpriteRenderer sr = g.AddComponent<SpriteRenderer>();
-        sr.sprite = Resources.Load<Sprite>("assets/hook");
-        g.AddComponent<CircleCollider2D>();
-        ProcOnCollsion p = g.AddComponent<ProcOnCollsion>();
-        p.p = impact.Go(dmg, this);
+		ProcOnCollsion p = basicBullet(this,"assets/hook");
+		p.gameObject.GetComponent<Rigidbody2D>().velocity = (o.transform.position - perent.transform.position).normalized*5;
+        p.p = impact.Go(damage(), this);
     }
 
     public BulletAttack() : base()
     {
-        range = 10;
-        timerMax = 1;
+        range = 5;
+        timerMax = 0.5f;
         procCoefficent = 1;
         dmg = 10;
         impact = new BulletProc();
@@ -155,7 +191,10 @@ public class BulletProc : Proc
 {
     public override void OnProc(GameObject g)
     {
-        g.GetComponent<Damageable>().TakeDamage(perent.dmg * dmg);
+		Damageable d = g.GetComponent<Damageable>();
+		if(d!=null){
+			d.TakeDamage(dmg);
+		}
     }
 
 
@@ -166,10 +205,10 @@ public class BulletProc : Proc
         dmgMultiplier = 1;
     }
 
-    public override Proc Go(float dmg, Attack perent)
+    public override Proc Go(float d, Attack perent)
     {
         Proc p = new BulletProc();
-        p.dmg = dmg;
+        p.dmg = d*dmgMultiplier;
         p.perent = perent;
         return p;
     }

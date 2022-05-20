@@ -59,7 +59,7 @@ public class Turret : Combatant{
 public class TurretItem<A> : Item where A:Attack,new(){
     public Stats baseStats;
 
-    public GameObject ToGameObject(Vector3 p){
+    public override GameObject ToGameObject(Vector3 p){
         GameObject o = base.ToGameObject<Turret>(p);
         Turret t = o.GetComponent<Turret>();
         t.AddAttack<A>();
@@ -70,21 +70,5 @@ public class TurretItem<A> : Item where A:Attack,new(){
         t.attackSpeed=baseStats.attackSpeed;
         t.attackRate=baseStats.attackRate;
         return o;
-    }
-}
-
-public class TurretTemplate<A> : ItemTemplate where A:Attack,new(){
-    public Stats baseStats;
-
-
-    public TurretTemplate(string itemName,float itemWeight,Stats basicStats,float[] itemRatio,string pathToGraphic=null,ItemTypes itemType=ItemTypes.Defence,int itemScale=1) : base(itemName,itemWeight,itemRatio,pathToGraphic,itemType,itemScale){
-        baseStats = basicStats;
-    }
-
-    public TurretTemplate():base(){}
-    public TurretItem<A> FromTemplate(float p,float s){
-        TurretItem<A> t = (TurretItem<A>)(base.FromTemplate(p,s,new TurretItem<A>()));
-        t.baseStats = baseStats;
-        return t;
     }
 }

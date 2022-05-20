@@ -8,10 +8,10 @@ public class EnemyFsm: Combatant{
 
 public class SpinHit : CloseAttack{
     public override void AtFunc(GameObject g){
-        Debug.Log("kys");
+        g.GetComponent<Damageable>().TakeDamage(500);
     }
     public SpinHit() : base(){
-        range=3;
+        range=1.2f;
         timerMax=1;
     }
 }
@@ -19,5 +19,6 @@ public class SpinHit : CloseAttack{
 public class SpinWheel : EnemyFsm{
     public void Start(){
         AddAttack<SpinHit>();
+        health=1000000;
     }
 }

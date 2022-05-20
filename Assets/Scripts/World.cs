@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public static class World
 {
     public static Node[,] grid;
     public static int[] size;
-    public const int playerCare=5;
+    public const int playerCare=2;
+    public const int largeDist = 2000000000;
     public static void Generate(int[] size,bool[,] filled){
         LookAt = new Queue<Node>();
         World.size=size;
@@ -26,19 +28,34 @@ public static class World
         }
     }
 
+    public static void Print(){
+        string r = "";
+        for(int i =0;i<size[1];i++){
+            for(int j=0;j<size[0];j++){
+                // if(grid[j,i].distance*playerCare>grid[j,i].plrDistance){
+                //     r+="p";
+                // }
+                r+=string.Format("{0:00.0}, ",grid[j,i].distance);
+            }
+            r+="\n";
+        }
+        File.WriteAllText(@"/home/mj/grid.txt",r);
+    }
+
+
     public static void clearGrid(bool main){
         if (!main){
             for(int i=0;i<size[0];i++){
                 for(int j=0;j<size[1];j++){
-                    grid[i,j].plrDistance=10000000;
-                    grid[i,j].plrNext=null;
+                    grid[i,j].plrDistance=largeDist;
+                    grid[i,j].plrNext=grid[i,j]; //avoids errors
                 }
             }
         }else{
             for(int i=0;i<size[0];i++){
                 for(int j=0;j<size[1];j++){
-                    grid[i,j].distance=10000000;
-                    grid[i,j].next=null;
+                    grid[i,j].distance=largeDist;
+                    grid[i,j].next=grid[i,j];
                 }
             }
         }
@@ -61,7 +78,7 @@ public static class World
             float change=1;
             if(n.x!=node.x && n.y !=node.y){change=1.4f;}
             float newd = node.plrDistance +change;
-            if(newd<=n.distance*playerCare && newd<n.plrDistance){
+            if(newd<=n.distance*playerCare && newd<n.plrDistance && newd<100){
                 n.plrDistance=newd;
                 n.plrNext=node;
                 LookAt.Enqueue(n);
@@ -75,6 +92,41 @@ public static class World
         LookAt.Enqueue(grid[x,y]);
         while(LookAt.Count>0){
             CheckNode(LookAt.Dequeue());
+        }
+    }
+
+    static List<Node> BorderNode=new List<Node>();
+    public static void RemoveConstruct(int x,int y){
+        if(grid[x,y].next!=grid[x,y]){return;}
+        LookAt.Enqueue(grid[x,y]);
+        //forward check
+        while(LookAt.Count>0){
+            BackCheck(LookAt.Dequeue());
+        }
+        //border validation
+        foreach(Node b in BorderNode){
+            if(b.distance!=largeDist && b.next.distance!=largeDist){
+                LookAt.Enqueue(b);
+            }
+        }
+        //backwards write
+        BorderNode.Clear();
+        while(LookAt.Count>0){
+            CheckNode(LookAt.Dequeue());
+        }
+
+    }
+
+    public static void BackCheck(Node node){
+        List<Node> ns = Neighbors(node);
+        if(node.distance==largeDist){return;}
+        node.distance=largeDist;
+        foreach(Node n in ns){
+            if(n.next.distance==largeDist){
+                LookAt.Enqueue(n);
+            }else{
+                BorderNode.Add(n);
+            }
         }
     }
 
@@ -92,26 +144,40 @@ public static class World
         }
     }
 
-    static List<Node> Neighbors(Node node){
+    static List<Node> Neighbors(Node node,bool powerCheck=false){
         List<Node> r = new List<Node>();
-        if(node.x>0){
-            r.Add(grid[node.x-1,node.y]);
+
+
+        for(int i=0;i<3;i++){
+            if(node.x+i-1>=0 && node.x+i-1<size[0]){
+                for(int j=0;j<3;j++){
+                    if(node.y+j-1>=0 && node.y+j-1<size[1]&& !(i==1&&j==0)){
+                        r.Add(grid[node.x-1+i,node.y-1+j]);
+                    }
+                }
+            }
         }
-        if(node.x+1<size[0]){
-            r.Add(grid[node.x+1,node.y]);
-        }
-        if(node.y+1<size[1]){
-            r.Add(grid[node.x,node.y+1]);
-        }
-        if(node.y>0){
-            r.Add(grid[node.x,node.y-1]);
-        }
+
+
+        // if(node.x>0){
+        //     r.Add(grid[node.x-1,node.y]);
+        // }
+        // if(node.x+1<size[0]){
+        //     r.Add(grid[node.x+1,node.y]);
+        // }
+        // if(node.y+1<size[1]){
+        //     r.Add(grid[node.x,node.y+1]);
+        // }
+        // if(node.y>0){
+        //     r.Add(grid[node.x,node.y-1]);
+        // }
         return r;
     }
 
     public static int[] WorldPos(Vector3 v){
         return new int[2]{(int)Mathf.Round(v.x+(size[0]/2)),(int)Mathf.Round(v.y+(size[1]/2))};
     }
+
 }
 
 public class Node{

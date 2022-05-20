@@ -13,7 +13,13 @@ public class move : MonoBehaviour
         wop = World.WorldPos(transform.position);
         World.MovePlayer(wop[0],wop[1]);
         pwop = wop;
+        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,0,0));
+        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,6,0));
+        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
+        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
+
     }
+
 
     // Update is called once per frame
     public float force;

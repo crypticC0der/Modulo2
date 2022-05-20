@@ -1,0 +1,97 @@
+#+title: Docs
+
+* classes
+
+- Damager
+  this damages stuff ez
+- Attack : Damager
+  an attack this is a abstract class and is a perent to the different types of attack
+- Proc : Damager
+  a proc is a (somewhat) random occurance that happens whenever something is hit by an attack
+  it can be an explosion or anything
+  think risk of rain
+- ProcOnCollsion : MonoBehaviour
+  this will proc whenever it collides with something
+- RangedAttack : Attack
+  a ranged attack
+  this has a proc component
+- CloseAttack : Attack
+  a close attack
+- BulletAttack : RangedAttack
+  an attack that shoots a bullet
+- BulletProc : Proc
+  a proc to deal damage on collision like a bullet
+- EnemyFsm: Combatant
+  a finite state machine to be used to control enemies
+- SpinHit : CloseAttack
+  an attack that is just spinning
+- SpinWheel : EnemyFsm
+  a enemy that spins and attacks
+- Combatant : Damageable
+  an object of this is capable of engaging in combat
+  both enemies and turrets inheret from this
+- crafting
+  *TODO*
+- Damageable : MonoBehaviour
+  the component allowing things to be damaged
+  perent to combatant
+- StackDeck : Deck
+  this is a deck that behaves like a stack can have infinate amounts of items
+- QueueDeck : Deck
+  this is a deck that behaves like a queue, can have infinate amounts of items
+- ArrayDeck : Deck
+  this is a standard deck like a standard inventory
+- HashDeck : Deck
+  30 item deck
+  orders items by their hash
+  this is balanced by the inability to have two of the same item
+- TreeDeck : Deck
+  an unused and untested deck *not to be readded as its impossible to balance and would require so much ui work*
+- Module : Item
+  a component able to be attached to turrets in a way that simulates items like in risk of rain
+- StatModule : Module
+  a module used to modify stats on turrets
+- Turret : Combatant
+  currently this is no different from a combatant
+- TurretItem<A> : Item where A:Attack,new()
+  the actual item for the turret
+  this is not a turret it is just the item that will be turned into a gameobject connected to a turret when placed
+- followAi : MonoBehaviour
+  the monobehavior allowing the ai to stalk objects and the player
+- FPS : MonoBehaviour
+  this is a class that renders the fps given a textobject
+- TurretCreation
+  this is a static class that just generates the turrets on startup
+- ItemHelperFunctions
+  this is a static class for having functions that help items but arent functions for items
+  like Render
+- ItemRatio
+  this is a class connecting ratios and itemTemplates
+  this is one of the classes i make for just bundling data together
+- Item : ItemTemplate
+  this is the actual itemObject and has properties such as power and stability that are given apon crafting
+  this is what the player holds onto in its inventory
+- move : MonoBehaviour
+  this is the monobehavior for moving the player
+- IsItem : MonoBehaviour
+  this is a simple monobehavior to give an item to a gameobject
+  this allows me to connect things that unity doesnt want me to connect
+- PlayerBehavior : MonoBehaviour
+  this is what i use to interface with the player gameobject and the things it holds such as its deck
+  most of its methods and objects are static
+- TurretTemplate<A> : ItemTemplate where A:Attack,new()
+  this is the same as an itemTemplate but it is based around the turret
+  A will be the base attack the turret has by default
+- ItemTemplate
+  this is a template for an item, it will be solely used for itemRatio tables
+  when you craft it will turn the itemTemplate found into an item
+- uiBar : MonoBehaviour
+  this is a bar that has a value on the ui
+  such as hp
+  it is used to control scale and position for the gameobjects
+- UIControl : MonoBehaviour
+  this is the controller for the ui
+  it is attached to the player for the sole purpose of being a monobehavior i can interface with
+- World
+  this is the class that controls the itemgrid and allows for easy pathfinding
+  there are two grids one based of the fastest route to an object and one based of the fastest route to the player
