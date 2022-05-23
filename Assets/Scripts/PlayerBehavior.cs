@@ -17,8 +17,8 @@ public class PlayerBehavior : MonoBehaviour{
         dmg = gameObject.AddComponent<Damageable>();
         controller = GetComponent<UIControl>();
         new ItemTemplate("thing",1,new float[]{0,0,0,0,0,0});
-        for(int i =0;i<60;i++){
-            AddToDeck(ItemRatio.table[0].item.FromTemplate(1,1));
+        for(int i =0;i<5;i++){
+            AddToDeck(ItemRatio.table[1].item.FromTemplate(1,1));
         }
     }
 
@@ -42,10 +42,8 @@ public class PlayerBehavior : MonoBehaviour{
 
     public static void Place(){
         Vector3 p= Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        p.z =0;
-        p.x = Mathf.Round(p.x);
-        p.y = Mathf.Round(p.y);
-        GameObject o = holding.ToGameObject(p);
+        p.z=0;
+        GameObject o = holding.ToGameObject(World.NearestHex(p));
         holding=null;
     }
 }

@@ -5,12 +5,15 @@ using UnityEngine;
 public class uiBar : MonoBehaviour
 {
     public Transform angle;
-    public void Start(){Reset();}
     public void Reset(){UpdateValue(1,1);}
     public void Zero(){UpdateValue(0,1);}
 
     float current;public float aim;float transition;
 
+    public void Start(){
+        perentScale=transform.lossyScale.x/transform.localScale.x;
+        Reset();
+    }
     public void UpdateValue(float current,float max){
         this.aim=current/max;
         transition+=4;
@@ -26,18 +29,21 @@ public class uiBar : MonoBehaviour
             SetValue(aim,1);
         }
     }
+
+    float perentScale;
+
     public void SetValue(float current,float max){
         Vector3 v = transform.localScale;
-        v.x=(current/max)*(.5f+transform.position.y);
+        v.x=(current/max)*(.5f+transform.localPosition.y);
         transform.localScale=v;
 
-        v = transform.position;
-        v.x = 12f + (11-transform.localScale.x)/2;
-        transform.position=v;
+        v = transform.localPosition;
 
-        v.x-=transform.localScale.x/2 + 0.375f;
-        angle.transform.position=v;
-        Debug.Log(current);
+        v.x = 12f* 2/perentScale+ (11 * 2/perentScale-transform.localScale.x)/2;
+        transform.localPosition=v;
+
+        v.x-=(transform.localScale.x/2 + 0.375f* 2/perentScale);
+        angle.transform.localPosition=v;
         if(current<=0.002f){angle.gameObject.GetComponent<SpriteRenderer>().enabled=false;}
     }
 }

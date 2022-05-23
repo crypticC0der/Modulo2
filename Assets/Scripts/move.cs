@@ -9,15 +9,9 @@ public class move : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        World.Generate(new int[]{36,22},new bool[36,22]);
         wop = World.WorldPos(transform.position);
         World.MovePlayer(wop[0],wop[1]);
         pwop = wop;
-        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,0,0));
-        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,6,0));
-        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
-        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
-
     }
 
 

@@ -28,6 +28,16 @@ public static class World
         }
     }
 
+    [RuntimeInitializeOnLoadMethod]
+    public static void Initialize(){
+        World.Generate(new int[]{72,44},new bool[72,44]);
+        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,0,0));
+        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,6,0));
+        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
+        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
+
+    }
+
     public static void Print(){
         string r = "";
         for(int i =0;i<size[1];i++){
@@ -75,9 +85,7 @@ public static class World
     public static void UpdatePlrNodes(Node node){
         List<Node> ns = Neighbors(node);
         foreach(Node n in ns){
-            float change=1;
-            if(n.x!=node.x && n.y !=node.y){change=1.4f;}
-            float newd = node.plrDistance +change;
+            float newd= node.plrDistance +1;
             if(newd<=n.distance*playerCare && newd<n.plrDistance && newd<100){
                 n.plrDistance=newd;
                 n.plrNext=node;
@@ -133,11 +141,8 @@ public static class World
     public static void CheckNode(Node node){
         List<Node> ns = Neighbors(node);
         foreach(Node n in ns){
-            float change=1;
-            if(n.x!=node.x && n.y!=node.y){change = 1.4f;}
-            float newd = node.distance+ change;
-            if(newd<n.distance){
-                n.distance=newd;
+            if(node.distance+1<n.distance){
+                n.distance=node.distance+1;
                 n.next = node;
                 LookAt.Enqueue(n);
             }
@@ -146,19 +151,45 @@ public static class World
 
     static List<Node> Neighbors(Node node,bool powerCheck=false){
         List<Node> r = new List<Node>();
+        //horiz
+        if(node.x>0){r.Add(grid[node.x-1,node.y]);}
+        if(node.x+1<size[0]){r.Add(grid[node.x+1,node.y]);}
 
-
-        for(int i=0;i<3;i++){
-            if(node.x+i-1>=0 && node.x+i-1<size[0]){
-                for(int j=0;j<3;j++){
-                    if(node.y+j-1>=0 && node.y+j-1<size[1]&& !(i==1&&j==0)){
-                        r.Add(grid[node.x-1+i,node.y-1+j]);
-                    }
-                }
+        //down
+        if(node.y>0){
+            r.Add(grid[node.x,node.y-1]);
+            if(node.y%2==0 && node.x+1<size[0]){
+                //if not shifted
+                r.Add(grid[node.x+1,node.y-1]);
+            }else if(node.y%2==1&& node.x>0){
+                //if shifted
+                r.Add(grid[node.x-1,node.y-1]);
+            }
+        }
+        //up
+        if(node.y+1<size[1]){
+            r.Add(grid[node.x,node.y+1]);
+            if(node.y%2==0 && node.x+1<size[0]){
+                //if not shifted
+                r.Add(grid[node.x+1,node.y+1]);
+            }else if(node.y%2==1&& node.x>0){
+                //if shifted
+                r.Add(grid[node.x-1,node.y+1]);
             }
         }
 
+        //pre hexagon
+        // for(int i=0;i<3;i++){
+        //     if(node.x+i-1>=0 && node.x+i-1<size[0]){
+        //         for(int j=0;j<3;j++){
+        //             if(node.y+j-1>=0 && node.y+j-1<size[1]&& !(i==1&&j==0)){
+        //                 r.Add(grid[node.x-1+i,node.y-1+j]);
+        //             }
+        //         }
+        //     }
+        // }
 
+        //v1
         // if(node.x>0){
         //     r.Add(grid[node.x-1,node.y]);
         // }
@@ -175,9 +206,21 @@ public static class World
     }
 
     public static int[] WorldPos(Vector3 v){
-        return new int[2]{(int)Mathf.Round(v.x+(size[0]/2)),(int)Mathf.Round(v.y+(size[1]/2))};
+        // (int)Mathf.Round(v.x+(size[0]/2))
+        int[] p = new int[2]{0,(int)Mathf.Round(v.y+(size[1]/2))};
+        if(p[1]%2==1){v.x-=0.5f;}
+        p[0]=(int)(Mathf.Round(v.x+size[0]/2));
+        return p;
     }
 
+    public static Vector3 NearestHex(Vector3 v){
+        v.y=Mathf.Round(v.y);
+        v.x=Mathf.Round(v.x);
+        if(v.y%2==1){
+            v.x+=0.5f;
+        }
+        return v;
+    }
 }
 
 public class Node{
@@ -204,6 +247,28 @@ public class Node{
            return plrDistance;
         }else{
             return distance;
+        }
+    }
+
+    public Vector3 WorldPos(){
+        Vector3 v = new Vector3(x,y);
+        if(y%2==1){
+            v.x+=0.5f;
+        }
+        return v - new Vector3(World.size[0]/2,World.size[1]/2);
+    }
+
+    public Vector3 Direction(){
+        if(next.y-y==0){
+            return new Vector3(next.x-x,0);
+        }else{
+            int dx=next.x-x;
+            Vector3 r = new Vector3(0,next.y-y*1/2);
+            r.x=Mathf.Sqrt(3);
+            if(dx==0 ^ y%2==1){
+                r.x=-Mathf.Sqrt(3);
+            }
+            return r;
         }
     }
 

@@ -16,7 +16,8 @@ public class followAi : MonoBehaviour
     void Update(){
         int[] wap = World.WorldPos(transform.position);
         Node n = World.grid[wap[0],wap[1]].GetNext();
-        Vector3 v = new Vector3(n.x-wap[0],n.y-wap[1]);
+        Vector3 v = n.WorldPos()-transform.position;
+        v=v.normalized;
         rb.AddForce(v.normalized*Time.deltaTime*force/0.02f);
     }
 

@@ -71,9 +71,7 @@ public class UIControl : MonoBehaviour{
             inWorldClone.transform.localScale= ss.size;
             holdimg.transform.localScale= ss.size;
             holdimg.gameObject.transform.position=p;
-            p.x = Mathf.Round(p.x);
-            p.y = Mathf.Round(p.y);
-            inWorldClone.gameObject.transform.position=p;
+            inWorldClone.gameObject.transform.position=World.NearestHex(p);
         }else{
             holdimg.sprite=null;
             inWorldClone.sprite=null;
