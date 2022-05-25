@@ -74,7 +74,8 @@ public class ItemTemplate{
     public SpriteSize GetSpriteSize(){
         SpriteSize r;
         r.sprite = GetGraphic();
-        Vector2 v = scale * r.sprite.bounds.size;
+        Vector2 v = r.sprite.bounds.size;
+        v= new Vector3(scale/v.x,scale/v.y);
         r.size = new Vector3(v.x,v.y,1);
         return r;
     }

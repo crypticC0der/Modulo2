@@ -23,8 +23,10 @@ public class PlayerBehavior : MonoBehaviour{
     }
 
     public static void TakeFromDeck(int i){
-        holding = deck.Take(i);
-        controller.Render();
+        if(holding==null){
+            holding = deck.Take(i);
+            controller.Render();
+        }
     }
 
     public static void AddToDeck(){

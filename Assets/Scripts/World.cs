@@ -28,6 +28,8 @@ public static class World
         }
     }
 
+    public static Vector2 hexVec = new Vector2(1f/2,Mathf.Sqrt(3)/2);
+
     [RuntimeInitializeOnLoadMethod]
     public static void Initialize(){
         World.Generate(new int[]{72,44},new bool[72,44]);
@@ -35,7 +37,6 @@ public static class World
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,6,0));
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
-
     }
 
     public static void Print(){
@@ -207,18 +208,21 @@ public static class World
 
     public static int[] WorldPos(Vector3 v){
         // (int)Mathf.Round(v.x+(size[0]/2))
-        int[] p = new int[2]{0,(int)Mathf.Round(v.y+(size[1]/2))};
-        if(p[1]%2==1){v.x-=0.5f;}
+        int[] p = new int[2]{0,(int)Mathf.Round(v.y/hexVec.y+(size[1]/2))};
+        if(p[1]%2==1){v.x-=hexVec.x;}
         p[0]=(int)(Mathf.Round(v.x+size[0]/2));
         return p;
     }
 
     public static Vector3 NearestHex(Vector3 v){
-        v.y=Mathf.Round(v.y);
-        v.x=Mathf.Round(v.x);
+        v.y=Mathf.Round(v.y/hexVec.y);
+        Debug.Log(hexVec.x);
         if(v.y%2==1){
-            v.x+=0.5f;
+            v.x=Mathf.Round(v.x-hexVec.x)+hexVec.x;
+        }else{
+            v.x=Mathf.Round(v.x);
         }
+        v.y*=hexVec.y;
         return v;
     }
 }
@@ -251,9 +255,9 @@ public class Node{
     }
 
     public Vector3 WorldPos(){
-        Vector3 v = new Vector3(x,y);
+        Vector3 v = new Vector3(x,y*World.hexVec.y);
         if(y%2==1){
-            v.x+=0.5f;
+            v.x+=World.hexVec.x;
         }
         return v - new Vector3(World.size[0]/2,World.size[1]/2);
     }
