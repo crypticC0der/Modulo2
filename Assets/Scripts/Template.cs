@@ -59,7 +59,9 @@ public class ItemTemplate{
         GameObject ico = new GameObject("icon");
         ico.transform.SetParent(card.transform);
         Image img = ico.AddComponent<Image>();
-        img.sprite=GetGraphic();
+        SpriteSize s = GetSpriteSize();
+        img.sprite=s.sprite;
+        img.transform.localScale=s.size;
         float widthRatio = card.GetComponent<RectTransform>().sizeDelta.x/100;
         ico.transform.localScale=card.transform.localScale*0.6f*widthRatio;
         ico.transform.localPosition=Vector3.zero;
@@ -71,12 +73,13 @@ public class ItemTemplate{
         }
         return s;
     }
+
     public SpriteSize GetSpriteSize(){
         SpriteSize r;
         r.sprite = GetGraphic();
         Vector2 v = r.sprite.bounds.size;
-        v= new Vector3(scale/v.x,scale/v.y);
-        r.size = new Vector3(v.x,v.y,1);
+        r.size = new Vector3(scale/v.x,scale/v.y,1);
+        r.size.y*=2f/Mathf.Sqrt(3);
         return r;
     }
 

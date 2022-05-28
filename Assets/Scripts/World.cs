@@ -37,6 +37,9 @@ public static class World
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,6,0));
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
+        int[] h = WorldPos(new Vector3(00,0));
+        Debug.Log(new Vector2( h[0],h[1] ));
+        Debug.Log(grid[h[0],h[1]].WorldPos());
     }
 
     public static void Print(){
@@ -46,7 +49,7 @@ public static class World
                 // if(grid[j,i].distance*playerCare>grid[j,i].plrDistance){
                 //     r+="p";
                 // }
-                r+=string.Format("{0:00.0}, ",grid[j,i].distance);
+                r+=string.Format("{0:00.0}, ",grid[j,i].GetDist());
             }
             r+="\n";
         }
@@ -255,11 +258,13 @@ public class Node{
     }
 
     public Vector3 WorldPos(){
-        Vector3 v = new Vector3(x,y*World.hexVec.y);
+        Vector3 v = new Vector3(x,y);
         if(y%2==1){
             v.x+=World.hexVec.x;
         }
-        return v - new Vector3(World.size[0]/2,World.size[1]/2);
+        v -= new Vector3(World.size[0]/2,World.size[1]/2);
+        v.y*=World.hexVec.y;
+        return v;
     }
 
     public Vector3 Direction(){

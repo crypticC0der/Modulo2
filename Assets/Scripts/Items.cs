@@ -50,14 +50,13 @@ public class Item : ItemTemplate{
         r.transform.position=p;
         D d = r.AddComponent<D>();
         SpriteRenderer sp = r.AddComponent<SpriteRenderer>();
-        SpriteSize ss = GetSpriteSize();
+        SpriteSize ss  = GetSpriteSize();
         sp.sprite = ss.sprite;
-        r.transform.localScale = ss.size;
+        r.transform.localScale=ss.size;
         d.maxHealth = 50 *(level)*power*StrengthModifier();
         IsItem i = r.AddComponent<IsItem>();
         i.item=this;
-        BoxCollider2D b =r.AddComponent<BoxCollider2D>();
-        b.size = (Vector2)(ss.size);
+        r.AddComponent<PolygonCollider2D>();
         int[] wop = World.WorldPos(p);
         World.AddConstruct(wop[0],wop[1]);
         return r;

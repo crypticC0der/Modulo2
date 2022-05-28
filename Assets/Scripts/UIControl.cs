@@ -68,8 +68,9 @@ public class UIControl : MonoBehaviour{
             SpriteSize ss = PlayerBehavior.holding.GetSpriteSize();
             holdimg.sprite = ss.sprite;
             inWorldClone.sprite = ss.sprite;
-            inWorldClone.transform.localScale= ss.size;
-            holdimg.transform.localScale= ss.size;
+            Debug.Log(ss.size);
+            holdimg.transform.localScale=ss.size;
+            inWorldClone.transform.localScale=ss.size;
             holdimg.gameObject.transform.position=p;
             inWorldClone.gameObject.transform.position=World.NearestHex(p);
         }else{
