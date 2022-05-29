@@ -6,15 +6,36 @@ public class IsItem : MonoBehaviour{
     public Item item;
 }
 
-public class PlayerBehavior : MonoBehaviour{
-    public static Damageable dmg;
+public enum Component{
+    bladeParts,sparkon,soul,organic,lowDensityMetal,combustine
+}
+
+public class PlayerBehavior : Damageable{
     public static Deck deck;
     public static Item holding;
     public static UIControl controller;
+    public static int[] components=new int[6];
 
-    public void Start(){
+    public override void OnHit(float d){
+        base.OnHit(d);
+        controller.bars[0].UpdateValue(health,maxHealth);
+        components[(int)Component.organic]+=(int)(d/10);
+    }
+
+    public override void Regen(){
+        base.Regen();
+        controller.bars[0].UpdateValue(health,maxHealth);
+    }
+
+    public override void Die(){
+        base.Die();
+        controller.bars[0].SetValue(0,1);
+    }
+
+    protected override void Start(){
+        base.Start();
+        type=EntityTypes.Player;
         deck = new QueueDeck();
-        dmg = gameObject.AddComponent<Damageable>();
         controller = GetComponent<UIControl>();
         new ItemTemplate("thing",1,new float[]{0,0,0,0,0,0});
         for(int i =0;i<5;i++){

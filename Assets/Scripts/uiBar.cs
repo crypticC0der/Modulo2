@@ -16,8 +16,9 @@ public class uiBar : MonoBehaviour
     }
     public void UpdateValue(float current,float max){
         this.aim=current/max;
-        transition+=4;
+        transition=3;
     }
+
     public void Update(){
         if(transition>Time.deltaTime){
             current += (aim-current)/transition;

@@ -749,7 +749,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &403693414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2567,7 +2567,7 @@ GameObject:
   - component: {fileID: 1993915000}
   - component: {fileID: 1993915001}
   - component: {fileID: 1993915002}
-  m_Layer: 1
+  m_Layer: 0
   m_Name: evil
   m_TagString: Player
   m_Icon: {fileID: 0}

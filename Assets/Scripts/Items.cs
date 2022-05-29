@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public enum ItemTypes{
-    Module,
-    Defence,
-    Turret
+    Module=0,
+    Defence=1,
+    Turret=2
 }
 
 public static class ItemHelperFunctions{
@@ -49,6 +49,7 @@ public class Item : ItemTemplate{
         GameObject r =new GameObject(name);
         r.transform.position=p;
         D d = r.AddComponent<D>();
+        d.type=(EntityTypes)type;
         SpriteRenderer sp = r.AddComponent<SpriteRenderer>();
         SpriteSize ss  = GetSpriteSize();
         sp.sprite = ss.sprite;
@@ -59,6 +60,7 @@ public class Item : ItemTemplate{
         r.AddComponent<PolygonCollider2D>();
         int[] wop = World.WorldPos(p);
         World.AddConstruct(wop[0],wop[1]);
+        r.layer=3;
         return r;
     }
 }

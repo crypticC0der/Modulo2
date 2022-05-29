@@ -35,14 +35,13 @@ public static class World
         World.Generate(new int[]{72,44},new bool[72,44]);
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,0,0));
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,6,0));
-        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
-        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
+        ItemRatio.table[1].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
+        ItemRatio.table[1].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
         int[] h = WorldPos(new Vector3(00,0));
-        Debug.Log(new Vector2( h[0],h[1] ));
-        Debug.Log(grid[h[0],h[1]].WorldPos());
     }
 
     public static void Print(){
+        Debug.Log("saving");
         string r = "";
         for(int i =0;i<size[1];i++){
             for(int j=0;j<size[0];j++){
@@ -219,7 +218,6 @@ public static class World
 
     public static Vector3 NearestHex(Vector3 v){
         v.y=Mathf.Round(v.y/hexVec.y);
-        Debug.Log(hexVec.x);
         if(v.y%2==1){
             v.x=Mathf.Round(v.x-hexVec.x)+hexVec.x;
         }else{

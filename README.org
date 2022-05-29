@@ -105,30 +105,30 @@ there will be 2 components to how good a thing is:
 these two components mean that you need to figure out things by adjusting the amount youre putting in and you cant just shovel in a fuck ton of resources into a good recipie you find
 
 *** components
-- blade parts
-  high damage
-  all enemies
-  red(ish, maybe)
-- sparkon
-  electricity
-  stronger enemies
-  dark blue (very different to soul)
-- soul energy
-  exotic components
-  enemies but you need to be close
-  whitey blue
-- organic matter
-  things that are oddly powerful/create life
-  damaging yourself
-  green
-- low density metal
-  everything really
-  all enemies
-  gray
-- combustine
-  fire weapons
-  towers exploding, then killing the enemies that were caught in the explosion
-  red/orange
+**** DONE blade parts
+high damage
+all enemies
+red(ish, maybe)
+**** DONE sparkon
+electricity
+stronger enemies
+dark blue (very different to soul)
+**** DONE soul energy
+exotic components
+enemies but you need to be close
+whitey blue
+**** DONE organic matter
+things that are oddly powerful/create life
+damaging yourself
+green
+**** DONE low density metal
+everything really
+fast enemies
+gray
+**** DONE combustine
+fire weapons
+towers exploding, then killing the enemies that were caught in the explosion
+red/orange
 
 *** keeping inventory
 i am calling inventories decks like a sylladex from homestuck

@@ -36,10 +36,14 @@ public abstract class Attack : Damager
 		Rigidbody2D r = g.AddComponent<Rigidbody2D>();
 		r.bodyType=RigidbodyType2D.Kinematic;
 		r.mass=1;
-		g.AddComponent<Despawn>().deathTimer=3;
+		g.AddComponent<Despawn>().deathTimer=3*(attack.attackRange()/10);
 		ProcOnCollsion p = g.AddComponent<ProcOnCollsion>();
         p.perentLayer=attack.perent.gameObject.layer;
 		return p;
+	}
+
+	protected int layerMask(){
+		return ~((1<<perent.gameObject.layer) | (1<<7));
 	}
 
 	abstract public void Update();
@@ -59,11 +63,18 @@ public abstract class Attack : Damager
 
 /// <summary>
 /// basically this is a hook you can apply to an object woo
-/// dmg in this system is just a multiple
+/// dmg in this system is just a dmg*dmgMultiplier
 /// </summary>
 abstract public class Proc : Damager
 {
+	///<summary>
+	///runs the proc function on a gameobject
+	///</summary>
 	abstract public void OnProc(GameObject g);
+
+	///<summary>
+	///makes a new proc for an attack
+	///</summary>
 	abstract public Proc Go(float dmg, Attack perent);
 	public Attack perent;
 	public float chance;
@@ -96,7 +107,7 @@ public class ProcOnCollsion : MonoBehaviour
 	public int perentLayer;
 	public void OnTriggerEnter2D(Collider2D c)
 	{
-		if (c.gameObject.layer != perentLayer)
+		if (c.gameObject.layer != perentLayer && c.gameObject.layer!=this.gameObject.layer)
 		{
 			p.OnProc(c.gameObject);
 			Destroy(this.gameObject);
@@ -116,7 +127,7 @@ public abstract class RangedAttack : Attack
 
 	public override Collider2D Target()
 	{
-		Collider2D[] o = Physics2D.OverlapCircleAll(perent.transform.position, attackRange(),~(1<<7));
+		Collider2D[] o = Physics2D.OverlapCircleAll(perent.transform.position, attackRange(),layerMask());
 		foreach (Collider2D c in o)
 		{
 			if (Physics2D.Raycast(perent.transform.position, c.transform.position - perent.transform.position)
@@ -151,7 +162,7 @@ public abstract class CloseAttack : Attack
 
 	public override Collider2D Target()
 	{
-		return Physics2D.OverlapCircle(perent.transform.position, attackRange(), ~((1<<6) + (1<<7)));
+		return Physics2D.OverlapCircle(perent.transform.position, attackRange(), layerMask());
 	}
 	public override void Update()
 	{
@@ -166,50 +177,4 @@ public abstract class CloseAttack : Attack
 		}
 		timer -= Time.deltaTime * perent.attackRate;
 	}
-}
-
-public class BulletAttack : RangedAttack
-{
-	public override void AtFunc(GameObject o)
-	{
-		ProcOnCollsion p = basicBullet(this,"assets/hook");
-		p.gameObject.GetComponent<Rigidbody2D>().velocity = (o.transform.position - perent.transform.position).normalized*5;
-        p.p = impact.Go(damage(), this);
-    }
-
-    public BulletAttack() : base()
-    {
-        range = 5;
-        timerMax = 0.5f;
-        procCoefficent = 1;
-        dmg = 10;
-        impact = new BulletProc();
-    }
-}
-
-public class BulletProc : Proc
-{
-    public override void OnProc(GameObject g)
-    {
-		Damageable d = g.GetComponent<Damageable>();
-		if(d!=null){
-			d.TakeDamage(dmg);
-		}
-    }
-
-
-    public BulletProc()
-    {
-        procCoefficent = 1;
-        chance = 1;
-        dmgMultiplier = 1;
-    }
-
-    public override Proc Go(float d, Attack perent)
-    {
-        Proc p = new BulletProc();
-        p.dmg = d*dmgMultiplier;
-        p.perent = perent;
-        return p;
-    }
 }

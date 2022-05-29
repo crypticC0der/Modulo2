@@ -17,6 +17,37 @@ public class TurretTemplate<A> : ItemTemplate where A:Attack,new(){
         return t;
     }
 }
+
+//you need a module template for every type of module
+public abstract class ModuleTemplate : ItemTemplate {
+    public ModuleType t;
+
+    public ModuleTemplate(string itemName,float itemWeight,ModuleType type,float[] itemRatio,string pathToGraphic=null,int itemScale=1) : base(itemName,itemWeight,itemRatio,pathToGraphic,ItemTypes.Turret,itemScale){
+        t=type;
+    }
+
+    public ModuleTemplate():base(){}
+    public Item FromTemplate(float p,float s,Module m){
+        Module mod = (Module)(base.FromTemplate(p,s,m));
+        mod.t=t;
+        return mod;
+    }
+}
+
+public class StatModuleTemplate : ModuleTemplate{
+
+    public Stats changes;
+    public StatModuleTemplate(string itemName,float itemWeight,Stats statChanges,float[] itemRatio,string pathToGraphic=null,int itemScale=1) : base(itemName,itemWeight,ModuleType.uncommon,itemRatio,pathToGraphic,itemScale){
+        changes=statChanges;
+    }
+
+    public StatModuleTemplate():base(){}
+    public override Item FromTemplate(float p,float s){
+        StatModule mod = (StatModule)(base.FromTemplate(p,s,new StatModule(changes)));
+        return mod;
+    }
+}
+
 public class ItemTemplate{
     public string name;
     public float weight;

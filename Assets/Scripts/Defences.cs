@@ -21,10 +21,24 @@ public enum ModuleType{
 };
 
 public abstract class Module : Item{
-    ModuleType t;
-    Vector2 s;
+    public ModuleType t;
+    public float range;
     public abstract void onApply(Turret perent);
     public abstract void onRemove(Turret perent);
+
+    public List<Damageable> GetNearby(Vector3 p){
+        List<Damageable> ret = new List<Damageable>();
+        Collider2D[] inRange = Physics2D.OverlapCircleAll(p,range);
+        foreach(Collider2D obj in inRange){
+            Damageable damageable;
+            if(damageable= obj.GetComponent<Damageable>()){
+                if(damageable.type==EntityTypes.Turret){
+                    ret.Add(damageable);
+                }
+            }
+        }
+        return ret;
+    }
 }
 
 public class StatModule : Module{
@@ -51,9 +65,23 @@ public class StatModule : Module{
     public StatModule(Stats s){
         changes = s;
     }
+
+    public override GameObject ToGameObject(Vector3 p)
+    {
+        List<Damageable> nearbyTurrets = GetNearby(p);
+        foreach (Damageable turret in nearbyTurrets){
+            onApply((Turret)turret);
+        }
+        return base.ToGameObject(p);
+    }
+
 }
 
 public class Turret : Combatant{
+    public new void Die(){
+        base.Die();
+        Effects.Explode(transform.position,1);
+    }
 }
 
 public class TurretItem<A> : Item where A:Attack,new(){
