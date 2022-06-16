@@ -37,6 +37,10 @@ public static class World
         ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,6,0));
         ItemRatio.table[1].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
         ItemRatio.table[1].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
+        for(int i=0;i<11;i++){
+            EnemyFsm o = MeshGens.ObjGen((Shapes)i,MatColour.white);
+            o.transform.position = new Vector3(2*i-11,-5);
+        }
         int[] h = WorldPos(new Vector3(00,0));
     }
 
@@ -125,7 +129,6 @@ public static class World
         while(LookAt.Count>0){
             CheckNode(LookAt.Dequeue());
         }
-
     }
 
     public static void BackCheck(Node node){
@@ -249,6 +252,14 @@ public class Node{
 
     public float GetDist(){
         if(plrDistance<distance*World.playerCare){
+           return plrDistance;
+        }else{
+            return distance;
+        }
+    }
+
+    public float GetDistReal(){
+        if(plrDistance<distance){
            return plrDistance;
         }else{
             return distance;

@@ -2715,6 +2715,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 115a3564a5c49c409bc1418a15309a0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 200
+  maxHealth: 200
+  regen: 0
+  timeSinceDmg: 0
+  appliedDebuffs: 0
+  type: 5
 --- !u!114 &1993915002
 MonoBehaviour:
   m_ObjectHideFlags: 0

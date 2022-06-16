@@ -4,13 +4,19 @@ public enum DebuffName{
 	Burning=1,
 }
 
+///<summary>
 ///debuffs are not procs, procs do a thing on hit
 ///debuffs stay attached to an object for a bit
+///debuffs also dont care about the damage the attack did
+///</summary>
 public abstract class Debuff{
 	public DebuffName name;
 	public Damageable perent;
 	public float timeLeft;
 	public int stacks=1;
+	public float chance=1;
+
+	public abstract void Apply(Damageable d);
 	public virtual bool onUpdate(){
 		timeLeft-=Time.deltaTime;
 		if(timeLeft<0){
@@ -27,11 +33,15 @@ public abstract class Debuff{
 }
 
 public class Burning:Debuff{
-	public new DebuffName name=DebuffName.Burning;
-	const int dmg=1;
+	const int dmg=10;
+
+	public override void Apply(Damageable d){
+		d.ApplyDebuff<Burning>();
+	}
 
 	public Burning(){
 		timeLeft=3;
+		name=DebuffName.Burning;
 	}
 
 	public override bool onUpdate(){

@@ -4,16 +4,21 @@ using UnityEngine.UI;
 
 public class TurretTemplate<A> : ItemTemplate where A:Attack,new(){
     public Stats baseStats;
+    public List<Module> baseModules=new List<Module>();
 
 
-    public TurretTemplate(string itemName,float itemWeight,Stats basicStats,float[] itemRatio,string pathToGraphic=null,ItemTypes itemType=ItemTypes.Defence,int itemScale=1) : base(itemName,itemWeight,itemRatio,pathToGraphic,itemType,itemScale){
+    public TurretTemplate(string itemName,float itemWeight,Stats basicStats,float[] itemRatio,string pathToGraphic=null,ItemTypes itemType=ItemTypes.Turret,List<Module> basicModules=null,int itemScale=1) : base(itemName,itemWeight,itemRatio,pathToGraphic,itemType,itemScale){
         baseStats = basicStats;
+        if(basicModules!=null){
+            baseModules = basicModules;
+        }
     }
 
     public TurretTemplate():base(){}
     public override Item FromTemplate(float p,float s){
         TurretItem<A> t = (TurretItem<A>)(base.FromTemplate(p,s,new TurretItem<A>()));
         t.baseStats = baseStats;
+        t.baseModules=baseModules;
         return t;
     }
 }
@@ -46,6 +51,21 @@ public class StatModuleTemplate : ModuleTemplate{
         StatModule mod = (StatModule)(base.FromTemplate(p,s,new StatModule(changes)));
         return mod;
     }
+}
+
+public class DebuffModuleTemplate : ModuleTemplate{
+    public Debuff d;
+
+    public DebuffModuleTemplate():base(){}
+    public DebuffModuleTemplate(string itemName,float itemWeight,Debuff debuff,float[] itemRatio,string pathToGraphic=null,int itemScale=1) : base(itemName,itemWeight,ModuleType.uncommon,itemRatio,pathToGraphic,itemScale){
+        d=debuff;
+    }
+    public override Item FromTemplate(float p, float s)
+    {
+        DebuffModule mod = (DebuffModule)(base.FromTemplate(p,s,new DebuffModule(d)));
+        return base.FromTemplate(p, s);
+    }
+
 }
 
 public class ItemTemplate{

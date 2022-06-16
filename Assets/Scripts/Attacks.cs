@@ -48,7 +48,8 @@ public abstract class Attack : Damager
 
 	abstract public void Update();
 	abstract public Collider2D Target();
-	abstract public void AtFunc(GameObject g);
+	abstract public Vector3 AtFunc(GameObject g);
+	abstract public void AddAttack(Combatant c);
 
 	public AttackType t;
 	public Combatant perent;
@@ -70,7 +71,10 @@ abstract public class Proc : Damager
 	///<summary>
 	///runs the proc function on a gameobject
 	///</summary>
-	abstract public void OnProc(GameObject g);
+	public virtual void OnProc(Damageable d){
+		perent.perent.RunProc(procCoefficent,perent,dmg,d);
+		perent.perent.ApplyDebuffs(procCoefficent,d);
+	}
 
 	///<summary>
 	///makes a new proc for an attack
@@ -79,8 +83,9 @@ abstract public class Proc : Damager
 	public Attack perent;
 	public float chance;
 	public float dmgMultiplier;
-}
+	public ProcOnCollsion collider;
 
+}
 /// <summary>
 /// makes a object destroy itself after a couple seconds
 /// </summary>
@@ -103,14 +108,22 @@ public class Despawn: MonoBehaviour
 /// </summary>
 public class ProcOnCollsion : MonoBehaviour
 {
+	public int peirce;
 	public Proc p;
 	public int perentLayer;
 	public void OnTriggerEnter2D(Collider2D c)
 	{
 		if (c.gameObject.layer != perentLayer && c.gameObject.layer!=this.gameObject.layer)
 		{
-			p.OnProc(c.gameObject);
-			Destroy(this.gameObject);
+			Damageable d = c.GetComponent<Damageable>();
+			if(d!=null){
+				p.collider=this;
+				p.OnProc(d);
+				peirce--;
+				if(peirce<0){
+					Destroy(this.gameObject);
+				}
+			}
 		}
 	}
 
@@ -119,6 +132,7 @@ public class ProcOnCollsion : MonoBehaviour
 public abstract class RangedAttack : Attack
 {
 	public Proc impact;
+	abstract public void AtFunc(Vector3 p);
 
 	public RangedAttack()
 	{
@@ -145,7 +159,16 @@ public abstract class RangedAttack : Attack
 			Collider2D c;
 			if ((c = Target()) != null)
 			{
-				AtFunc(c.gameObject);
+				Vector3 d = AtFunc(c.gameObject);
+				if((perent.specialProperties & SpecialProperties.crossShot)!=0){
+					float t;
+					for(int i=0;i<3;i++){
+						t=-d.y;
+						d.y=d.x;
+						d.x=t;
+						AtFunc(d);
+					}
+				}
 				timer = attackRate()+ perent.attackSpeed;
 			}
 		}
@@ -155,12 +178,21 @@ public abstract class RangedAttack : Attack
 
 public abstract class CloseAttack : Attack
 {
-	public CloseAttack()
+	public new float damage()
 	{
-		t = AttackType.Close;
-	}
+		if ((perent.specialProperties & SpecialProperties.crossShot) != 0){
+			return 4*(dmg + perent.dmgPlus) * perent.dmgMultipler;
+		}else{
+			return (dmg + perent.dmgPlus) * perent.dmgMultipler;
+        }
+    }
 
-	public override Collider2D Target()
+    public CloseAttack()
+	{
+        t = AttackType.Close;
+    }
+
+    public override Collider2D Target()
 	{
 		return Physics2D.OverlapCircle(perent.transform.position, attackRange(), layerMask());
 	}

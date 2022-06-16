@@ -11,72 +11,9 @@ public struct Stats{
     public float attackRate;
     public float attackSpeed;
     public float range;
+    public float speed;
+    public int peirce;
 }
-
-public enum ModuleType{
-    uncommon,
-	exotic,
-	rare,
-	epic
-};
-
-public abstract class Module : Item{
-    public ModuleType t;
-    public float range;
-    public abstract void onApply(Turret perent);
-    public abstract void onRemove(Turret perent);
-
-    public List<Damageable> GetNearby(Vector3 p){
-        List<Damageable> ret = new List<Damageable>();
-        Collider2D[] inRange = Physics2D.OverlapCircleAll(p,range);
-        foreach(Collider2D obj in inRange){
-            Damageable damageable;
-            if(damageable= obj.GetComponent<Damageable>()){
-                if(damageable.type==EntityTypes.Turret){
-                    ret.Add(damageable);
-                }
-            }
-        }
-        return ret;
-    }
-}
-
-public class StatModule : Module{
-    public Stats changes;
-
-    public override void onApply(Turret perent){
-        perent.maxHealth+=changes.maxHealth;
-        perent.regen+=changes.HpRegen;
-        perent.dmgPlus+=changes.damage;
-        perent.dmgMultipler+=changes.dmgMultipler;
-        perent.attackSpeed+=changes.attackSpeed;
-        perent.attackRate+=changes.attackRate;
-    }
-
-    public override void onRemove(Turret perent){
-        perent.maxHealth-=changes.maxHealth;
-        perent.regen-=changes.HpRegen;
-        perent.dmgPlus-=changes.damage;
-        perent.dmgMultipler-=changes.dmgMultipler;
-        perent.attackSpeed-=changes.attackSpeed;
-        perent.attackRate-=changes.attackRate;
-    }
-
-    public StatModule(Stats s){
-        changes = s;
-    }
-
-    public override GameObject ToGameObject(Vector3 p)
-    {
-        List<Damageable> nearbyTurrets = GetNearby(p);
-        foreach (Damageable turret in nearbyTurrets){
-            onApply((Turret)turret);
-        }
-        return base.ToGameObject(p);
-    }
-
-}
-
 public class Turret : Combatant{
     public new void Die(){
         base.Die();
@@ -86,6 +23,7 @@ public class Turret : Combatant{
 
 public class TurretItem<A> : Item where A:Attack,new(){
     public Stats baseStats;
+    public List<Module> baseModules;
 
     public override GameObject ToGameObject(Vector3 p){
         GameObject o = base.ToGameObject<Turret>(p);
@@ -97,6 +35,9 @@ public class TurretItem<A> : Item where A:Attack,new(){
         t.dmgMultipler=baseStats.dmgMultipler;
         t.attackSpeed=baseStats.attackSpeed;
         t.attackRate=baseStats.attackRate;
+        foreach(Module m in baseModules){
+            m.onApply(t);
+        }
         return o;
     }
 }

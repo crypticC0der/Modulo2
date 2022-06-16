@@ -2,12 +2,24 @@ using UnityEngine;
 
 public class BulletAttack : RangedAttack
 {
-	public override void AtFunc(GameObject o)
+    public override void AddAttack(Combatant c)
+    {
+        c.AddAttack<BulletAttack>();
+    }
+
+	public override Vector3 AtFunc(GameObject o)
+	{
+		Vector3 d =o.transform.position-perent.transform.position;
+		AtFunc(d);
+		return d;
+    }
+	public override void AtFunc(Vector3 d)
 	{
 		ProcOnCollsion p = basicBullet(this,"assets/hook");
-		p.gameObject.GetComponent<Rigidbody2D>().velocity = (o.transform.position - perent.transform.position).normalized*5;
+		p.gameObject.GetComponent<Rigidbody2D>().velocity = (d).normalized*5;
         p.p = impact.Go(damage(), this);
     }
+
 
     public BulletAttack() : base()
     {
@@ -21,12 +33,10 @@ public class BulletAttack : RangedAttack
 
 public class BulletProc : Proc
 {
-    public override void OnProc(GameObject g)
+    public override void OnProc(Damageable d)
     {
-		Damageable d = g.GetComponent<Damageable>();
-		if(d!=null){
-			d.TakeDamage(dmg);
-		}
+		base.OnProc(d);
+		d.TakeDamage(dmg,perent.perent,d.transform.position - collider.transform.position);
     }
 
 

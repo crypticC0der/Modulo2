@@ -29,10 +29,12 @@ public class PlayerBehavior : Damageable{
 
     public override void Die(){
         base.Die();
+        World.clearGrid(false);
         controller.bars[0].SetValue(0,1);
     }
 
     protected override void Start(){
+        maxHealth=200;
         base.Start();
         type=EntityTypes.Player;
         deck = new QueueDeck();

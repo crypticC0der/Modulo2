@@ -7,7 +7,7 @@ public static class Effects{
 		foreach(Collider2D col in c){
 			Damageable D = col.GetComponent<Damageable>();
 			if(D){
-				D.ApplyDebuff<Burning>((int)(20*strength));
+				D.ApplyDebuff<Burning>((int)(2*strength));
 				D.TakeDamage(100*strength);
 			}
 		}

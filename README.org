@@ -202,11 +202,7 @@ i want to cover all towers from bloons and all towers from factorio
 - raycast
 - area damage
 - single projectile
-- omnidirectional
-- bidirectional
-- multiple shots funnel  style
-- homing
-- spot based
+- spot based (maybe)
 - landmine esc
 
 all of these will be able to go into the respective tree
@@ -241,3 +237,16 @@ the targeting system would have to be done to find the best enemy that is also n
 though currently there is no targeting so i guess i could just ignore any factors other than how near it is to the head (possibly)
 i greatly prefer the medium and cooler ways *but* they are harder to do and i want to get the game at a demoable point
 slowing down is always bad
+
+* enemies
+- star - only in weak spots
+  4 sides - attacks quadruoupled + more weak spots
+- circle - default
+  hemisphere - weak at the back
+  quaterfoil - regens
+- square - stronger
+  rectangle - strong + fast
+  octagon - super fucking strong + big
+- triangle - fast furious
+  diamond - spawns 2 triangles
+  curvilinear - speeds up nearby enemies, normal speed

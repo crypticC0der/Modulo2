@@ -5,33 +5,21 @@ using UnityEngine;
 public class followAi : MonoBehaviour
 {
     void Start(){
-        gameObject.AddComponent<SpinWheel>();
         rb= GetComponent<Rigidbody2D>();
+        fsm=GetComponent<EnemyFsm>();
+        force=fsm.speed*10;
     }
 
 
+    EnemyFsm fsm;
     public float force;
-    GameObject target;
     Rigidbody2D rb;
     void Update(){
         int[] wap = World.WorldPos(transform.position);
         Node n = World.grid[wap[0],wap[1]].GetNext();
+        fsm.distance=n.GetDistReal();
         Vector3 v = n.WorldPos()-transform.position;
         v=v.normalized;
         rb.AddForce(v.normalized*Time.deltaTime*force/0.02f);
-    }
-
-    public static GameObject closestTarget(Vector3 pos){
-        GameObject target=null;
-        float d =1000000000000000000;
-        GameObject[] targets = GameObject.FindGameObjectsWithTag("Player");
-        foreach(GameObject o in targets){
-            float dx = (o.transform.position-pos).magnitude;
-            if(dx<d){
-                d=dx;
-                target=o;
-            }
-        }
-        return target;
     }
 }
