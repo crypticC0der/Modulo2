@@ -80,7 +80,7 @@ public class HealthBar : MonoBehaviour,Bar{
         if(transition>Time.deltaTime){
             current += (aim-current)/transition;
             SetValue(current,1);
-        }else if(transition-Time.deltaTime< -1 && transition> -1){
+        }else if(transition-Time.deltaTime< -0.5f && transition> -0.5f){
             current=aim;
             SetValue(aim,1);
             Enable(false);

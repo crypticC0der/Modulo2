@@ -34,6 +34,7 @@ public class EnemySpawner{
 			a.AddAttack(q);
 		}
 		q.perent=this;
+		q.LevelUp(level);
 		return q;
 	}
 

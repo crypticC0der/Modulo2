@@ -19,7 +19,9 @@ public class EnemyFsm: Combatant{
     public float speedBonus=1;
     public float distance;
     public EnemySpawner perent;
-    public int level;
+    public int level=0;
+    public int baseStrength;
+    public Stats baseStats;
 
     public override void RunAttacks()
     {
@@ -37,8 +39,24 @@ public class EnemyFsm: Combatant{
         return perent.Spawn(transform.position,level);
     }
 
+    public void LevelUpStats(){
+        strength=baseStrength+level*baseStrength;
+        speed=baseStats.speed+(level/10f)*baseStats.speed;
+        maxHealth=baseStats.maxHealth+(level/5)*baseStats.maxHealth;
+        dmgPlus=baseStats.damage+(level)*baseStats.damage;
+        dmgMultipler=baseStats.dmgMultipler+(level/10)*baseStats.dmgMultipler;
+        health=maxHealth;
+    }
+
+    public int LevelUp(int levels){
+        level+=levels;
+        LevelUpStats();
+        return level;
+    }
     public int LevelUp(){
-        return ++level;
+        ++level;
+        LevelUpStats();
+        return level;
     }
 
     public override void RemoveStats(Stats changes){
@@ -58,6 +76,17 @@ public class EnemyFsm: Combatant{
         type=EntityTypes.Enemy;
         enemies++;
         AddAttack<SpinHit>();
+        baseStats=new Stats();
+        baseStats.shotSpeed=shotSpeed;
+        baseStats.damage=dmgPlus;
+        baseStats.dmgMultipler=dmgMultipler;
+        baseStats.range=range;
+        baseStats.maxHealth=maxHealth;
+        baseStats.attackSpeed=attackSpeed;
+        baseStats.peirce=peirce;
+        baseStats.attackRate=attackRate;
+        baseStats.speed=speed;
+        baseStrength=strength;
     }
 
     public override void Die(){
@@ -114,6 +143,7 @@ public class SemicircleEnemy: SpinEnemyFsm{
         maxHealth=50;
         base.Start();
         enemyType|=EnemyTypes.WeakPoint;
+        strength=4;
     }
 
     public override void TakeDamage(float d,Combatant sender,Vector3 direction){
@@ -132,6 +162,8 @@ public class QuaterfoilEnemy:EnemyFsm{
         health/=2;
         regening=true;
         regen=maxHealth/4;
+        enemyType|=EnemyTypes.Regen;
+        strength=4;
     }
 
     public override void Regen(){
@@ -153,6 +185,8 @@ public class StarEnemy : SpinEnemyFsm{
     protected override void Start(){
         maxHealth=100;
         points=5;
+        enemyType|=EnemyTypes.WeakPoint;
+        strength=7;
         base.Start();
     }
 
@@ -176,6 +210,8 @@ public class CrossEnemy : StarEnemy{
         attackRate=4;
         AddAttack<FlameAttack>();
         specialProperties|=SpecialProperties.crossShot;
+        enemyType|=EnemyTypes.WeakPoint;
+        strength=20;
         base.SkipStart();
     }
 }
@@ -185,6 +221,8 @@ public class SquareEnemy : EnemyFsm{
         maxHealth=200;
         speed=0.5f;
         dmgMultipler*=2;
+        strength=4;
+        enemyType|=EnemyTypes.Strong;
         base.Start();
     }
 }
@@ -194,6 +232,8 @@ public class RectangleEnemy : SpinEnemyFsm{
         maxHealth=200;
         speed=1.5f;
         dmgMultipler*=2;
+        enemyType|=EnemyTypes.Strong;
+        strength=6;
         base.Start();
     }
 }
@@ -203,15 +243,20 @@ public class TriangleEnemy : SpinEnemyFsm{
         maxHealth=50;
         speed=3f;
         dmgMultipler*=2;
+        enemyType|=EnemyTypes.Fast;
+        strength=3;
         base.Start();
     }
 }
 
 public class OctogonEnemy : EnemyFsm{
+
     protected override void Start(){
         maxHealth=800;
         dmgMultipler*=8;
         speed=0.25f;
+        enemyType|=EnemyTypes.Boss | EnemyTypes.Strong;
+        strength=20;
         base.Start();
     }
 }
@@ -230,6 +275,11 @@ public class DiamondEnemy : TriangleEnemy{
         }
         base.Die();
     }
+
+    protected override void Start(){
+        strength=6;
+        base.Start();
+    }
 }
 
 public class CurvilinearEnemy : TriangleEnemy{
@@ -239,6 +289,10 @@ public class CurvilinearEnemy : TriangleEnemy{
             c[i].GetComponent<EnemyFsm>().speedBonus=2;
         }
         base.FixedUpdate();
+    }
+    protected override void Start(){
+        strength=6;
+        base.Start();
     }
 }
 
