@@ -11,7 +11,7 @@ public class FlameAttack : RangedAttack
 	public override void AtFunc(Vector3 d)
 	{
 		ProcOnCollsion p = basicBullet(this,"assets/hook");
-		p.gameObject.GetComponent<Rigidbody2D>().velocity = (d).normalized*5;
+		p.gameObject.GetComponent<Rigidbody2D>().velocity = (d).normalized*shotSpeed();
         p.p = impact.Go(damage(), this);
     }
 

@@ -17,6 +17,7 @@ public class Combatant : Damageable{
     public float dmgMultipler=1;
     public float attackRate=1;
     public float attackSpeed=0;
+    public float shotSpeed=5; //only applicable with 2 things
     public float range=1;
     public int peirce=0;
     public SpecialProperties specialProperties;
@@ -28,6 +29,7 @@ public class Combatant : Damageable{
         dmgMultipler-=changes.dmgMultipler;
         attackSpeed-=changes.attackSpeed;
         attackRate-=changes.attackRate;
+        shotSpeed-=changes.shotSpeed;
         range-=changes.range;
         peirce-=changes.peirce;
     }
@@ -39,6 +41,7 @@ public class Combatant : Damageable{
         dmgMultipler+=changes.dmgMultipler;
         attackSpeed+=changes.attackSpeed;
         attackRate+=changes.attackRate;
+        shotSpeed-=changes.shotSpeed;
         range+=changes.range;
         peirce+=changes.peirce;
     }

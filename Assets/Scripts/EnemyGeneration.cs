@@ -26,7 +26,6 @@ public class EnemySpawner{
 		return quantity>0;
 	}
 
-
 	public EnemyFsm Spawn(Vector3 location, int level,Shapes s){
         EnemyFsm q = MeshGens.ObjGen(enemy,matColour);
         q.toApply=debuffs;

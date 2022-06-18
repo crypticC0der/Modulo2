@@ -14,8 +14,9 @@ public enum EnemyTypes{
 public class EnemyFsm: Combatant{
     public static int enemies=0;
     protected EnemyTypes enemyType=0;
-    public int strength; // a metric  of how strong the enmy
+    public int strength=6; // a metric  of how strong the enmy
     public float speed=1;
+    public float speedBonus=1;
     public float distance;
     public EnemySpawner perent;
     public int level;
@@ -62,24 +63,29 @@ public class EnemyFsm: Combatant{
     public override void Die(){
         //give components
         if((EnemyTypes.Boss|EnemyTypes.Strong & enemyType) != 0){
-            PlayerBehavior.components[(int)Component.sparkon]+=strength;
+            PlayerBehavior.SpawnComponent(Component.sparkon,strength,transform.position);
         }
         if((EnemyTypes.Fast & enemyType) != 0){
-            PlayerBehavior.components[(int)Component.lowDensityMetal]+=strength;
+            PlayerBehavior.SpawnComponent(Component.lowDensityMetal,strength,transform.position);
         }
         Debuff d = FindDebuff(DebuffName.Burning);
         if(d!=null){
-            PlayerBehavior.components[(int)Component.combustine]+=d.stacks;
+            PlayerBehavior.SpawnComponent(Component.combustine,d.stacks,transform.position);
         }
         Vector3 dist = PlayerBehavior.controller.transform.position-transform.position;
         if(dist.magnitude<2){
-            PlayerBehavior.components[(int)Component.soul]+=strength;
+            PlayerBehavior.SpawnComponent(Component.soul,strength,transform.position);
         }
-        PlayerBehavior.components[(int)Component.bladeParts]+=strength;
+        PlayerBehavior.SpawnComponent(Component.bladeParts,strength,transform.position);
 
         enemies--;
         //actually die
         base.Die();
+    }
+
+    public override void FixedUpdate(){
+        speedBonus=1;
+        base.FixedUpdate();
     }
 }
 
@@ -121,16 +127,17 @@ public class SemicircleEnemy: SpinEnemyFsm{
 public class QuaterfoilEnemy:EnemyFsm{
 
     protected override void Start(){
-        maxHealth=50;
+        maxHealth=100; //2x regular health
         base.Start();
+        health/=2;
         regening=true;
-        regen=maxHealth/2;
+        regen=maxHealth/4;
     }
 
     public override void Regen(){
         health+=regen*Time.deltaTime;
-        if(health>maxHealth*2&&enemies<420){
-            health=maxHealth;
+        if(health>=maxHealth&&enemies<420){
+            health=maxHealth/2;
             if(perent!=null){
                 EnemyFsm e = Clone(transform.position+new Vector3(0.35f,0.35f));
             }else{
@@ -229,7 +236,7 @@ public class CurvilinearEnemy : TriangleEnemy{
     public override void FixedUpdate(){
         Collider2D[] c = Physics2D.OverlapAreaAll(transform.position-transform.up*0.5f-transform.right*2,transform.position-transform.up*4.5f+transform.right*2,1<<gameObject.layer);
         for(int i=0;i<c.Length;i++){
-            c[i].GetComponent<EnemyFsm>().speed*=2;
+            c[i].GetComponent<EnemyFsm>().speedBonus=2;
         }
         base.FixedUpdate();
     }

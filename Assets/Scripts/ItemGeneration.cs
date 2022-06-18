@@ -5,6 +5,7 @@ using UnityEngine;
 static class TurretCreation{
     [RuntimeInitializeOnLoadMethod]
     static void CreateProjectileTurret(){
+        HealthBar.barSprites = new Sprite[]{Resources.Load<Sprite>("assets/barOutlineB"),Resources.Load<Sprite>("assets/barInner")};
         Debug.Log("gay sex");
         Stats s = new Stats();
         s.maxHealth=150;

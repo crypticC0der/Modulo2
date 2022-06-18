@@ -79,6 +79,32 @@ public static class MeshGens{
 		return tris;
 	}
 
+	public static Mesh CircleOutline(float size,int v=6,float offset=0,float thickness=0.8f){
+		Vector3[] points = new Vector3[v*2];
+		Vector2[] uvs = new Vector2[v*2];
+		int[] tris = new int[v*6];
+		PointData outer = CirclePoints(size,v,offset);
+		PointData inner = CirclePoints(size*thickness,v,offset);
+		for(int i=0;i<v;i++){
+			points[i]=inner.p[i];
+			uvs[i]=inner.u[i];
+		}
+		for(int i=0;i<v;i++){
+			points[i+v]=outer.p[i];
+			uvs[i+v]=outer.u[i];
+		}
+		for(int i=0;i<v;i++){
+			int j=6*i;
+			tris[j+2]=i;
+			tris[j+1]=(i+1)%v;
+			tris[j]=(i+1)%v + v;
+			tris[j+5]=i;
+			tris[j+4]=tris[j];
+			tris[j+3]=i+v;
+		}
+		return GenMesh(points,uvs,tris);
+	}
+
 	public static Mesh Star(float size, int v=5,float offset=0){
 		PointData dinner = CirclePoints(size/3,v,offset-(Mathf.PI/v));
 		PointData douter = CirclePoints(size,v,offset);
@@ -178,25 +204,35 @@ public static class MeshGens{
 		return GenMesh(points,uv,tris);
 	}
 
-	public static GameObject Triangle(float size,Color c){
-		Shader s = Shader.Find("Unlit/Color");
-		Material black = new Material(s);
-		black.color=c;
-		GameObject obj = new GameObject();
-		obj.transform.position=new Vector2(5,5);
-		obj.AddComponent<MeshFilter>().mesh=Circle(size,3);
-		Renderer r = obj.AddComponent<MeshRenderer>();
-		r.material=black;
-		return obj;
-	}
-	static string[] shapeNames = new string[]{"star", "cross", "circle", "semicircle", "quaterfoil", "square", "rectangle", "octogon", "triangle", "diamond", "curvilinear"};
-	static Mesh[] meshes = new Mesh[11];
-	static Material[] colors= new Material[8];
+	static string[] shapeNames = new string[]{
+		"star",
+		"cross",
+		"circle",
+		"semicircle",
+		"quaterfoil",
+		"square",
+		"rectangle",
+		"octogon",
+		"triangle",
+		"diamond",
+		"curvilinear",
+		"hexagonOuter",
+		"hexagon"
+	};
+	static Mesh[] meshes = new Mesh[13];
+	static Material[] colors= new Material[10];
 
     [RuntimeInitializeOnLoadMethod]
 	static void StructureGen(){
 		MeshGen();
 		ColourGen();
+	}
+
+	public static GameObject MinObjGen(Shapes shape,MatColour m){
+		GameObject obj = new GameObject(shapeNames[(int)shape]);
+		obj.AddComponent<MeshFilter>().mesh=meshes[(int)shape];
+		obj.AddComponent<MeshRenderer>().material=colors[(int)m*2];
+		return obj;
 	}
 
 	public static EnemyFsm ObjGen(Shapes shape,MatColour m){
@@ -286,6 +322,10 @@ public static class MeshGens{
 		meshes[(int)Shapes.curvilinear].name="curvilinear";
 		meshes[(int)Shapes.octogon]=Circle(1,8,Mathf.PI/8);
 		meshes[(int)Shapes.octogon].name="octogon";
+		meshes[(int)Shapes.hexagonOuter]=CircleOutline(Mathf.Sqrt(3)/3,6,0,0.92f);
+		meshes[(int)Shapes.hexagonOuter].name="hexagonOuter";
+		meshes[(int)Shapes.hexagon]=Circle(Mathf.Sqrt(3)/3,6);
+		meshes[(int)Shapes.hexagon].name="hexagon";
 	}
 
 	static void ColourGen(){
@@ -293,6 +333,7 @@ public static class MeshGens{
 		ColourMats(MatColour.red,Color.red);
 		ColourMats(MatColour.green,Color.green);
 		ColourMats(MatColour.blue,Color.blue);
+		ColourMats(MatColour.black,Color.black);
 	}
 
 	const float blackness=1/8f;
@@ -302,19 +343,6 @@ public static class MeshGens{
 		colors[(int)color*2].color=c;
 		colors[(int)color*2+1]=new Material(s);
 		colors[(int)color*2+1].color=new Color(blackness*c.r,blackness*c.g,blackness*c.b);
-	}
-
-	public static GameObject QuaterfoilObj(float size,Color c){
-		Shader s = Shader.Find("Unlit/Color");
-		Material black = new Material(s);
-		black.color=c;
-		GameObject obj = new GameObject();
-		obj.transform.position=new Vector2(5,5);
-		Mesh mf = obj.AddComponent<MeshFilter>().mesh=Curvilinear(size,6,-0.1f);
-		mf.name="hell";
-		Renderer r = obj.AddComponent<MeshRenderer>();
-		r.material=black;
-		return obj;
 	}
 }
 
@@ -329,12 +357,15 @@ public enum Shapes{
 	octogon,
 	triangle,
 	diamond,
-	curvilinear
+	curvilinear,
+	hexagonOuter,
+	hexagon
 };
 
 public enum MatColour{
 	white,
 	red,
 	blue,
-	green
+	green,
+	black
 }

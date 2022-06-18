@@ -12,19 +12,102 @@ public enum EntityTypes{
     Other=5
 }
 
+public class HealthBar : MonoBehaviour,Bar{
+    public SpriteRenderer backdrop;
+    public SpriteRenderer bar;
+    public static Sprite[] barSprites;
+    public static float[] intervals=new float[]{0.3f,0.4f};
+    public static Color[] colors=new Color[]{new Color(12/16f,3/16f,1/32f),new Color(3/16f,13/16f,2/16f),new Color(13/16f,17/32f,1/8f),new Color(1/8f,1/8f,1/8f)};
+    float current=1;
+    float aim=1;
+    float transition=0;
+    public void Start(){
+        backdrop= new GameObject("healthBar").AddComponent<SpriteRenderer>();
+        backdrop.sprite = barSprites[0];
+        backdrop.transform.localPosition=new Vector3(0,1);
+        bar= new GameObject("health").AddComponent<SpriteRenderer>();
+        bar.sprite = barSprites[1];
+        bar.transform.SetParent(backdrop.transform);
+        bar.transform.localPosition=new Vector3(0,0);
+        backdrop.transform.localScale=Vector3.one*2;
+        Enable(false);
+        if(gameObject.layer==6){
+            backdrop.color = colors[3];
+        }
+    }
+
+    public void Reset(){UpdateValue(1,1);}
+    public void Zero(){UpdateValue(0,1);}
+
+    public void Enable(bool b){
+        backdrop.enabled=b;
+        bar.enabled=b;
+    }
+
+    public void Delete(){
+        Destroy(bar.gameObject);
+        Destroy(backdrop.gameObject);
+    }
+
+    public void UpdateValue(float current,float max){
+        Enable(true);
+        aim=current/max;
+        transition=3;
+    }
+
+    public Color ColorAt(float v){
+        float t = Mathf.InverseLerp(intervals[0],intervals[1],v);
+        if(gameObject.layer==6){
+            return Color.LerpUnclamped(colors[2],colors[0],t);
+        }else{
+            return Color.LerpUnclamped(colors[0],colors[1],t);
+        }
+    }
+
+    public void SetValue(float current,float max){
+        Vector3 s = bar.transform.localScale;
+        float v = Mathf.Min(current/max,1);
+        s.x=v;
+        bar.color=ColorAt(v);
+        Vector3 p = bar.transform.localPosition;
+        p.x=(1-v)/2;
+        bar.transform.localScale=s;
+        bar.transform.localPosition=p;
+    }
+
+    public void Update(){
+        backdrop.transform.position=transform.position+Vector3.up;
+        if(transition>Time.deltaTime){
+            current += (aim-current)/transition;
+            SetValue(current,1);
+        }else if(transition-Time.deltaTime< -1 && transition> -1){
+            current=aim;
+            SetValue(aim,1);
+            Enable(false);
+        }
+        transition-=Time.deltaTime;
+
+    }
+
+}
+
 public class Damageable : MonoBehaviour{
     public float health;
     public float maxHealth=50;
-    public float regen;
+    public float regen=0; //rate of regen
+    public bool regening=false; //means it unconditionally regens
     public float timeSinceDmg=0;
     public DebuffName appliedDebuffs;
     public EntityTypes type=EntityTypes.Other;
     public List<Debuff> debuffs = new List<Debuff>();
-    public bool regening=false;
+    public Bar b;
 
     protected virtual void Start(){
         regen=maxHealth/10;
         health=maxHealth;
+        if(type!=EntityTypes.Player){
+            b = (Bar)gameObject.AddComponent<HealthBar>();
+        }
     }
 
     ///<summary>
@@ -62,6 +145,7 @@ public class Damageable : MonoBehaviour{
         ApplyDebuff(newDebuff);
     }
 
+
     public Debuff FindDebuff(DebuffName dn){
         if((appliedDebuffs & dn)!=0){
             foreach(Debuff d in debuffs){
@@ -71,10 +155,10 @@ public class Damageable : MonoBehaviour{
             }
         }
         return null;
-
     }
 
     public virtual void Die(){
+        b.Delete();
         switch(type){
             case EntityTypes.Turret:
                 Module m = (Module)GetComponent<IsItem>().item;
@@ -109,23 +193,27 @@ public class Damageable : MonoBehaviour{
 
     public virtual void Regen(){
         if(health<maxHealth){
-            if(timeSinceDmg>1){
+            if(timeSinceDmg>1 || regening){
                 health+=regen*Time.deltaTime;
+                b.UpdateValue(health,maxHealth);
             }
             timeSinceDmg+=Time.deltaTime;
-        }else{
+        }else if(health!=maxHealth){
             health=maxHealth;
+            b.UpdateValue(1,1);
         }
     }
 
     public virtual void FixedUpdate(){
         RunDebuffs();
-        if(regening){
+        if(regening||regen!=0){
             Regen();
         }
     }
 
-    public virtual void OnHit(float d){}
+    public virtual void OnHit(float d){
+        b.UpdateValue(health,maxHealth);
+    }
 
     public virtual void TakeDamage(float d,Combatant sender,Vector3 direction){
         if(d>health&&sender.type==EntityTypes.Enemy){

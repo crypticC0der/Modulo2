@@ -55,6 +55,7 @@ public class Item : ItemTemplate{
         sp.sprite = ss.sprite;
         r.transform.localScale=ss.size;
         d.maxHealth = 50 *(level)*power*StrengthModifier();
+        d.regen=d.maxHealth/10;
         IsItem i = r.AddComponent<IsItem>();
         i.item=this;
         r.AddComponent<PolygonCollider2D>();

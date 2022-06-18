@@ -7,7 +7,6 @@ public class followAi : MonoBehaviour
     void Start(){
         rb= GetComponent<Rigidbody2D>();
         fsm=GetComponent<EnemyFsm>();
-        force=fsm.speed*10;
     }
 
 
@@ -15,6 +14,7 @@ public class followAi : MonoBehaviour
     public float force;
     Rigidbody2D rb;
     void Update(){
+        force=fsm.speed*10*fsm.speedBonus;
         int[] wap = World.WorldPos(transform.position);
         Node n = World.grid[wap[0],wap[1]].GetNext();
         fsm.distance=n.GetDistReal();

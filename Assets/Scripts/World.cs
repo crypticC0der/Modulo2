@@ -5,6 +5,7 @@ using System.IO;
 
 public static class World
 {
+    public static GameObject gridObj=null;
     public static Node[,] grid;
     public static int[] size;
     public const int playerCare=2;
@@ -27,8 +28,18 @@ public static class World
             }
         }
     }
-
     public static Vector2 hexVec = new Vector2(1f/2,Mathf.Sqrt(3)/2);
+
+    public static void GenGrid(){
+        gridObj=new GameObject("grid");
+        gridObj.transform.position=new Vector3(0,0,100);
+        for (int i=0;i<size[0];i++){
+            for(int j=0;j<size[1];j++){
+                grid[i,j].RenderNode();
+            }
+        }
+    }
+
 
     [RuntimeInitializeOnLoadMethod]
     public static void Initialize(){
@@ -41,7 +52,6 @@ public static class World
             EnemyFsm o = MeshGens.ObjGen((Shapes)i,MatColour.white);
             o.transform.position = new Vector3(2*i-11,-5);
         }
-        int[] h = WorldPos(new Vector3(00,0));
     }
 
     public static void Print(){
@@ -244,6 +254,14 @@ public class Node{
         }else{
             return next;
         }
+    }
+
+    public GameObject RenderNode(){
+        GameObject o =MeshGens.MinObjGen(Shapes.hexagonOuter,MatColour.black);
+        Vector3 p =WorldPos();
+        o.transform.SetParent(World.gridObj.transform);
+        o.transform.localPosition=p;
+        return o;
     }
 
     public string ToString(){

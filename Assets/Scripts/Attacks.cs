@@ -56,10 +56,12 @@ public abstract class Attack : Damager
 	public float timerMax;
 	protected float timer=1;
 	public float range = 1;
+	public float shotSpd=5;
 
 	public float damage(){return (dmg+perent.dmgPlus)*perent.dmgMultipler;}
 	public float attackRate(){return perent.attackSpeed + timerMax/perent.attackRate;}
 	public float attackRange(){return perent.range*range;}
+	public float shotSpeed(){return perent.shotSpeed+shotSpd;}
 }
 
 /// <summary>

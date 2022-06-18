@@ -58,6 +58,15 @@ public class UIControl : MonoBehaviour{
             }
         }
 
+        if(Input.GetButtonDown("uiToggle")){
+            if(World.gridObj!=null){
+                GameObject.Destroy(World.gridObj);
+                World.gridObj=null;
+            }else{
+                World.GenGrid();
+            }
+        }
+
         inventory.Update();
         crafting.Update();
         plcDown = Input.GetButton("place");

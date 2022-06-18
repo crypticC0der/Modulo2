@@ -10,10 +10,12 @@ public struct Stats{
     public float dmgMultipler;
     public float attackRate;
     public float attackSpeed;
+    public float shotSpeed;
     public float range;
     public float speed;
     public int peirce;
 }
+
 public class Turret : Combatant{
     public new void Die(){
         base.Die();
@@ -35,6 +37,9 @@ public class TurretItem<A> : Item where A:Attack,new(){
         t.dmgMultipler=baseStats.dmgMultipler;
         t.attackSpeed=baseStats.attackSpeed;
         t.attackRate=baseStats.attackRate;
+        t.shotSpeed=baseStats.shotSpeed;
+        t.range =baseStats.range;
+        t.peirce=baseStats.peirce;
         foreach(Module m in baseModules){
             m.onApply(t);
         }
