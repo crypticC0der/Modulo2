@@ -16,18 +16,20 @@ public class uiBar : MonoBehaviour,Bar
     public Color[] colors;
     public float[] intervals;
     public Transform angle;
-    public void Reset(){UpdateValue(1,1);}
+    public void Reset(){
+        transition=0;
+        current=1;
+        aim=1;
+        SetValue(1,1);
+    }
     public void Zero(){UpdateValue(0,1);}
     SpriteRenderer renderer;
-    SpriteRenderer childRenderer;
     float current;
     float aim;
     float transition;
 
     public void Start(){
-        perentScale=transform.lossyScale.x/transform.localScale.x;
         renderer=GetComponent<SpriteRenderer>();
-        childRenderer=angle.gameObject.GetComponent<SpriteRenderer>();
         Reset();
     }
     public void UpdateValue(float current,float max){
@@ -37,12 +39,11 @@ public class uiBar : MonoBehaviour,Bar
 
     public void Enable(bool b){
         renderer.enabled=false;
-        childRenderer.enabled=false;
     }
 
     public void Delete(){
         Destroy(renderer.gameObject);
-        Destroy(childRenderer.gameObject);
+        Destroy(this);
     }
 
     public Color Remap(float v){
@@ -62,21 +63,20 @@ public class uiBar : MonoBehaviour,Bar
         }
     }
 
-    float perentScale;
 
     public void SetValue(float current,float max){
-        Vector3 v = transform.localScale;
-        v.x=(current/max)*(.5f+transform.localPosition.y);
-        transform.localScale=v;
-        v = transform.localPosition;
         Color c = Remap(current/max);
         renderer.color=c;
-        childRenderer.color=c;
-        v.x = 12f* 2/perentScale+ (11 * 2/perentScale-transform.localScale.x)/2;
-        transform.localPosition=v;
-
-        v.x-=(transform.localScale.x/2 + 0.375f* 2/perentScale);
-        angle.transform.localPosition=v;
-        if(current<=0.002f){angle.gameObject.GetComponent<SpriteRenderer>().enabled=false;}
+        renderer.gameObject.GetComponent<SpriteRenderer>().enabled=current>=0.002f;
+        Vector3 p = transform.localPosition;
+        Vector3 s = transform.localScale;
+        float scale = 4.8f + 1.125f*p.y;
+        s.x=(current/max)*(scale);
+        p.x=-(scale-s.x)/2-0.53f+0.525f*p.y;
+        transform.localPosition=p;
+        transform.localScale=s;
+        p.x+=s.x/2-0.185f;
+        p.z+=1;
+        angle.localPosition=p;
     }
 }

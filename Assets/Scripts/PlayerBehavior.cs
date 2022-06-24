@@ -18,7 +18,7 @@ public class ComponentData : MonoBehaviour{
 
     private void FixedUpdate(){
         time-=Time.deltaTime;
-        if(time<0){
+        if(time<0&&PlayerBehavior.me!=null){
             Vector3 d = PlayerBehavior.me.transform.position-transform.position;
             if(d.magnitude>0.5f){
                 transform.position+=Force(d)*Time.deltaTime;
@@ -55,6 +55,11 @@ public class PlayerBehavior : Damageable{
     public override void OnHit(float d){
         PlayerBehavior.SpawnComponent(Component.organic,(int)(d/10),transform.position);
         base.OnHit(d);
+    }
+
+    public override void TakeDamage(float d, Combatant sender, Vector3 direction)
+    {
+        base.TakeDamage(d, sender, direction);
     }
 
     public static void SpawnComponent(Component c,int amount,Vector3 position){
@@ -98,7 +103,7 @@ public class PlayerBehavior : Damageable{
         b=controller.bars[0];
         base.Start();
         deck = new StackDeck();
-        ItemTemplate itemTemplate = new ItemTemplate("thing",1,new float[]{0,0,0,0,0,0});
+        ItemTemplate itemTemplate = new ItemTemplate("wallBase",1,new float[]{0,0,0,0,0,0});
         for(int i =0;i<5;i++){
             AddToDeck(ItemRatio.table[1].item.FromTemplate(1,1));
             AddToDeck(itemTemplate.FromTemplate(1,1));

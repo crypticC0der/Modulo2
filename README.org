@@ -250,3 +250,55 @@ slowing down is always bad
 - triangle - fast furious
   diamond - spawns 2 triangles
   curvilinear - speeds up nearby enemies, normal speed
+
+* items
+** bases
+*** TODO rocket
+**** DONE base
+**** TODO projectile
+*** TODO laser
+**** DONE base
+**** TODO projectile
+*** DONE gun
+**** TODO base
+**** TODO projectile
+*** DONE flamethrower
+**** TODO base
+**** TODO projectile
+*** TODO area damage
+**** DONE base
+**** TODO projectile
+*** TODO landmine
+**** DONE base
+**** TODO projectile
+*** TODO tesla coil
+**** TODO base
+**** TODO projectile
+
+* visual identiy
+neon asthetic
+aka bright colors and dark colors
+will need to redo
+- crafting box
+- deck box
+- item cards
+- all items
+- all bases
+- ui sidebar
+- ui topbar
+
+* pallete
+#1a1f2a - background
+#1a1b26 - alt background
+#a9b1d6 - forground
+#ff1178 - pink
+#fe0000 - red
+#fff205 - yellow
+#01fff4 - blue
+#7cff01 - green
+#f2a400 - dirk orange
+#0715cd - john blue
+#6c00da - gamzee purple
+#de0266 - gay pink
+#f5a9b8 - trans pink
+#5bcefa - trans blue

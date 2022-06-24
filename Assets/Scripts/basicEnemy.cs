@@ -173,7 +173,6 @@ public class QuaterfoilEnemy:EnemyFsm{
             if(perent!=null){
                 EnemyFsm e = Clone(transform.position+new Vector3(0.35f,0.35f));
             }else{
-                Debug.Log("no spawner defined");
             }
             transform.position-= new Vector3(0.35f,0.35f);
         }
@@ -196,7 +195,7 @@ public class StarEnemy : SpinEnemyFsm{
 
     public override void TakeDamage(float d,Combatant sender,Vector3 direction){
         //TODO add visual
-        if((int)(Vector3.Angle(direction,transform.up)+10)%(360/points) < 30){ //gets if its close to the funny points
+        if((int)(Vector3.Angle(direction,transform.up)+10)%(360/points) < 20){ //gets if its close to the funny points
             return;
         }
         TakeDamage(d);

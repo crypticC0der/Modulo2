@@ -44,14 +44,13 @@ public static class World
     [RuntimeInitializeOnLoadMethod]
     public static void Initialize(){
         World.Generate(new int[]{72,44},new bool[72,44]);
-        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,0,0));
-        ItemRatio.table[0].item.FromTemplate(1,1).ToGameObject(new Vector3(0,6,0));
-        ItemRatio.table[1].item.FromTemplate(1,1).ToGameObject(new Vector3(6,6,0));
-        ItemRatio.table[1].item.FromTemplate(1,1).ToGameObject(new Vector3(6,0,0));
-        for(int i=0;i<11;i++){
-            EnemyFsm o = MeshGens.ObjGen((Shapes)i,MatColour.white);
-            o.transform.position = new Vector3(2*i-11,-5);
-        }
+        ItemRatio.table[2].item.FromTemplate(1,1).ToGameObject(NearestHex(new Vector3(6,6,0)));
+        EnemyFsm o = MeshGens.ObjGen((Shapes)0,MatColour.white);
+        o.transform.position=new Vector3(-6,-6);
+        // for(int i=0;i<11;i++){
+        //     EnemyFsm o = MeshGens.ObjGen((Shapes)i,MatColour.white);
+        //     o.transform.position = new Vector3(2*i-11,-5);
+        // }
     }
 
     public static void Print(){

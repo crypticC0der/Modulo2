@@ -26,23 +26,33 @@ public abstract class Damager
 /// </summary>
 public abstract class Attack : Damager
 {
-	public static ProcOnCollsion basicBullet(Attack attack,string assetPath){
+	public static ProcOnCollsion basicBullet(Attack attack,string assetPath,bool homing=false,float scale=1){
 		GameObject g = new GameObject();
 		g.layer=7;
 		g.transform.position=attack.perent.transform.position;
+		g.transform.localScale=new Vector3(scale,scale,1);
 		SpriteRenderer sr = g.AddComponent<SpriteRenderer>();
         sr.sprite = Resources.Load<Sprite>(assetPath);
-        g.AddComponent<CircleCollider2D>().isTrigger=true;
+        g.AddComponent<BoxCollider2D>().isTrigger=true;
 		Rigidbody2D r = g.AddComponent<Rigidbody2D>();
-		r.bodyType=RigidbodyType2D.Kinematic;
+		if(homing){
+			HomingBullet b = g.AddComponent<HomingBullet>();
+			b.rb=r;
+			b.layerMask=attack.layerMask();
+			b.spd=attack.shotSpeed();
+			r.gravityScale=0;
+		}else{
+			r.bodyType=RigidbodyType2D.Kinematic;
+		}
 		r.mass=1;
-		g.AddComponent<Despawn>().deathTimer=3*(attack.attackRange()/10);
+		g.AddComponent<Despawn>().deathTimer=2*(attack.attackRange()/attack.shotSpeed());
 		ProcOnCollsion p = g.AddComponent<ProcOnCollsion>();
-        p.perentLayer=attack.perent.gameObject.layer;
+		p.peirce=attack.peirce();
+        p.perentLayer=attack.layerMask();
 		return p;
 	}
 
-	protected int layerMask(){
+	public int layerMask(){
 		return ~((1<<perent.gameObject.layer) | (1<<7));
 	}
 
@@ -57,11 +67,13 @@ public abstract class Attack : Damager
 	protected float timer=1;
 	public float range = 1;
 	public float shotSpd=5;
+	public int attackPeirce=0;
 
 	public float damage(){return (dmg+perent.dmgPlus)*perent.dmgMultipler;}
 	public float attackRate(){return perent.attackSpeed + timerMax/perent.attackRate;}
 	public float attackRange(){return perent.range*range;}
-	public float shotSpeed(){return perent.shotSpeed+shotSpd;}
+	public float shotSpeed(){return perent.shotSpeed*shotSpd;}
+	public int peirce(){return perent.peirce+attackPeirce;}
 }
 
 /// <summary>
@@ -110,12 +122,12 @@ public class Despawn: MonoBehaviour
 /// </summary>
 public class ProcOnCollsion : MonoBehaviour
 {
-	public int peirce;
+	public int peirce=0;
 	public Proc p;
 	public int perentLayer;
 	public void OnTriggerEnter2D(Collider2D c)
 	{
-		if (c.gameObject.layer != perentLayer && c.gameObject.layer!=this.gameObject.layer)
+		if ((1<<c.gameObject.layer & perentLayer)!=0)
 		{
 			Damageable d = c.GetComponent<Damageable>();
 			if(d!=null){
