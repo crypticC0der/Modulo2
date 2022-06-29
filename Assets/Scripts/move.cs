@@ -34,7 +34,6 @@ public class move : MonoBehaviour
             sprint-=Time.deltaTime;
             PlayerBehavior.controller.bars[1].SetValue(sprint,2);
         }
-        Debug.Log(sprint);
         sprintTime+=Time.deltaTime;
         if(sprintTime>2){
             if(sprint<2){

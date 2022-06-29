@@ -45,7 +45,7 @@ public class Burning:Debuff{
 	}
 
 	public override bool onUpdate(){
-		perent.TakeDamage(dmg*stacks*Time.deltaTime);
+		perent.TakeDamage(new DamageData{dmg=dmg*stacks*Time.deltaTime});
 		return base.onUpdate();
 	}
 }

@@ -211,25 +211,30 @@ public class Damageable : MonoBehaviour{
         }
     }
 
-    public virtual void OnHit(float d){
-        b.UpdateValue(health,maxHealth);
-    }
 
-    public virtual void TakeDamage(float d,Combatant sender,Vector3 direction){
-        if(d>health&&sender.type==EntityTypes.Enemy){
-            ((EnemyFsm)sender).LevelUp();
+    public virtual void TakeDamage(DamageData d){
+        if(d.sender!=null){
+            if(d.dmg>health&&d.sender.type==EntityTypes.Enemy){
+                ((EnemyFsm)d.sender).LevelUp();
+            }
         }
-        TakeDamage(d);
-    }
-
-    public virtual void TakeDamage(float d){
         timeSinceDmg=0;
-        health-=d;
+        health-=d.dmg;
         if(health<=0){
             health=0;
             Die();
         }
-        OnHit(d);
+        b.UpdateValue(health,maxHealth);
     }
+}
 
+public class DamageData{
+    public float dmg;
+    public Combatant sender=null;
+    public Vector3 direction=Vector3.zero;
+    public DamageProperties properties=0;
+}
+
+public enum DamageProperties{
+    bypassArmor=1
 }

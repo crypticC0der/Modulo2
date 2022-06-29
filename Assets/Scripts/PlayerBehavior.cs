@@ -52,14 +52,9 @@ public class PlayerBehavior : Damageable{
         textMeshes[(int)component].text=components[(int)component].ToString();
     }
 
-    public override void OnHit(float d){
-        PlayerBehavior.SpawnComponent(Component.organic,(int)(d/10),transform.position);
-        base.OnHit(d);
-    }
-
-    public override void TakeDamage(float d, Combatant sender, Vector3 direction)
-    {
-        base.TakeDamage(d, sender, direction);
+    public override void TakeDamage(DamageData d){
+        PlayerBehavior.SpawnComponent(Component.organic,(int)(d.dmg/10),transform.position);
+        base.TakeDamage(d);
     }
 
     public static void SpawnComponent(Component c,int amount,Vector3 position){

@@ -47,5 +47,44 @@ static class TurretCreation{
         new TurretTemplate<RocketAttack>(
             "rocketTurret",5,s,new float[]{0,0,0,0,0,0},"rocketBase",ItemTypes.Defence
         );
+
+        s = new Stats();
+        s.maxHealth=150;
+        s.HpRegen=0;
+        s.damage=0;
+        s.dmgMultipler=1;
+        s.attackRate=1;
+        s.attackSpeed=0;
+        s.range=1;
+        s.shotSpeed=1;
+        new TurretTemplate<LaserAttack>(
+            "laserTurret",5,s,new float[]{0,0,0,0,0,0},"laserBase",ItemTypes.Defence
+        );
+
+        s = new Stats();
+        s.maxHealth=150;
+        s.HpRegen=0;
+        s.damage=0;
+        s.dmgMultipler=1;
+        s.attackRate=1;
+        s.attackSpeed=0;
+        s.range=1;
+        s.shotSpeed=1;
+        new TurretTemplate<TeslaAttack>(
+            "teslaTurret",5,s,new float[]{0,0,0,0,0,0},"teslaBase",ItemTypes.Defence
+        );
+
+        s = new Stats();
+        s.maxHealth=150;
+        s.HpRegen=0;
+        s.damage=0;
+        s.dmgMultipler=1;
+        s.attackRate=1;
+        s.attackSpeed=0;
+        s.range=1;
+        s.shotSpeed=1;
+        new TurretTemplate<BeamAttack>(
+            "beamTurret",5,s,new float[]{0,0,0,0,0,0},"unusedBase",ItemTypes.Defence
+        );
     }
 }

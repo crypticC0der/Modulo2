@@ -255,24 +255,33 @@ slowing down is always bad
 ** bases
 *** TODO rocket
 **** DONE base
-**** TODO projectile
+**** DONE projectile
 *** TODO laser
 **** DONE base
+this will shoot a single instant laser at the enemy and peirce through ti
+homing: it will bounce to enemies
 **** TODO projectile
+*** TODO beam
+consistant damage version of raycast
 *** DONE gun
 **** TODO base
 **** TODO projectile
 *** DONE flamethrower
 **** TODO base
+rapid shot, pew pew, flame
 **** TODO projectile
 *** TODO area damage
 **** DONE base
+this will deal damage to all around it
 **** TODO projectile
 *** TODO landmine
 **** DONE base
 **** TODO projectile
 *** TODO tesla coil
 **** TODO base
+this will shoot out ukelele blasts to all the entities in its range that bounce 3 times max
+how do i measure the bounces,
+have a list lmao
 **** TODO projectile
 
 * visual identiy
@@ -302,3 +311,11 @@ will need to redo
 #de0266 - gay pink
 #f5a9b8 - trans pink
 #5bcefa - trans blue
+
+* modding modulo2
+i am thinking of allowing dynamic sprite loading, having some asset related stuff in  a xml file
+maybe i could have lua code in the xml file allowing all the assets to be coded in the thingy
+i intend on using moonsharp for the C# lua interpretation
+[[www.moonsharp.org]]
+the problems i see are getting C# to generate classes from lisp
+and the other problem i see is getting C# to run finite state machines with lua functions

@@ -8,7 +8,7 @@ public static class Effects{
 			Damageable D = col.GetComponent<Damageable>();
 			if(D){
 				D.ApplyDebuff<Burning>((int)(2*strength));
-				D.TakeDamage(100*strength);
+				D.TakeDamage(new DamageData{dmg=100*strength});
 			}
 		}
 	}

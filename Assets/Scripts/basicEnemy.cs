@@ -101,9 +101,11 @@ public class EnemyFsm: Combatant{
         if(d!=null){
             PlayerBehavior.SpawnComponent(Component.combustine,d.stacks,transform.position);
         }
-        Vector3 dist = PlayerBehavior.controller.transform.position-transform.position;
-        if(dist.magnitude<2){
-            PlayerBehavior.SpawnComponent(Component.soul,strength,transform.position);
+        if(PlayerBehavior.controller!=null){
+            Vector3 dist = PlayerBehavior.controller.transform.position-transform.position;
+            if(dist.magnitude<2){
+                PlayerBehavior.SpawnComponent(Component.soul,strength,transform.position);
+            }
         }
         PlayerBehavior.SpawnComponent(Component.bladeParts,strength,transform.position);
 
@@ -146,11 +148,14 @@ public class SemicircleEnemy: SpinEnemyFsm{
         strength=4;
     }
 
-    public override void TakeDamage(float d,Combatant sender,Vector3 direction){
-        if(Vector3.Dot(transform.up,direction.normalized)<0.2f){
-            d/=2;
+    public override void TakeDamage(DamageData d){
+        if(d.direction!=Vector3.zero &&
+           (d.properties&DamageProperties.bypassArmor)==0){
+            if(Vector3.Dot(transform.up,d.direction.normalized)<0.2f){
+                d.dmg/=2;
+            }
         }
-        base.TakeDamage(d,sender,direction);
+        base.TakeDamage(d);
     }
 }
 
@@ -193,12 +198,20 @@ public class StarEnemy : SpinEnemyFsm{
         base.Start();
     }
 
-    public override void TakeDamage(float d,Combatant sender,Vector3 direction){
+    public override void TakeDamage(DamageData d){
         //TODO add visual
-        if((int)(Vector3.Angle(direction,transform.up)+10)%(360/points) < 20){ //gets if its close to the funny points
-            return;
+        if(d.direction.x!=0&&d.direction.y!=0&&
+           (d.properties&DamageProperties.bypassArmor)==0){
+            float angle;
+            angle = -180*Mathf.Atan(d.direction.x/d.direction.y)/Mathf.PI;
+            if(d.direction.y<0){
+            angle+=180;
+            }
+            if((int)(angle+10)%(360/points) < 20){ //gets if its close to the funny points
+                return;
+            }
         }
-        TakeDamage(d);
+        base.TakeDamage(d);
     }
 }
 
@@ -310,7 +323,7 @@ public class SpinHit : CloseAttack{
     }
 
     public override Vector3 AtFunc(GameObject g){
-        g.GetComponent<Damageable>().TakeDamage(20);
+        g.GetComponent<Damageable>().TakeDamage(new DamageData{dmg=20,sender=perent,direction=g.transform.position-perent.transform.position});
         return Vector3.zero;
     }
     public SpinHit() : base(){

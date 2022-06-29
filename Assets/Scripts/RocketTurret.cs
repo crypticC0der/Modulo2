@@ -9,9 +9,9 @@ public class RocketAttack : RangedAttack
 
 	public override Vector3 AtFunc(GameObject o)
 	{
-		Vector3 d =o.transform.position-perent.transform.position;
-		AtFunc(d);
-		return d;
+		Vector3 v = AttackProjection(o);
+		AtFunc(v);
+		return v;
     }
 	public override void AtFunc(Vector3 d)
 	{
@@ -26,7 +26,7 @@ public class RocketAttack : RangedAttack
         range = 10;
         timerMax = 1;
         procCoefficent = 1;
-        dmg = 100;
+        dmg = 50;
         impact = new RocketProc();
     }
 }
@@ -38,7 +38,10 @@ public class RocketProc : Proc
 		base.OnProc(d);
 		Collider2D[] hits = Physics2D.OverlapCircleAll(d.transform.position,3,perent.layerMask());
 		foreach(Collider2D col in hits){
-			col.GetComponent<Damageable>().TakeDamage(dmg);
+			Damageable damageable = col.GetComponent<Damageable>();
+			if(damageable){
+				damageable.TakeDamage(new DamageData{dmg=dmg,sender=perent.perent,direction=d.transform.position - collider.transform.position,properties=DamageProperties.bypassArmor});
+			}
 		}
     }
 

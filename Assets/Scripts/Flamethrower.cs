@@ -4,9 +4,9 @@ public class FlameAttack : RangedAttack
 {
 	public override Vector3 AtFunc(GameObject o)
 	{
-		Vector3 d =o.transform.position-perent.transform.position;
-		AtFunc(d);
-		return d;
+		Vector3 v = AttackProjection(o);
+		AtFunc(v);
+		return v;
     }
 	public override void AtFunc(Vector3 d)
 	{
@@ -54,7 +54,7 @@ public class FlameProc : Proc
     public override void OnProc(Damageable d)
     {
 		base.OnProc(d);
-		d.TakeDamage(dmg,perent.perent,d.transform.position - collider.transform.position);
+		d.TakeDamage(new DamageData{dmg=dmg,sender=perent.perent,direction=d.transform.position - collider.transform.position});
     }
 
 

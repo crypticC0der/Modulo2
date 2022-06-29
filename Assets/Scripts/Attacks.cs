@@ -26,6 +26,49 @@ public abstract class Damager
 /// </summary>
 public abstract class Attack : Damager
 {
+
+	public LineRenderer MinimalRay(Color startColor,Color endColor,Vector3[] points){
+		GameObject g = new GameObject();
+		g.layer=7;
+		LineRenderer line = g.AddComponent<LineRenderer>();
+		line.material=Resources.Load<Material>("RayMaterial");
+		line.positionCount=points.Length;
+		line.SetPositions(points);
+		line.startColor=startColor;
+		line.endColor=endColor;
+		line.startWidth=0.05f;
+		line.useWorldSpace=true;
+		line.numCapVertices=3;
+		return line;
+	}
+
+
+	public RayDespawnTracking basicBeam(Color startColor,Color endColor,Damageable[] aims,DamageData d){
+		Vector3[] points = new Vector3[aims.Length+1];
+		points[0]=perent.transform.position;
+		for(int i=0;i<aims.Length;i++){
+			points[i+1]=aims[i].transform.position;
+		}
+		LineRenderer line = MinimalRay(startColor,endColor,points);
+		RayDespawnTracking rdt = line.gameObject.AddComponent<RayDespawnTracking>();
+		rdt.lineRenderer=line;
+		rdt.length= (points[0]-points[points.Length-1]).magnitude;
+		rdt.data =d;
+		rdt.aims=aims;
+		rdt.perent=this;
+		return rdt;
+	}
+
+	public Despawn basicRay(Color startColor,Color endColor,Vector3[] points){
+		LineRenderer line = MinimalRay(startColor,endColor,points);
+		RayTracking d = line.gameObject.AddComponent<RayTracking>();
+		d.deathTimer=0.25f;
+		d.lineRenderer=line;
+		d.perent=perent.transform;
+		d.FixedUpdate();
+		return d;
+	}
+
 	public static ProcOnCollsion basicBullet(Attack attack,string assetPath,bool homing=false,float scale=1){
 		GameObject g = new GameObject();
 		g.layer=7;
@@ -56,24 +99,30 @@ public abstract class Attack : Damager
 		return ~((1<<perent.gameObject.layer) | (1<<7));
 	}
 
+	public virtual void DmgOverhead(DamageData d,Damageable hit){
+		d.sender=perent;
+		hit.TakeDamage(d);
+		perent.RunProc(procCoefficent,this,d.dmg,hit);
+		perent.ApplyDebuffs(procCoefficent,hit);
+	}
+
 	abstract public void Update();
-	abstract public Collider2D Target();
 	abstract public Vector3 AtFunc(GameObject g);
 	abstract public void AddAttack(Combatant c);
 
 	public AttackType t;
 	public Combatant perent;
 	public float timerMax;
-	protected float timer=1;
+	protected float timer=3;
 	public float range = 1;
 	public float shotSpd=5;
 	public int attackPeirce=0;
 
-	public float damage(){return (dmg+perent.dmgPlus)*perent.dmgMultipler;}
-	public float attackRate(){return perent.attackSpeed + timerMax/perent.attackRate;}
-	public float attackRange(){return perent.range*range;}
-	public float shotSpeed(){return perent.shotSpeed*shotSpd;}
-	public int peirce(){return perent.peirce+attackPeirce;}
+	public virtual float damage(){return (dmg+perent.dmgPlus)*perent.dmgMultipler;}
+	public virtual float attackRate(){return perent.attackSpeed + timerMax/perent.attackRate;}
+	public virtual float attackRange(){return perent.range*range;}
+	public virtual float shotSpeed(){return perent.shotSpeed*shotSpd;}
+	public virtual int peirce(){return perent.peirce+attackPeirce;}
 }
 
 /// <summary>
@@ -93,26 +142,11 @@ abstract public class Proc : Damager
 	///<summary>
 	///makes a new proc for an attack
 	///</summary>
-	abstract public Proc Go(float dmg, Attack perent);
+	abstract public Proc Go(float d, Attack perent);
 	public Attack perent;
 	public float chance;
 	public float dmgMultiplier;
 	public ProcOnCollsion collider;
-
-}
-/// <summary>
-/// makes a object destroy itself after a couple seconds
-/// </summary>
-public class Despawn: MonoBehaviour
-{
-	public float deathTimer=0;
-	public void FixedUpdate()
-	{
-		deathTimer-=Time.deltaTime;
-		if(deathTimer<0){
-			Destroy(gameObject);
-		}
-	}
 
 }
 
@@ -148,12 +182,18 @@ public abstract class RangedAttack : Attack
 	public Proc impact;
 	abstract public void AtFunc(Vector3 p);
 
+	public virtual Vector3 AttackProjection(GameObject g){
+		Vector3 d =g.transform.position-perent.transform.position;
+		return d;
+
+	}
+
 	public RangedAttack()
 	{
 		t = AttackType.Ranged;
 	}
 
-	public override Collider2D Target()
+	public Collider2D Target()
 	{
 		Collider2D[] o = Physics2D.OverlapCircleAll(perent.transform.position, attackRange(),layerMask());
 		foreach (Collider2D c in o)
@@ -190,14 +230,50 @@ public abstract class RangedAttack : Attack
 	}
 }
 
+public abstract class AreaAttack : Attack
+{
+	public new int peirce()
+	{
+		int r = base.peirce();
+		if ((perent.specialProperties & SpecialProperties.crossShot) != 0){
+			return 4*r;
+		}else{
+			return r;
+		}
+    }
+
+    public AreaAttack()
+	{
+        t = AttackType.Close;
+    }
+    public Collider2D[] Target()
+	{
+		return Physics2D.OverlapCircleAll(perent.transform.position, attackRange(), layerMask());
+	}
+	public override void Update()
+	{
+		if (timer <= 0)
+		{
+			Collider2D[] c=Target();
+			int p = peirce();
+			for(int i=0;i<c.Length&&i<p;i++){
+				AtFunc(c[i].gameObject);
+			}
+			timer = attackRate()+ perent.attackSpeed;
+		}
+		timer -= Time.deltaTime * perent.attackRate;
+	}
+}
+
 public abstract class CloseAttack : Attack
 {
 	public new float damage()
 	{
+		float d = base.damage();
 		if ((perent.specialProperties & SpecialProperties.crossShot) != 0){
-			return 4*(dmg + perent.dmgPlus) * perent.dmgMultipler;
+			return 4*d;
 		}else{
-			return (dmg + perent.dmgPlus) * perent.dmgMultipler;
+			return d;
         }
     }
 
@@ -206,7 +282,7 @@ public abstract class CloseAttack : Attack
         t = AttackType.Close;
     }
 
-    public override Collider2D Target()
+    public Collider2D Target()
 	{
 		return Physics2D.OverlapCircle(perent.transform.position, attackRange(), layerMask());
 	}

@@ -16,11 +16,11 @@ public class HomingBullet : MonoBehaviour{
 		Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,5,layerMask);
 		int i=0;
 		int bestI=-1;
-		float bestDot=-1;
+		float bestDot=999;
 		while(hits.Length>i){
 			Vector2 d = hits[i].transform.position-transform.position;
-			float dot = Vector2.Dot(d,rb.velocity)/(rb.velocity.magnitude*d.magnitude);
-			if(dot>bestDot){
+			float dot = d.magnitude;// Vector2.Dot(d,rb.velocity)/(rb.velocity.magnitude*d.magnitude);
+			if(dot<bestDot){
 				bestDot=dot;
 				bestI=i;
 			}
