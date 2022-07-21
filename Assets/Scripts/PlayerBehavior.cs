@@ -37,6 +37,7 @@ public class ComponentData : MonoBehaviour{
 }
 
 public class PlayerBehavior : Damageable{
+    Rigidbody2D r;
     public static PlayerBehavior me;
     public static string[] componentNames = new string[]{"Blade Parts","Sparkon","Soul","Organic","Low Density Metal","Combustine"};
     public static Deck deck;
@@ -53,14 +54,20 @@ public class PlayerBehavior : Damageable{
     }
 
     public override void TakeDamage(DamageData d){
-        PlayerBehavior.SpawnComponent(Component.organic,(int)(d.dmg/10),transform.position);
+        int components = (int)(d.dmg/10);
+        float remander = (d.dmg/10) - (float)components;
+        if(Random.value<remander){
+            components++;
+        }
+        Debug.Log(components);
+        PlayerBehavior.SpawnComponent(Component.organic,components,transform.position);
         base.TakeDamage(d);
     }
 
     public static void SpawnComponent(Component c,int amount,Vector3 position){
         for(int e=3;e>=0;e--){
             int p = (int)Mathf.Pow(10,e);
-            while(p<amount){
+            while(p<=amount){
                 amount-=p;
                 CreateComponent(c,p,position+new Vector3(Random.Range(-1f,1f),Random.Range(-1f,1f)),(e+1)/4f);
             }
@@ -100,9 +107,9 @@ public class PlayerBehavior : Damageable{
         deck = new StackDeck();
         ItemTemplate itemTemplate = new ItemTemplate("wallBase",1,new float[]{0,0,0,0,0,0});
         for(int i =0;i<5;i++){
-            AddToDeck(ItemRatio.table[1].item.FromTemplate(1,1));
             AddToDeck(itemTemplate.FromTemplate(1,1));
         }
+        r=GetComponent<Rigidbody2D>();
     }
 
     public static void TakeFromDeck(int i){
@@ -127,9 +134,26 @@ public class PlayerBehavior : Damageable{
 
     public static void Place(){
         Vector3 p= Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        p.z=0;
-        GameObject o = holding.ToGameObject(World.NearestHex(p));
-        holding=null;
+        //check if space is free
+        if(!Physics2D.OverlapCircle(p,0.5f,((1<<3)))){
+            //check if targets arent near
+            if(!Physics2D.OverlapCircle(p,1f,((1<<6) + (1<<0)))){
+            p.z=0;
+            GameObject o = holding.ToGameObject(World.NearestHex(p));
+            holding=null;
+            }
+        }
     }
 
+    public override void FixedUpdate(){
+        if(r.velocity.y!=0){
+            float angle;
+            angle = -180*Mathf.Atan(r.velocity.x/r.velocity.y)/Mathf.PI;
+            if(r.velocity.y<0){
+               angle+=180;
+            }
+            transform.eulerAngles=new Vector3(0,0,angle);
+        }
+        base.FixedUpdate();
+    }
 }

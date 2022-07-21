@@ -47,8 +47,8 @@ public static class World
         ItemRatio.table[5].item.FromTemplate(1,1).ToGameObject(NearestHex(new Vector3(6,6,0)));
         // EnemyFsm o = MeshGens.ObjGen(Shapes.star,MatColour.white);
         // o.transform.position=new Vector3(-6,-6);
-        for(int i=0;i<11;i++){
-            EnemyFsm o = MeshGens.ObjGen((Shapes)i,MatColour.white);
+        for(int i=0;i<3;i++){
+            EnemyFsm o = MeshGens.ObjGen((Shapes.circle),MatColour.white);
             o.transform.position = new Vector3(2*i-11,-5);
         }
     }
@@ -99,13 +99,17 @@ public static class World
 
     static Queue<Node> LookAt;
     public static void UpdatePlrNodes(Node node){
-        List<Node> ns = Neighbors(node);
-        foreach(Node n in ns){
-            float newd= node.plrDistance +1;
-            if(newd<=n.distance*playerCare && newd<n.plrDistance && newd<100){
-                n.plrDistance=newd;
-                n.plrNext=node;
-                LookAt.Enqueue(n);
+        List<NodeData> ns = Neighbors(node);
+        foreach(NodeData data in ns){
+            float addedDist = 1;
+            if (data.over!=null){
+                addedDist=1.5f;
+            }
+            float newd= node.plrDistance +addedDist;
+            if(newd<=data.n.distance*playerCare && newd<data.n.plrDistance && newd<100){
+                data.n.plrDistance=newd;
+                data.n.plrNext=node;
+                LookAt.Enqueue(data.n);
             }
         }
     }
@@ -141,83 +145,140 @@ public static class World
     }
 
     public static void BackCheck(Node node){
-        List<Node> ns = Neighbors(node);
+        List<NodeData> ns = Neighbors(node);
         if(node.distance==largeDist){return;}
         node.distance=largeDist;
-        foreach(Node n in ns){
-            if(n.next.distance==largeDist){
-                LookAt.Enqueue(n);
+        foreach(NodeData data in ns){
+            bool invalidPath=false;
+            if(data.n.over!=null){
+                invalidPath |= (data.n.over[0].distance==largeDist);
+                invalidPath |= (data.n.over[1].distance==largeDist);
+            }
+            invalidPath |= (data.n.next.distance==largeDist);
+            if(invalidPath){
+                LookAt.Enqueue(data.n);
             }else{
-                BorderNode.Add(n);
+                BorderNode.Add(data.n);
             }
         }
     }
 
     public static void CheckNode(Node node){
-        List<Node> ns = Neighbors(node);
-        foreach(Node n in ns){
-            if(node.distance+1<n.distance){
-                n.distance=node.distance+1;
-                n.next = node;
-                LookAt.Enqueue(n);
+        List<NodeData> ns = Neighbors(node);
+        foreach(NodeData data in ns){
+            float addedDist = 1;
+            if (data.over!=null){
+                addedDist=1.5f;
+            }
+            if(node.distance+addedDist<data.n.distance){
+                data.n.distance=node.distance+addedDist;
+                data.n.next = node;
+                data.n.over=data.over;
+                LookAt.Enqueue(data.n);
             }
         }
     }
 
-    static List<Node> Neighbors(Node node,bool powerCheck=false){
-        List<Node> r = new List<Node>();
-        //horiz
-        if(node.x>0){r.Add(grid[node.x-1,node.y]);}
-        if(node.x+1<size[0]){r.Add(grid[node.x+1,node.y]);}
+    //data for neighbors
+    struct NodeData{
+        public Node n;
+        public Node[] over;
+    }
+    public struct Direction{
+        public int x;
+        public int y;
+    }
+    static Direction[] directions = new Direction[]{
+        new Direction{x=0,y=1},
+        new Direction{x=1,y=0},
+        new Direction{x=0,y=-1},
+        new Direction{x=-1,y=-1},
+        new Direction{x=-1,y=0},
+        new Direction{x=-1,y=1}
+    };
+    static Direction[] longDirections = new Direction[]{
+        new Direction{x=0,y=2},
+        new Direction{x=1,y=1},
+        new Direction{x=1,y=-1},
+        new Direction{x=0,y=-2},
+        new Direction{x=-2,y=1},
+        new Direction{x=-2,y=1}
+    };
 
-        //down
-        if(node.y>0){
-            r.Add(grid[node.x,node.y-1]);
-            if(node.y%2==0 && node.x+1<size[0]){
-                //if not shifted
-                r.Add(grid[node.x+1,node.y-1]);
-            }else if(node.y%2==1&& node.x>0){
-                //if shifted
-                r.Add(grid[node.x-1,node.y-1]);
-            }
+    static List<NodeData> Neighbors(Node node){
+        List<NodeData> r = new List<NodeData>();
+
+        int offset = ((node.y+1)%2);
+        //check initial direction
+        Direction nd = directions[0];
+        if(nd.y!=0){nd.x+=offset;}
+        bool initial = node.Valid(nd);
+        Node initialNode=null;
+        if(initial){
+            initialNode = (grid[node.x+nd.x,node.y+nd.y]);
+            r.Add(new NodeData{n=initialNode});
         }
-        //up
-        if(node.y+1<size[1]){
-            r.Add(grid[node.x,node.y+1]);
-            if(node.y%2==0 && node.x+1<size[0]){
-                //if not shifted
-                r.Add(grid[node.x+1,node.y+1]);
-            }else if(node.y%2==1&& node.x>0){
-                //if shifted
-                r.Add(grid[node.x-1,node.y+1]);
+        bool correct = initial;
+        Node previousNode = initialNode;
+        //check all non initial directions
+        for(int i=1;i<6;i++){
+            nd = directions[i];
+            //manage offsets
+            if(nd.y!=0){nd.x+=offset;}
+            bool valid = node.Valid(nd);
+            Node currentNode=null;
+            if(valid){
+                //add to list
+                currentNode = (grid[node.x+nd.x,node.y+nd.y]);
+                r.Add(new NodeData{n=currentNode});
+                //check long direction
+                Direction md = longDirections[i];
+                if(md.y%2!=0){
+                    md.x+=offset;
+                }
+                //if all is well add to the list
+                if(correct&&node.Valid(md)){
+                    r.Add(new NodeData{n=grid[node.x+md.x,node.y+md.y],over=new Node[]{previousNode,currentNode}});
+                }
             }
+            correct=valid;
+            previousNode=currentNode;
         }
+        //check final long direction
+        if(correct && initial && node.Valid(longDirections[0])){
+            Node longNode = (grid[node.x+longDirections[0].x,node.y+longDirections[0].y]);
+            r.Add(new NodeData{n=longNode,over=new Node[]{previousNode,initialNode}});
+        }
+        return r;
 
-        //pre hexagon
-        // for(int i=0;i<3;i++){
-        //     if(node.x+i-1>=0 && node.x+i-1<size[0]){
-        //         for(int j=0;j<3;j++){
-        //             if(node.y+j-1>=0 && node.y+j-1<size[1]&& !(i==1&&j==0)){
-        //                 r.Add(grid[node.x-1+i,node.y-1+j]);
-        //             }
-        //         }
-        //     }
-        // }
 
-        //v1
-        // if(node.x>0){
-        //     r.Add(grid[node.x-1,node.y]);
-        // }
-        // if(node.x+1<size[0]){
-        //     r.Add(grid[node.x+1,node.y]);
-        // }
-        // if(node.y+1<size[1]){
-        //     r.Add(grid[node.x,node.y+1]);
-        // }
+        // hex version 1
+        // //horiz
+        // if(node.x>0){r.Add(grid[node.x-1,node.y]);}
+        // if(node.x+1<size[0]){r.Add(grid[node.x+1,node.y]);}
+
+        // //down
         // if(node.y>0){
         //     r.Add(grid[node.x,node.y-1]);
+        //     if(node.y%2==0 && node.x+1<size[0]){
+        //         //if not shifted
+        //         r.Add(grid[node.x+1,node.y-1]);
+        //     }else if(node.y%2==1&& node.x>0){
+        //         //if shifted
+        //         r.Add(grid[node.x-1,node.y-1]);
+        //     }
         // }
-        return r;
+        // //up
+        // if(node.y+1<size[1]){
+        //     r.Add(grid[node.x,node.y+1]);
+        //     if(node.y%2==0 && node.x+1<size[0]){
+        //         //if not shifted
+        //         r.Add(grid[node.x+1,node.y+1]);
+        //     }else if(node.y%2==1&& node.x>0){
+        //         //if shifted
+        //         r.Add(grid[node.x-1,node.y+1]);
+        //     }
+        // }
     }
 
     public static int[] WorldPos(Vector3 v){
@@ -242,6 +303,7 @@ public static class World
 
 public class Node{
     public Node next;
+    public Node[] over=null;
     public float distance;
     public Node plrNext;
     public float plrDistance;
@@ -307,4 +369,9 @@ public class Node{
         }
     }
 
+    public bool Valid(World.Direction d){
+        d.y+=y;
+        d.x+=x;
+        return (d.x>=0 && d.y>=0 && d.y<World.size[1] && d.x<World.size[0]);
+    }
 }

@@ -17,7 +17,7 @@ static class TurretCreation{
         s.shotSpeed=1;
 
         new TurretTemplate<BulletAttack>(
-            "gunTurret",5,s,new float[]{0,0,0,0,0,0},"gunBase",ItemTypes.Defence
+            "gunTurret",5,s,new float[]{0,0,0,0,0,0},"gunBase",ItemTypes.Turret
         );
 
         s = new Stats();
@@ -31,7 +31,7 @@ static class TurretCreation{
         s.peirce=3;
         s.shotSpeed=1;
         new TurretTemplate<FlameAttack>(
-            "flameTurret",5,s,new float[]{0,0,0,0,0,0},"flameBase",ItemTypes.Defence,new List<Module>{new DebuffModule(new Burning())}
+            "flameTurret",5,s,new float[]{0,0,0,0,0,0},"flameBase",ItemTypes.Turret,new List<Module>{new DebuffModule(new Burning())}
         );
 
         s = new Stats();
@@ -45,7 +45,7 @@ static class TurretCreation{
         s.shotSpeed=2;
 
         new TurretTemplate<RocketAttack>(
-            "rocketTurret",5,s,new float[]{0,0,0,0,0,0},"rocketBase",ItemTypes.Defence
+            "rocketTurret",5,s,new float[]{0,0,0,0,0,0},"rocketBase",ItemTypes.Turret
         );
 
         s = new Stats();
@@ -58,7 +58,7 @@ static class TurretCreation{
         s.range=1;
         s.shotSpeed=1;
         new TurretTemplate<LaserAttack>(
-            "laserTurret",5,s,new float[]{0,0,0,0,0,0},"laserBase",ItemTypes.Defence
+            "laserTurret",5,s,new float[]{0,0,0,0,0,0},"laserBase",ItemTypes.Turret
         );
 
         s = new Stats();
@@ -71,7 +71,7 @@ static class TurretCreation{
         s.range=1;
         s.shotSpeed=1;
         new TurretTemplate<TeslaAttack>(
-            "teslaTurret",5,s,new float[]{0,0,0,0,0,0},"teslaBase",ItemTypes.Defence
+            "teslaTurret",5,s,new float[]{0,0,0,0,0,0},"teslaBase",ItemTypes.Turret
         );
 
         s = new Stats();
@@ -84,7 +84,9 @@ static class TurretCreation{
         s.range=1;
         s.shotSpeed=1;
         new TurretTemplate<BeamAttack>(
-            "beamTurret",5,s,new float[]{0,0,0,0,0,0},"unusedBase",ItemTypes.Defence
+            "beamTurret",5,s,new float[]{0,0,0,0,0,0},"unusedBase",ItemTypes.Turret
         );
+
+        new ItemTemplate("wall",5,new float[]{0,0,0,0,0},"wallBase",ItemTypes.Defence);
     }
 }

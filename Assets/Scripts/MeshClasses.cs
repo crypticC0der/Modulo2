@@ -35,7 +35,7 @@ public static class MeshGens{
 		float r;
 		for(int i=0;i<v;i++){
 			r = offset+2*Mathf.PI*(float)(i)/v;
-			points[i] = new Vector3(Mathf.Sin(r)*size.x,Mathf.Cos(r)*size.y);
+			points[i] = new Vector3((Mathf.Sin(r))*size.x,(Mathf.Cos(r))*size.y);
 			uv[i] = points[i];
 		}
 		return new PointData{p=points,u=uv};
@@ -245,7 +245,7 @@ public static class MeshGens{
 		child.AddComponent<MeshFilter>().mesh=meshes[(int)shape];
 		child.AddComponent<MeshRenderer>().material=colors[(int)m*2+1];
 		child.transform.localScale=new Vector3(0.8f,0.8f,0);
-		child.transform.position+=new Vector3(0,0,-0.1f);
+		child.transform.position+=new Vector3(0,0,-0.001f);
 		child.transform.SetParent(obj.transform);
 
 		obj.transform.position+=new Vector3(0,0,-0.1f);
@@ -261,9 +261,11 @@ public static class MeshGens{
 		switch (shape) {
 			case Shapes.star:
 				e=obj.AddComponent<StarEnemy>();
+				child.transform.localScale=new Vector3(0.6f,0.6f,0);
 				break;
 			case Shapes.cross:
 				e=obj.AddComponent<CrossEnemy>();
+				child.transform.localScale=new Vector3(0.6f,0.6f,0);
 				break;
 			case Shapes.circle:
 				e=obj.AddComponent<CircleEnemy>();

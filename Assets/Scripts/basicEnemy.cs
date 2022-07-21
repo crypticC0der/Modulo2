@@ -177,7 +177,6 @@ public class QuaterfoilEnemy:EnemyFsm{
             health=maxHealth/2;
             if(perent!=null){
                 EnemyFsm e = Clone(transform.position+new Vector3(0.35f,0.35f));
-            }else{
             }
             transform.position-= new Vector3(0.35f,0.35f);
         }

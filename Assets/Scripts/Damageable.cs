@@ -24,7 +24,7 @@ public class HealthBar : MonoBehaviour,Bar{
     public void Start(){
         backdrop= new GameObject("healthBar").AddComponent<SpriteRenderer>();
         backdrop.sprite = barSprites[0];
-        backdrop.transform.localPosition=new Vector3(0,1);
+        backdrop.transform.localPosition=new Vector3(0,1,-1);
         bar= new GameObject("health").AddComponent<SpriteRenderer>();
         bar.sprite = barSprites[1];
         bar.transform.SetParent(backdrop.transform);
@@ -76,7 +76,7 @@ public class HealthBar : MonoBehaviour,Bar{
     }
 
     public void Update(){
-        backdrop.transform.position=transform.position+Vector3.up;
+        backdrop.transform.position=transform.position+Vector3.up-Vector3.forward;
         if(transition>Time.deltaTime){
             current += (aim-current)/transition;
             SetValue(current,1);
