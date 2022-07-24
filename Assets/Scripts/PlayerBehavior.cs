@@ -59,7 +59,6 @@ public class PlayerBehavior : Damageable{
         if(Random.value<remander){
             components++;
         }
-        Debug.Log(components);
         PlayerBehavior.SpawnComponent(Component.organic,components,transform.position);
         base.TakeDamage(d);
     }
@@ -96,6 +95,9 @@ public class PlayerBehavior : Damageable{
 
     protected override void Start(){
         me=this;
+
+        World.MapGen();
+
         for(int i=0;i<6;i++){
             componentSprites[i]=Resources.Load<Sprite>("assets/bloon");
         }

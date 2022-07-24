@@ -16,9 +16,15 @@ public class followAi : MonoBehaviour
     void Update(){
         force=fsm.speed*10*fsm.speedBonus;
         int[] wap = World.WorldPos(transform.position);
-        Node n = World.grid[wap[0],wap[1]].GetNext();
-        fsm.distance=n.GetDistReal();
-        Vector3 v = n.WorldPos()-transform.position;
+        Node n = World.grid[wap[0],wap[1]].next;
+        Vector3 v;
+        if(n!=null){
+        fsm.distance=n.distance;
+        v = n.WorldPos()-transform.position;
+        }else{
+            v=PlayerBehavior.me.transform.position-transform.position;
+            fsm.distance=v.magnitude;
+        }
         v=v.normalized;
         rb.AddForce(v.normalized*Time.deltaTime*force/0.02f);
     }

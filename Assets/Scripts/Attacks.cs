@@ -6,7 +6,7 @@ public enum AttackType
 {
 	Ranged,
 	Close,
-	Med,
+	Random,
 	Area
 }
 
@@ -69,7 +69,37 @@ public abstract class Attack : Damager
 		return d;
 	}
 
+	public static GasBomb basicGas(Attack attack,string assetPath,bool homing=false,float scale=1){
+		GameObject g = minimalBullet<CircleCollider2D>(attack,assetPath,homing,scale);
+		GasBomb gb = g.AddComponent<GasBomb>();
+        gb.perentLayer=attack.layerMask();
+		float spd=attack.shotSpeed();
+		gb.initialDensity=(attack.peirce()+5)/10f;
+		gb.lossTime=spd*gb.initialDensity*4/attack.attackRange();
+		return gb;
+	}
+
+	public static ProcOnCollsion basicSpike(Attack attack,string assetPath,bool homing=false,float scale=1){
+		GameObject g = minimalBullet<CircleCollider2D>(attack,assetPath,homing,scale,RigidbodyType2D.Static);
+		SpikeDespawn d =g.AddComponent<SpikeDespawn>();
+		d.deathTimer=60;
+		d.spd= attack.shotSpeed();
+		ProcOnCollsion p = g.AddComponent<ProcOnCollsion>();
+		p.peirce=attack.peirce();
+        p.perentLayer=attack.layerMask();
+		return p;
+	}
+
 	public static ProcOnCollsion basicBullet(Attack attack,string assetPath,bool homing=false,float scale=1){
+		GameObject g = minimalBullet<BoxCollider2D>(attack,assetPath,homing,scale);
+		g.AddComponent<Despawn>().deathTimer=2*(attack.attackRange()/attack.shotSpeed());
+		ProcOnCollsion p = g.AddComponent<ProcOnCollsion>();
+		p.peirce=attack.peirce();
+        p.perentLayer=attack.layerMask();
+		return p;
+	}
+
+	public static GameObject minimalBullet<C>(Attack attack,string assetPath,bool homing,float scale,RigidbodyType2D rbt=RigidbodyType2D.Kinematic) where C:Collider2D{
 		GameObject g = new GameObject();
 		g.layer=7;
 		g.transform.position=attack.perent.transform.position;
@@ -78,21 +108,15 @@ public abstract class Attack : Damager
         sr.sprite = Resources.Load<Sprite>(assetPath);
         g.AddComponent<BoxCollider2D>().isTrigger=true;
 		Rigidbody2D r = g.AddComponent<Rigidbody2D>();
+		r.bodyType=rbt;
 		if(homing){
 			HomingBullet b = g.AddComponent<HomingBullet>();
 			b.rb=r;
 			b.layerMask=attack.layerMask();
 			b.spd=attack.shotSpeed();
-			r.gravityScale=0;
-		}else{
-			r.bodyType=RigidbodyType2D.Kinematic;
 		}
 		r.mass=1;
-		g.AddComponent<Despawn>().deathTimer=2*(attack.attackRange()/attack.shotSpeed());
-		ProcOnCollsion p = g.AddComponent<ProcOnCollsion>();
-		p.peirce=attack.peirce();
-        p.perentLayer=attack.layerMask();
-		return p;
+		return g;
 	}
 
 	public int layerMask(){
@@ -117,12 +141,14 @@ public abstract class Attack : Damager
 	public float range = 1;
 	public float shotSpd=5;
 	public int attackPeirce=0;
+	public SpecialProperties attackProps=0;
 
 	public virtual float damage(){return (dmg+perent.dmgPlus)*perent.dmgMultipler;}
 	public virtual float attackRate(){return perent.attackSpeed + timerMax/perent.attackRate;}
 	public virtual float attackRange(){return perent.range*range;}
 	public virtual float shotSpeed(){return perent.shotSpeed*shotSpd;}
 	public virtual int peirce(){return perent.peirce+attackPeirce;}
+	public virtual SpecialProperties attackProperties(){return attackProps | perent.specialProperties;}
 }
 
 /// <summary>
@@ -146,7 +172,7 @@ abstract public class Proc : Damager
 	public Attack perent;
 	public float chance;
 	public float dmgMultiplier;
-	public ProcOnCollsion collider;
+	public Transform collider;
 
 }
 
@@ -165,7 +191,7 @@ public class ProcOnCollsion : MonoBehaviour
 		{
 			Damageable d = c.GetComponent<Damageable>();
 			if(d!=null){
-				p.collider=this;
+				p.collider=transform;
 				p.OnProc(d);
 				peirce--;
 				if(peirce<0){
@@ -206,15 +232,27 @@ public abstract class RangedAttack : Attack
 		}
 		return null;
 	}
+
 	public override void Update()
 	{
 		if (timer <= 0)
 		{
 			Collider2D c;
-			if ((c = Target()) != null)
-			{
-				Vector3 d = AtFunc(c.gameObject);
-				if((perent.specialProperties & SpecialProperties.crossShot)!=0){
+			bool hit=false;
+			Vector3 d=Vector2.zero;
+			if((attackProperties()& SpecialProperties.random)!=0){
+				hit=true;
+				float theata = Random.Range(0,2*Mathf.PI);
+				float r = (attackRange()-0.7f)*(Mathf.Sqrt(Random.value))+0.7f; //uniform probabilities
+				d = new Vector3(r*Mathf.Cos(theata),r*Mathf.Sin(theata));
+				AtFunc(d);
+			}
+			else if ((c = Target()) != null) {
+				d = AtFunc(c.gameObject);
+				hit=true;
+			}
+			if(hit){
+				if((attackProperties()& SpecialProperties.crossShot)!=0){
 					float t;
 					for(int i=0;i<3;i++){
 						t=-d.y;
@@ -235,7 +273,7 @@ public abstract class AreaAttack : Attack
 	public new int peirce()
 	{
 		int r = base.peirce();
-		if ((perent.specialProperties & SpecialProperties.crossShot) != 0){
+		if ((attackProperties()& SpecialProperties.crossShot) != 0){
 			return 4*r;
 		}else{
 			return r;
@@ -270,7 +308,7 @@ public abstract class CloseAttack : Attack
 	public new float damage()
 	{
 		float d = base.damage();
-		if ((perent.specialProperties & SpecialProperties.crossShot) != 0){
+		if ((attackProperties()& SpecialProperties.crossShot) != 0){
 			return 4*d;
 		}else{
 			return d;

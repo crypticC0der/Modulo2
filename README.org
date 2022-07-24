@@ -253,35 +253,40 @@ slowing down is always bad
 
 * items
 ** bases
-*** TODO rocket
+*** DONE rocket
 **** DONE base
 **** DONE projectile
-*** TODO laser
+*** DONE laser
 **** DONE base
 this will shoot a single instant laser at the enemy and peirce through ti
 homing: it will bounce to enemies
-**** TODO projectile
-*** TODO beam
+**** DONE projectile
+*** DONE beam
 consistant damage version of raycast
 *** DONE gun
-**** TODO base
-**** TODO projectile
-*** DONE flamethrower
-**** TODO base
-rapid shot, pew pew, flame
-**** TODO projectile
-*** TODO area damage
 **** DONE base
+**** DONE projectile
+*** DONE flamethrower
+**** DONE base
+rapid shot, pew pew, flame
+**** DONE projectile
+*** TODO area damage
+**** TODO base
 this will deal damage to all around it
 **** TODO projectile
 *** TODO landmine
-**** DONE base
-**** TODO projectile
-*** TODO tesla coil
 **** TODO base
+**** TODO projectile
+*** DONE tesla coil
+**** DONE base
 this will shoot out ukelele blasts to all the entities in its range that bounce 3 times max
 how do i measure the bounces,
 have a list lmao
+**** DONE projectile
+*** TODO gas machine
+**** TODO base
+this will shoot out gas which disapperates and becomes weaker
+it will be projected in a direction but slow down over time
 **** TODO projectile
 
 * visual identiy
@@ -319,3 +324,32 @@ i intend on using moonsharp for the C# lua interpretation
 [[www.moonsharp.org]]
 the problems i see are getting C# to generate classes from lisp
 and the other problem i see is getting C# to run finite state machines with lua functions
+
+i think my solution will be items and shit in xml
+all attacks, debuffs ,procs and modules should be in lists with names
+the item database and waves will be loaded via xml
+
+custom attacks, debuffs and procs aka classes will be loaded in via C# dll
+this all works well in theory
+
+* game concept
+ok so what the game is about is building turrets, yes
+why build turrets
+well because there are enemies
+
+what do the enemies want then
+they want uuhhhhh a gold orb
+what does the gold orb do?
+uhhhh everything in its range gets homing and 2x attack speed
+
+why do the enemies attack the player then
+uhhh the player has the orb
+why cant the player just drop the orb
+uhhhh they can but enemies can attack it then
+
+so how do the enemies move cos of this
+well they just want the orb so they pathfind to wherever that is
+
+* pathfinding
+they move to the orb
+they avoid other stuff

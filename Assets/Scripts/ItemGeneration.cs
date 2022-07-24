@@ -84,8 +84,35 @@ static class TurretCreation{
         s.range=1;
         s.shotSpeed=1;
         new TurretTemplate<BeamAttack>(
-            "beamTurret",5,s,new float[]{0,0,0,0,0,0},"unusedBase",ItemTypes.Turret
+            "beamTurret",5,s,new float[]{0,0,0,0,0,0},"beamBase",ItemTypes.Turret
         );
+
+        s = new Stats();
+        s.maxHealth=150;
+        s.HpRegen=0;
+        s.damage=0;
+        s.dmgMultipler=1;
+        s.attackRate=1;
+        s.attackSpeed=0;
+        s.range=1;
+        s.shotSpeed=1;
+        new TurretTemplate<GasAttack>(
+            "gasTurret",5,s,new float[]{0,0,0,0,0,0},"gasBase",ItemTypes.Turret
+        );
+
+        s = new Stats();
+        s.maxHealth=150;
+        s.HpRegen=0;
+        s.damage=0;
+        s.dmgMultipler=1;
+        s.attackRate=1;
+        s.attackSpeed=0;
+        s.range=1;
+        s.shotSpeed=1;
+        new TurretTemplate<SpikeAttack>(
+            "spikeTurret",5,s,new float[]{0,0,0,0,0,0},"spikeBase",ItemTypes.Turret
+        );
+
 
         new ItemTemplate("wall",5,new float[]{0,0,0,0,0},"wallBase",ItemTypes.Defence);
     }

@@ -36,7 +36,7 @@ public class BulletProc : Proc
     public override void OnProc(Damageable d)
     {
 		base.OnProc(d);
-		d.TakeDamage(new DamageData{dmg=dmg,sender=perent.perent,direction=d.transform.position - collider.transform.position});
+		d.TakeDamage(new DamageData{dmg=dmg,sender=perent.perent,direction=d.transform.position - collider.position});
     }
 
     public BulletProc()

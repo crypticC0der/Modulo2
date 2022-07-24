@@ -5,13 +5,6 @@ public class HomingBullet : MonoBehaviour{
 	public float spd;
 	public int layerMask = 0;
 
-	public Vector2 integral;
-	public Vector2 previousError;
-	public void Start(){
-		integral=new Vector2(0,0);
-	}
-
-
 	public void FixedUpdate(){
 		Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,5,layerMask);
 		int i=0;
@@ -28,8 +21,8 @@ public class HomingBullet : MonoBehaviour{
 		}
 		if(bestI!=-1){
 			Vector2 direction= hits[bestI].transform.position-transform.position;
-			direction= direction.normalized*spd;
-			rb.velocity = Vector2.LerpUnclamped(direction,rb.velocity,0.8f);
+			direction= direction.normalized;
+			rb.velocity = Vector2.LerpUnclamped(rb.velocity.normalized,direction,7*Time.deltaTime).normalized*spd;
 		}
 
 

@@ -26,7 +26,7 @@ public class EnemyFsm: Combatant{
     public override void RunAttacks()
     {
         foreach(Attack a in attacks){
-            if(a.attackRange()>distance){
+            if(a.attackRange()*8>distance){
                 a.Update();
             }
         }

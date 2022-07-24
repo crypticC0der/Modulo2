@@ -12,7 +12,23 @@ public class Despawn: MonoBehaviour
 			Destroy(gameObject);
 		}
 	}
+}
 
+public class SpikeDespawn: MonoBehaviour
+{
+	public Vector2 target;
+	public float spd;
+	public float deathTimer=0;
+	public virtual void FixedUpdate()
+	{
+		Vector3 t = Vector2.LerpUnclamped(transform.position,target,Time.deltaTime*2*spd/5);
+		t.z=-1;
+		transform.position=t;
+		deathTimer-=Time.deltaTime;
+		if(deathTimer<0){
+			Destroy(gameObject);
+		}
+	}
 }
 
 public class RayTracking : Despawn{
@@ -41,7 +57,7 @@ public class RayDespawnTracking :MonoBehaviour {
 		// TODO i am redoing how the lines work, they shall dynamically reposition themselves to aim at multiple points, this is so homing on the lasers can work properly
 		Vector3[] posititons = new Vector3[aims.Length+1];
 		posititons[0]=data.sender.transform.position;
-		float proc=perent.procCoefficent*Time.deltaTime;
+		float proc=perent.procCoefficent*Time.deltaTime*2;
 		DamageData dataScaled = new DamageData{
 			dmg=data.dmg*Time.deltaTime,
 			sender=data.sender,

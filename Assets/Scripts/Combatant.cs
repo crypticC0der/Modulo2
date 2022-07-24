@@ -2,7 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public enum SpecialProperties{
-    crossShot=1
+    crossShot=1,
+    random=2
 }
 
 /// <summary>
@@ -18,6 +19,7 @@ public class Combatant : Damageable{
     public float attackRate=1;
     public float attackSpeed=0;
     public float shotSpeed=5; //only applicable with 2 things
+    public float maxRange=0;
     public float range=1;
     public int peirce=0;
     public SpecialProperties specialProperties;
@@ -32,6 +34,23 @@ public class Combatant : Damageable{
         shotSpeed-=changes.shotSpeed;
         range-=changes.range;
         peirce-=changes.peirce;
+        if(changes.range!=0 && type==EntityTypes.Turret){
+            ValidateRange(true);
+        }
+    }
+
+    public void ValidateRange(bool reset=false){
+        int[] wop = World.WorldPos(transform.position);
+        if(reset){
+            World.ChangeStatesInRange(wop[0],wop[1],maxRange,NodeState.targeted,false,World.ChangeStateMethod.Off);
+        }
+        maxRange=0;
+        foreach(Attack a in attacks){
+            if (a.attackRange()>maxRange){
+                maxRange=a.attackRange();
+            }
+        }
+        World.ChangeStatesInRange(wop[0],wop[1],maxRange,NodeState.targeted,true,World.ChangeStateMethod.On);
     }
 
     public virtual void ApplyStats(Stats changes){
@@ -44,12 +63,21 @@ public class Combatant : Damageable{
         shotSpeed-=changes.shotSpeed;
         range+=changes.range;
         peirce+=changes.peirce;
+        if(changes.range!=0 && type==EntityTypes.Turret){
+            ValidateRange(false);
+        }
     }
 
     public void AddAttack<A>() where A:Attack,new(){
         Attack a = new A();
         attacks.Add(a);
         a.perent=this;
+
+        if (a.attackRange()>maxRange && type==EntityTypes.Turret){
+            maxRange=a.attackRange();
+            int[] wop = World.WorldPos(transform.position);
+            World.ChangeStatesInRange(wop[0],wop[1],maxRange,NodeState.targeted,true,World.ChangeStateMethod.On);
+        }
     }
 
     public void AddProc<P>() where P:Proc,new(){

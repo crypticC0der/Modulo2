@@ -60,7 +60,7 @@ public class Item : ItemTemplate{
         i.item=this;
         r.AddComponent<PolygonCollider2D>();
         int[] wop = World.WorldPos(p);
-        World.AddConstruct(wop[0],wop[1]);
+        World.ChangeState(wop[0],wop[1],NodeState.wall,false,World.ChangeStateMethod.On);
         r.layer=3;
         return r;
     }

@@ -10,8 +10,9 @@ public class move : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         wop = World.WorldPos(transform.position);
-        World.MovePlayer(wop[0],wop[1]);
+        World.PlaceOrb(wop[0],wop[1]);
         pwop = wop;
+        World.orbTransform=transform;
     }
 
 
@@ -23,9 +24,9 @@ public class move : MonoBehaviour
     float sprintTime=0;
     void Update()
     {
-        wop = World.WorldPos(transform.position);
+        wop = World.WorldPos(World.orbTransform.position);
         if(wop[0]!=pwop[0] || wop[1] != pwop[1]){
-            World.MovePlayer(wop[0],wop[1]);
+            World.PlaceOrb(wop[0],wop[1]);
         }
         Vector3 v=new Vector3(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical"))*Time.deltaTime;
         if(Input.GetButton("Sprint")&sprint>0){

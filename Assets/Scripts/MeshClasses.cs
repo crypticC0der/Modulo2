@@ -256,6 +256,7 @@ public static class MeshGens{
 		r.gravityScale=0;
 		r.drag=2;
 		obj.AddComponent<followAi>().force=10;
+		obj.transform.localScale*=0.5f;
 
 		EnemyFsm e;
 		switch (shape) {

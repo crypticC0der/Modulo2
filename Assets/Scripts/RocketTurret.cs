@@ -40,7 +40,7 @@ public class RocketProc : Proc
 		foreach(Collider2D col in hits){
 			Damageable damageable = col.GetComponent<Damageable>();
 			if(damageable){
-				damageable.TakeDamage(new DamageData{dmg=dmg,sender=perent.perent,direction=d.transform.position - collider.transform.position,properties=DamageProperties.bypassArmor});
+				damageable.TakeDamage(new DamageData{dmg=dmg,sender=perent.perent,direction=d.transform.position - collider.position,properties=DamageProperties.bypassArmor});
 			}
 		}
     }

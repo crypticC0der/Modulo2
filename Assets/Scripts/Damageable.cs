@@ -76,7 +76,7 @@ public class HealthBar : MonoBehaviour,Bar{
     }
 
     public void Update(){
-        backdrop.transform.position=transform.position+Vector3.up-Vector3.forward;
+        backdrop.transform.position=transform.position+Vector3.up-5*Vector3.forward;
         if(transition>Time.deltaTime){
             current += (aim-current)/transition;
             SetValue(current,1);
@@ -160,7 +160,7 @@ public class Damageable : MonoBehaviour{
     public virtual void Die(){
         b.Delete();
         switch(type){
-            case EntityTypes.Turret:
+            case EntityTypes.Module:
                 Module m = (Module)GetComponent<IsItem>().item;
                 List<Damageable> nearbyTurrets = m.GetNearby(transform.position);
                 foreach (Damageable turret in nearbyTurrets){
@@ -172,8 +172,19 @@ public class Damageable : MonoBehaviour{
         }
 
         if((int)type<3){
-            int[] p = World.WorldPos(gameObject.transform.position);
-            World.RemoveConstruct(p[0],p[1]);
+            int[] wop = World.WorldPos(transform.position);
+            World.ChangeState(wop[0],wop[1],NodeState.wall,false,World.ChangeStateMethod.Off);
+            if(type==EntityTypes.Turret){
+                float maxRange=0;
+                foreach(Attack a in ((Combatant)(this)).attacks){
+                    float r = a.attackRange();
+                    if(r>maxRange){
+                        maxRange=r;
+                    }
+                }
+                World.ChangeStatesInRange(wop[0],wop[1],maxRange,NodeState.targeted,false,World.ChangeStateMethod.Off);
+            }
+            World.Reset();
         }
         GameObject.Destroy(gameObject);
     }

@@ -26,7 +26,7 @@ public class BeamAttack : RangedAttack
 					damageables[i]=hit;
 				}
 			}
-			rdt=basicBeam(new Color(1,0.5f,0),new Color(1,0,0),damageables,new DamageData{dmg=damage(),direction=-d,sender=perent});
+			rdt=basicBeam(new Color(.96f,0.66f,.72f),new Color(1,.5f,.3f),damageables,new DamageData{dmg=damage()*2,direction=-d,sender=perent});
 		}
     }
 
@@ -35,7 +35,7 @@ public class BeamAttack : RangedAttack
     {
         range = 10;
         timerMax = 0.5f;
-        procCoefficent = 2;
-        dmg = 100;
+        procCoefficent = 1;
+        dmg = 50;
     }
 }
