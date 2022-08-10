@@ -1,5 +1,7 @@
 using UnityEngine;
 
-public class NodeView : MonoBehaviour{
-    public Node n=new Node();
+namespace Modulo{
+	public class NodeView : MonoBehaviour{
+		public Node n=new Node();
+	}
 }
