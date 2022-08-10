@@ -15,7 +15,7 @@ public class RocketAttack : RangedAttack
     }
 	public override void AtFunc(Vector3 d)
 	{
-		ProcOnCollsion p = basicBullet(this,"assets/rocket",true);
+		ProcOnCollsion p = basicBullet(this,"assets/rocket",(attackProperties() & SpecialProperties.homing)!=0);
 		p.gameObject.GetComponent<Rigidbody2D>().velocity = (d).normalized*shotSpeed();
         p.p = impact.Go(damage(), this);
     }
@@ -27,6 +27,7 @@ public class RocketAttack : RangedAttack
         timerMax = 1;
         procCoefficent = 1;
         dmg = 50;
+		attackProps|=SpecialProperties.homing;
         impact = new RocketProc();
     }
 }
@@ -36,7 +37,7 @@ public class RocketProc : Proc
     public override void OnProc(Damageable d)
     {
 		base.OnProc(d);
-		Collider2D[] hits = Physics2D.OverlapCircleAll(d.transform.position,3,perent.layerMask());
+		Collider2D[] hits = Physics2D.OverlapCircleAll(d.transform.position,3,perent.perent.layerMask(false));
 		foreach(Collider2D col in hits){
 			Damageable damageable = col.GetComponent<Damageable>();
 			if(damageable){

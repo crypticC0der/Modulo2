@@ -15,7 +15,7 @@ public class GasAttack : RangedAttack
     }
 	public override void AtFunc(Vector3 d)
 	{
-		GasBomb p = basicGas(this,"assets/gas");
+		GasBomb p = basicGas(this,"assets/gas",(attackProperties() & SpecialProperties.homing)!=0);
 		p.gameObject.GetComponent<Rigidbody2D>().velocity = (d).normalized*shotSpeed();
         p.perent = impact.Go(damage(), this);
     }

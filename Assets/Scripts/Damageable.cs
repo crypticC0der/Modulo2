@@ -7,9 +7,10 @@ public enum EntityTypes{
     Module=0,
     Defence=1,
     Turret=2,
-    Player=3,
-    Enemy=4,
-    Other=5
+    Orb=3,
+    Player=4,
+    Enemy=5,
+    Other=6
 }
 
 public class HealthBar : MonoBehaviour,Bar{
@@ -88,7 +89,14 @@ public class HealthBar : MonoBehaviour,Bar{
         transition-=Time.deltaTime;
 
     }
+}
 
+public enum Priority{
+    Orb=4,
+    Turret=3,
+    Combatant=2,
+    Module=1,
+    Other=0
 }
 
 public class Damageable : MonoBehaviour{
@@ -101,8 +109,28 @@ public class Damageable : MonoBehaviour{
     public EntityTypes type=EntityTypes.Other;
     public List<Debuff> debuffs = new List<Debuff>();
     public Bar b;
+    public Priority priority;
 
     protected virtual void Start(){
+        switch (type) {
+            case EntityTypes.Module:
+                priority=Priority.Module;
+                break;
+            case EntityTypes.Turret:
+                priority=Priority.Turret;
+                break;
+            case EntityTypes.Orb:
+                priority=Priority.Orb;
+                break;
+            case EntityTypes.Player:
+            case EntityTypes.Enemy:
+                priority=Priority.Combatant;
+                break;
+            default:
+                priority=Priority.Other;
+                break;
+        }
+
         regen=maxHealth/10;
         health=maxHealth;
         if(type!=EntityTypes.Player){
@@ -171,9 +199,13 @@ public class Damageable : MonoBehaviour{
                 break;
         }
 
+        if(type==EntityTypes.Orb){
+            Debug.Log("GameOver");
+        }
+
         if((int)type<3){
             int[] wop = World.WorldPos(transform.position);
-            World.ChangeState(wop[0],wop[1],NodeState.wall,false,World.ChangeStateMethod.Off);
+            World.ChangeState(wop[0],wop[1],NodeState.wall,World.ChangeStateMethod.Off);
             if(type==EntityTypes.Turret){
                 float maxRange=0;
                 foreach(Attack a in ((Combatant)(this)).attacks){
@@ -182,9 +214,8 @@ public class Damageable : MonoBehaviour{
                         maxRange=r;
                     }
                 }
-                World.ChangeStatesInRange(wop[0],wop[1],maxRange,NodeState.targeted,false,World.ChangeStateMethod.Off);
+                World.ChangeStatesInRange(wop[0],wop[1],maxRange,NodeState.targeted,World.ChangeStateMethod.Off);
             }
-            World.Reset();
         }
         GameObject.Destroy(gameObject);
     }

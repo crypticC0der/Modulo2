@@ -13,8 +13,7 @@ public class SpikeAttack : RangedAttack
     }
 	public override void AtFunc(Vector3 d)
 	{
-		ProcOnCollsion p = basicSpike(this,"assets/spike");
-		p.gameObject.GetComponent<SpikeDespawn>().target=d+perent.transform.position;
+		ProcOnCollsion p  = basicSpike(this,"assets/spike",d,(attackProperties() & SpecialProperties.homing)!=0);
         p.p = impact.Go(damage(), this);
     }
 

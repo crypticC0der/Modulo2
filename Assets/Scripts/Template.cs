@@ -82,10 +82,12 @@ public class ItemTemplate{
         graphicPath=pathToGraphic;
         type=itemType;
         scale=itemScale;
-        ItemRatio.table.Add(new ItemRatio{
-                item=this,
-                ratio=itemRatio
-            });
+        if(itemType!=ItemTypes.Orb){
+            ItemRatio.table.Add(new ItemRatio{
+                    item=this,
+                    ratio=itemRatio
+                });
+        }
     }
 
     public ItemTemplate(){}

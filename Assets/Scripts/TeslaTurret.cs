@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class TeslaAttack : AreaAttack
 {
@@ -7,29 +8,67 @@ public class TeslaAttack : AreaAttack
         c.AddAttack<TeslaAttack>();
     }
 
+	public static Vector3[] Zig(Vector3 start,Vector3 end){
+		Vector3[] r = new Vector3[2];
+		Vector3 direction=end-start;
+		direction=Random.Range(-0.3f,0.3f)*new Vector3(-direction.y,direction.x);
+		Vector3 point = Vector2.LerpUnclamped(start,end,Random.Range(0.2f,0.8f));
+		r[0] = (direction+point);
+		r[1] = (end);
+		return r;
+	}
+
+
+    public override void Update()
+    {
+		greatestHits.Clear();
+        base.Update();
+	}
+
+	List<Collider2D> greatestHits=new List<Collider2D>();
 	public override Vector3 AtFunc(GameObject o)
 	{
 		Vector3 d = o.transform.position-perent.transform.position;
-		RaycastHit2D[] rh = Physics2D.RaycastAll(perent.transform.position,d,attackRange(),layerMask());
+		RaycastHit2D[] rh = Physics2D.RaycastAll(perent.transform.position,d,attackRange(),perent.layerMask(false));
+		List<Vector3> hitPos = new List<Vector3>();
+		Vector3 previous=perent.transform.position;
+
+		void HitTarget(Damageable hit){
+			Vector3[] zigs =Zig(previous,hit.transform.position);
+			hitPos.AddRange(zigs);
+			previous=hit.transform.position;
+			DmgOverhead(new DamageData{dmg=damage(),
+										direction=zigs[1]-zigs[0],
+										properties=DamageProperties.bypassArmor},
+						hit);
+		}
+
 		if(rh.Length>0){
-			Vector3[] hitPos = new Vector3[2*rh.Length+1];
+			hitPos.Add(perent.transform.position);
 			for(int i=0;i<rh.Length;i++){
-				hitPos[2*i+2]=rh[i].transform.position;
-				Vector3 direction=rh[i].transform.position-perent.transform.position;
-				direction=Random.Range(-0.3f,0.3f)*new Vector3(-direction.y,direction.x);
-				Vector3 point = Vector2.LerpUnclamped(perent.transform.position,rh[i].transform.position,Random.Range(0.2f,0.8f));
-				hitPos[2*i+1]=direction+point;
+				greatestHits.Add(rh[i].collider);
 				Damageable hit = rh[i].collider.GetComponent<Damageable>();
 				if(hit!=null){
-					DmgOverhead(new DamageData{dmg=damage(),
-											   direction=hitPos[2*i+2]-hitPos[2*i+1],
-											   properties=DamageProperties.bypassArmor},
-								hit);
+					HitTarget(hit);
 				}
 			}
-			Debug.Log(hitPos.Length);
-			hitPos[0]=perent.transform.position;
-			basicRay(new Color(0.98f,0.92f,0.68f),new Color(0.98f,0.8f,0.14f),hitPos);
+			if(( attackProperties() & SpecialProperties.homing )!=0){
+				Collider2D[] hits = Physics2D.OverlapCircleAll(previous,2,perent.layerMask(false));
+				int c=0;
+				while(hits.Length>c && currentPeirce>0){
+					if(!greatestHits.Contains(hits[c])){
+						Damageable dmg = hits[c].GetComponent<Damageable>();
+						if(dmg!=null){
+							HitTarget(dmg);
+							currentPeirce--;
+						}
+						hits = Physics2D.OverlapCircleAll(previous,2,perent.layerMask(false));
+						c=0;
+					}
+					c++;
+				}
+			}
+			basicRay(new Color(0.98f,0.92f,0.68f),new Color(0.98f,0.8f,0.14f),hitPos.ToArray());
 		}
 		return d;
     }
@@ -39,7 +78,7 @@ public class TeslaAttack : AreaAttack
         range = 3;
         timerMax = 0.25f;
         procCoefficent = 0.2f;
-        dmg = 20;
+        dmg = 17;
 		attackPeirce=3;
     }
 }

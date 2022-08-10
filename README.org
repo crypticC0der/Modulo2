@@ -79,15 +79,15 @@ all modules and towers blow up when you destroy them, this is the only way to ge
 - attack speed up
 - rotspd up
 *** exotic - T1/T2/T3 (mechanical changes aka changes how it fires) ie targeting computer or the gun head *yellow*
-- funnel shots
-- bidirirectional
-- computer
-- homing
-- rapid fire bursts
-- returning
-- polar (ie tiny planet issac)
-- single projectile (maybe)
-- spd goes up when not shooting
+- funnel shots - 20/20 or mutant spider
+- bidirirectional aka lokis horn
+- computer - predictive targeting
+- friendly fire - easy!
+- homing - hard
+- rapid fire bursts - easy
+- returning - hard
+- polar (ie tiny planet issac) - easy?
+- spd goes up when not shooting - easy?
 *** rare - T1/T2/T3 (procables) ie on hit chance to make a explosion *purple*
 *** epic - T1/T2/T3 (really cool and fun things) ie tesla coil *fushcia*
 

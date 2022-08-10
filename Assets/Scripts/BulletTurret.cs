@@ -15,7 +15,7 @@ public class BulletAttack : RangedAttack
     }
 	public override void AtFunc(Vector3 d)
 	{
-		ProcOnCollsion p = basicBullet(this,"assets/hook");
+		ProcOnCollsion p = basicBullet(this,"assets/hook",(attackProperties() & SpecialProperties.homing)!=0);
 		p.gameObject.GetComponent<Rigidbody2D>().velocity = (d).normalized*shotSpeed();
         p.p = impact.Go(damage(), this);
     }
@@ -24,6 +24,7 @@ public class BulletAttack : RangedAttack
     public BulletAttack() : base()
     {
         range = 10;
+		shotSpd=10;
         timerMax = 0.5f;
         procCoefficent = 1;
         dmg = 50;

@@ -79,6 +79,58 @@ public static class MeshGens{
 		return tris;
 	}
 
+	public static Mesh CircleSpikedOutline(float size,float spikeSize, int v=6,int spikes=1,float offset=0,float thickness=0.8f){
+		Vector3[] points = new Vector3[v*(2+spikes*7)];
+		Vector2[] uvs = new Vector2[v*(2+spikes*7)];
+		int[] tris= new int[v*(2+spikes*3)*3];
+		float r;
+		for(int i=0;i<v;i++){
+			r = offset+2*Mathf.PI*(float)(i)/v;
+			points[i+v] = new Vector3((Mathf.Sin(r))*size,(Mathf.Cos(r))*size);
+			points[i]=points[i+v]*thickness;
+			uvs[i] = points[i];
+			uvs[i+v] = points[i+v];
+			int j=6*i;
+			tris[j+2]=i;
+			tris[j+1]=(i+1)%v;
+			tris[j]=(i+1)%v + v;
+			tris[j+5]=i;
+			tris[j+4]=tris[j];
+			tris[j+3]=i+v;
+		}
+		for(int i=0;i<v;i++){
+			for(int j=0;j<spikes;j++){
+				//a lerp between the two multiplied by the value inbetween the thickness and 1
+				Vector3 spikeCenter = Vector3.Lerp(points[i+v],points[(i+1)%v + v],(j+1f)/(spikes+1)) * 1.2f;
+				int p=2*v + spikes*i*7 +j*7;
+				int m=6*v + spikes*i*9+ j*9;
+				for(int k=0;k<3;k++){
+					r = 2*Mathf.PI*k/3 + Mathf.PI*(2*i+1)/v;
+					points[p] = new Vector3((Mathf.Sin(r))*spikeSize,(Mathf.Cos(r))*spikeSize)+spikeCenter;
+					uvs[p]=points[p];
+					tris[m]=p;
+					p++;
+					m++;
+				}
+				points[p]= Vector3.Lerp(points[i+v],points[(i+1)%v + v],(j+1f)/(spikes+1) + spikeSize/3) * 1.2f;
+				points[p+1]= Vector3.Lerp(points[i+v],points[(i+1)%v + v],(j+1f)/(spikes+1) - spikeSize/3) * 1.2f;
+				points[p+2]=points[p]-spikeCenter;
+				points[p+3]=-points[p+2];
+				for(int k=0;k<4;k++){
+					uvs[p+k]=points[p+k];
+				}
+				Debug.Log(m);
+				tris[m]=p+3;
+				tris[m+1]=p+1;
+				tris[m+2]=p;
+				tris[m+3]=p+3;
+				tris[m+4]=p;
+				tris[m+5]=p+2;
+			}
+		}
+		return GenMesh(points,uvs,tris);
+	}
+
 	public static Mesh CircleOutline(float size,int v=6,float offset=0,float thickness=0.8f){
 		Vector3[] points = new Vector3[v*2];
 		Vector2[] uvs = new Vector2[v*2];
@@ -217,10 +269,11 @@ public static class MeshGens{
 		"diamond",
 		"curvilinear",
 		"hexagonOuter",
-		"hexagon"
+		"hexagon",
+		"spikedHexagonOuter"
 	};
-	static Mesh[] meshes = new Mesh[13];
-	static Material[] colors= new Material[10];
+	static Mesh[] meshes = new Mesh[14];
+	static Material[] colors= new Material[14];
 
     [RuntimeInitializeOnLoadMethod]
 	static void StructureGen(){
@@ -329,6 +382,8 @@ public static class MeshGens{
 		meshes[(int)Shapes.hexagonOuter].name="hexagonOuter";
 		meshes[(int)Shapes.hexagon]=Circle(Mathf.Sqrt(3)/3,6);
 		meshes[(int)Shapes.hexagon].name="hexagon";
+		meshes[(int)Shapes.spikedHexagonOuter]=CircleSpikedOutline(Mathf.Sqrt(3)/3,0.1f,6,1,0,0.92f);
+		meshes[(int)Shapes.spikedHexagonOuter].name="spikedHexagonOuter";
 	}
 
 	static void ColourGen(){
@@ -337,11 +392,26 @@ public static class MeshGens{
 		ColourMats(MatColour.green,Color.green);
 		ColourMats(MatColour.blue,Color.blue);
 		ColourMats(MatColour.black,Color.black);
+		ColourMats(MatColour.foreground,ColorFromHex(0xa9b1d680));
+		ColourMats(MatColour.blue2,ColorFromHex(0x0715cdff));
+	}
+
+	static Color ColorFromHex(uint hex){
+		float[] rgba = new float[4];
+		for(int i=0;i<4;i++){
+			rgba[i]=((hex>>(8*(3-i)))&0xff)/(255f);
+		}
+		return new Color(rgba[0],rgba[1],rgba[2],rgba[3]);
 	}
 
 	const float blackness=1/8f;
 	static void ColourMats(MatColour color,Color c){
-		Shader s = Shader.Find("Unlit/Color");
+		Shader s;
+		if(c.a!=1){
+			s = Shader.Find("Standard");
+		}else{
+			s = Shader.Find("Unlit/Color");
+		}
 		colors[(int)color*2]=new Material(s);
 		colors[(int)color*2].color=c;
 		colors[(int)color*2+1]=new Material(s);
@@ -362,7 +432,8 @@ public enum Shapes{
 	diamond,
 	curvilinear,
 	hexagonOuter,
-	hexagon
+	hexagon,
+	spikedHexagonOuter
 };
 
 public enum MatColour{
@@ -370,5 +441,7 @@ public enum MatColour{
 	red,
 	blue,
 	green,
-	black
+	black,
+	foreground,
+	blue2
 }

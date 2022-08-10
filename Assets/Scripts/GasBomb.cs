@@ -29,7 +29,7 @@ public class GasBomb: MonoBehaviour{
 		angle.z+=spd*45*Time.deltaTime;
 		transform.eulerAngles=angle;
 		Vector3 velocity=rb.velocity;
-		if(density<0.01){
+		if(density<0.05){
 			Destroy(gameObject);
 		}
 		if(scale>2){

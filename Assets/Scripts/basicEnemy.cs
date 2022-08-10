@@ -220,7 +220,8 @@ public class CrossEnemy : StarEnemy{
         points=4;
         attackRate=4;
         AddAttack<FlameAttack>();
-        specialProperties|=SpecialProperties.crossShot;
+        crossShots=4;
+        // specialProperties|=SpecialProperties.crossShot;
         enemyType|=EnemyTypes.WeakPoint;
         strength=20;
         base.SkipStart();
@@ -326,7 +327,7 @@ public class SpinHit : CloseAttack{
         return Vector3.zero;
     }
     public SpinHit() : base(){
-        range=1.2f;
+        range=.8f;
         timerMax=1;
     }
 }

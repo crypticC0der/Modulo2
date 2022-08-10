@@ -10,7 +10,7 @@ public class FlameAttack : RangedAttack
     }
 	public override void AtFunc(Vector3 d)
 	{
-		ProcOnCollsion p = basicBullet(this,"assets/hook");
+		ProcOnCollsion p = basicBullet(this,"assets/hook",(attackProperties() & SpecialProperties.homing)!=0);
 		p.gameObject.GetComponent<Rigidbody2D>().velocity = (d).normalized*shotSpeed();
         p.p = impact.Go(damage(), this);
     }
@@ -23,30 +23,11 @@ public class FlameAttack : RangedAttack
     public FlameAttack() : base()
     {
         range = 6;
-        timerMax = 0.5f;
+        timerMax = 0.03f;
         procCoefficent = 1;
         dmg = 2;
         impact = new FlameProc();
     }
-}
-
-public class BurnProc: Proc{
-	public BurnProc(){
-		procCoefficent=0;
-		dmgMultiplier=0;
-		chance=1;
-	}
-
-	public override Proc Go(float d, Attack perent){
-		Proc p = new BurnProc();
-		p.perent=perent;
-		return p;
-	}
-
-	public override void OnProc(Damageable d){
-		// i am not using base. onproc as the coefficent is 0
-		d.ApplyDebuff<Burning>();
-	}
 }
 
 public class FlameProc : Proc
@@ -60,7 +41,7 @@ public class FlameProc : Proc
 
     public FlameProc()
     {
-        procCoefficent = 0.2f;
+        procCoefficent = 0.063f;
         chance = 1;
         dmgMultiplier = 1;
     }

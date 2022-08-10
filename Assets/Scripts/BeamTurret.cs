@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BeamAttack : RangedAttack
 {
@@ -18,15 +19,27 @@ public class BeamAttack : RangedAttack
 	{
 		//TODO
 		if(!rdt){
-			RaycastHit2D[] rh = Physics2D.RaycastAll(perent.transform.position,d,attackRange(),layerMask());
-			Damageable[] damageables = new Damageable[rh.Length];
-			for(int i=0;i<rh.Length;i++){
-				Damageable hit = rh[i].collider.GetComponent<Damageable>();
-				if(hit!=null){
-					damageables[i]=hit;
+			RaycastHit2D[] rh = Physics2D.RaycastAll(perent.transform.position,d,attackRange(),perent.layerMask(false));
+			LinkedList<Damageable> damageables = new LinkedList<Damageable>();
+			int len=0;
+			if(( attackProperties() & SpecialProperties.homing )!=0){
+				len=rh.Length;
+				for(int i=0;i<rh.Length;i++){
+					Damageable hit = rh[i].collider.GetComponent<Damageable>();
+					if(hit!=null){
+						damageables.AddLast(hit);
+					}
 				}
+			}else{
+				len=1;
+				Collider2D[] rayCols=new Collider2D[rh.Length];
+				for(int i=0;i<rh.Length;i++){
+					rayCols[i] = rh[i].collider;
+				}
+				Collider2D best = BestCollider(rayCols);
+				damageables.AddLast(best.GetComponent<Damageable>());
 			}
-			rdt=basicBeam(new Color(.96f,0.66f,.72f),new Color(1,.5f,.3f),damageables,new DamageData{dmg=damage()*2,direction=-d,sender=perent});
+			rdt=basicBeam(new Color(.96f,0.66f,.72f),new Color(1,.5f,.3f),damageables,len,new DamageData{dmg=damage()*2,direction=-d,sender=perent});
 		}
     }
 
@@ -37,5 +50,6 @@ public class BeamAttack : RangedAttack
         timerMax = 0.5f;
         procCoefficent = 1;
         dmg = 50;
+		disabledProps|=SpecialProperties.predictive & SpecialProperties.returning;
     }
 }

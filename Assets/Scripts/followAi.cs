@@ -19,8 +19,8 @@ public class followAi : MonoBehaviour
         Node n = World.grid[wap[0],wap[1]].next;
         Vector3 v;
         if(n!=null){
-        fsm.distance=n.distance;
-        v = n.WorldPos()-transform.position;
+            fsm.distance=n.realDistance;
+            v = n.WorldPos()-transform.position;
         }else{
             v=PlayerBehavior.me.transform.position-transform.position;
             fsm.distance=v.magnitude;

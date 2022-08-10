@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public enum ItemTypes{
     Module=0,
     Defence=1,
-    Turret=2
+    Turret=2,
+    Orb=3
 }
 
 public static class ItemHelperFunctions{
@@ -59,9 +60,13 @@ public class Item : ItemTemplate{
         IsItem i = r.AddComponent<IsItem>();
         i.item=this;
         r.AddComponent<PolygonCollider2D>();
-        int[] wop = World.WorldPos(p);
-        World.ChangeState(wop[0],wop[1],NodeState.wall,false,World.ChangeStateMethod.On);
         r.layer=3;
+        if(type==ItemTypes.Orb){
+            d.maxHealth=500;
+        }else{
+            int[] wop = World.WorldPos(p);
+            World.ChangeState(wop[0],wop[1],NodeState.wall,World.ChangeStateMethod.On);
+        }
         return r;
     }
 }

@@ -14,6 +14,8 @@ public struct Stats{
     public float range;
     public float speed;
     public int peirce;
+    public int funnelShots;
+    public int crossShots;
 }
 
 public class Turret : Combatant{

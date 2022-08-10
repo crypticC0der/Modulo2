@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class LaserAttack : RangedAttack
 {
@@ -13,23 +14,45 @@ public class LaserAttack : RangedAttack
 		AtFunc(v);
 		return v;
     }
+
 	public override void AtFunc(Vector3 d)
 	{
-		RaycastHit2D[] rh = Physics2D.RaycastAll(perent.transform.position,d,attackRange(),layerMask());
-		Vector3 maxDistance=new Vector3(0,0,0);
-		for(int i=0;i<rh.Length;i++){
-			Damageable hit = rh[i].collider.GetComponent<Damageable>();
+		List<Vector3> v3 = new List<Vector3>();
+		Vector3 lastHit=perent.transform.position;
+		v3.Add(lastHit);
+		float tlen=0;
+		void DealWithHit(Collider2D c){
+			Damageable hit = c.GetComponent<Damageable>();
+			Vector3 d =c.transform.position-lastHit;
 			if(hit!=null){
-				DmgOverhead(new DamageData{dmg=damage(),direction=-d},hit);
+				DmgOverhead(new DamageData{dmg=damage(),direction=d},hit);
 			}
-			Vector3 distance = rh[i].transform.position - perent.transform.position;
-			if(distance.magnitude>=maxDistance.magnitude){
-				maxDistance=distance;
+			v3.Add(c.transform.position);
+			lastHit=c.transform.position;
+			tlen+=d.magnitude;
+			if(tlen>attackRange()){
+				basicRay(new Color(1,0.5f,0),new Color(1,0,0),v3.ToArray());
+				return;
 			}
 		}
-		if(maxDistance.magnitude==0){maxDistance=d;}
-		maxDistance+=perent.transform.position;
-		basicRay(new Color(1,0.5f,0),new Color(1,0,0),new Vector3[]{perent.transform.position,maxDistance});
+		if(( attackProperties() & SpecialProperties.homing )==0){
+			RaycastHit2D[] rh = Physics2D.RaycastAll(perent.transform.position,d,attackRange(),perent.layerMask(false));
+			for(int i=0;i<rh.Length;i++){
+				DealWithHit(rh[i].collider);
+			}
+		}else{
+			Collider2D[] cols = Physics2D.OverlapCircleAll(perent.transform.position,attackRange(),perent.layerMask(false));
+			for(int i=0;i<cols.Length;i++){
+				Vector3 dir = cols[i].transform.position-perent.transform.position;
+				if(Vector2.Dot(dir,d)>0.5f){
+					DealWithHit(cols[i]);
+				}
+			}
+		}
+		if(v3.Count==1){
+			v3.Add(d*attackRange());
+		}
+		basicRay(new Color(1,0.5f,0),new Color(1,0,0),v3.ToArray());
     }
 
 
@@ -39,5 +62,6 @@ public class LaserAttack : RangedAttack
         timerMax = 0.5f;
         procCoefficent = 1;
         dmg = 50;
+		disabledProps|=SpecialProperties.predictive & SpecialProperties.returning;
     }
 }

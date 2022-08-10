@@ -33,7 +33,7 @@ public abstract class Debuff{
 }
 
 public class Burning:Debuff{
-	const int dmg=10;
+	const int dmg=30;
 
 	public override void Apply(Damageable d){
 		d.ApplyDebuff<Burning>();

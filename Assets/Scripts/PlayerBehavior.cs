@@ -80,6 +80,7 @@ public class PlayerBehavior : Damageable{
         d.amount=amount;
         d.transform.localScale= new Vector3(size,size);
         d.transform.position=position;
+        o.layer=8;
         o.AddComponent<SpriteRenderer>().sprite=componentSprites[(int)c];
         return o;
     }
@@ -108,9 +109,11 @@ public class PlayerBehavior : Damageable{
         base.Start();
         deck = new StackDeck();
         ItemTemplate itemTemplate = new ItemTemplate("wallBase",1,new float[]{0,0,0,0,0,0});
+        ItemTemplate orbT = new ItemTemplate("orb",5,new float[]{0,0,0,0,0},"sacred",ItemTypes.Orb);
         for(int i =0;i<5;i++){
             AddToDeck(itemTemplate.FromTemplate(1,1));
         }
+        AddToDeck(orbT.FromTemplate(0,0));
         r=GetComponent<Rigidbody2D>();
     }
 
@@ -129,7 +132,12 @@ public class PlayerBehavior : Damageable{
         }
     }
 
-    public static void AddToDeck(Item t){
+    public void AddToDeck(Item t){
+        if(t.type==ItemTypes.Orb){
+            World.orbTransform=transform;
+            priority=Priority.Orb;
+            World.Reset();
+        }
         deck.Add(t);
         controller.Render();
     }
@@ -137,11 +145,16 @@ public class PlayerBehavior : Damageable{
     public static void Place(){
         Vector3 p= Camera.main.ScreenToWorldPoint(Input.mousePosition);
         //check if space is free
-        if(!Physics2D.OverlapCircle(p,0.5f,((1<<3)))){
+        if(!Physics2D.OverlapCircle(p,0.3f,((1<<3)))){
             //check if targets arent near
             if(!Physics2D.OverlapCircle(p,1f,((1<<6) + (1<<0)))){
             p.z=0;
             GameObject o = holding.ToGameObject(World.NearestHex(p));
+            if(holding.type==ItemTypes.Orb){
+                World.orbTransform=o.transform;
+                PlayerBehavior.me.priority=Priority.Combatant;
+                World.Reset(); //reset cos the orb is changing places entirely
+            }
             holding=null;
             }
         }
@@ -157,5 +170,13 @@ public class PlayerBehavior : Damageable{
             transform.eulerAngles=new Vector3(0,0,angle);
         }
         base.FixedUpdate();
+    }
+
+    void OnCollisionEnter2D(Collision2D collision){
+        if(collision.gameObject.name=="orb"){
+            AddToDeck(collision.gameObject.GetComponent<IsItem>().item);
+            collision.gameObject.GetComponent<Bar>().Delete();
+            Destroy(collision.gameObject);
+        }
     }
 }

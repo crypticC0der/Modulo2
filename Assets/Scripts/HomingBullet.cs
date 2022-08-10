@@ -37,3 +37,27 @@ public class HomingBullet : MonoBehaviour{
 	}
 
 }
+
+
+public class SimpleHoming: MonoBehaviour{
+	public Rigidbody2D rb;
+	public int layerMask = 0;
+
+    public Vector3 Force(Vector3 d){
+        float f = 30/(d.magnitude*d.magnitude+5);
+        return d.normalized*f;
+	}
+
+	public void FixedUpdate(){
+		Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,3,layerMask);
+		int i=0;
+		while(hits.Length>i){
+			Vector2 d = hits[i].transform.position-transform.position;
+            if(d.magnitude>0.2f){
+                transform.position+=Force(d)*Time.deltaTime;
+            }
+			i++;
+		}
+	}
+
+}
