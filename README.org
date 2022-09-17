@@ -79,15 +79,32 @@ all modules and towers blow up when you destroy them, this is the only way to ge
 - attack speed up
 - rotspd up
 *** exotic - T1/T2/T3 (mechanical changes aka changes how it fires) ie targeting computer or the gun head *yellow*
-- funnel shots - 20/20 or mutant spider
-- bidirirectional aka lokis horn
-- computer - predictive targeting
-- friendly fire - easy!
-- homing - hard
-- rapid fire bursts - easy
-- returning - hard
-- polar (ie tiny planet issac) - easy?
-- spd goes up when not shooting - easy?
+- random
+  shoots in random directions but constantly shoots
+  this only makes sense in ranged,im not implementing it anywhere else
+  except maybe area (maybe), could make it have the starting point somewhere random but nearby
+- homing
+  melee - not done (i do this by moving the point it goes around in the direction to the nearest enemy, and back when theres no enemy)
+  gas - done
+  spike - done
+  laser - done
+  bullet - done
+  area - done
+- predictive
+  ranged - done
+  area - done
+  melee - not done, will be done by targeting where the enemy will be
+- rapidFire
+  all - done
+- returning
+  only makes sense for ranged
+  which its done for
+- spdUp
+  all - done
+- polar
+  only makes sense for ranged, which its done for
+- bouncing
+  only makes sense for dagger and ranged, undone
 *** rare - T1/T2/T3 (procables) ie on hit chance to make a explosion *purple*
 *** epic - T1/T2/T3 (really cool and fun things) ie tesla coil *fushcia*
 
@@ -353,3 +370,39 @@ well they just want the orb so they pathfind to wherever that is
 * pathfinding
 they move to the orb
 they avoid other stuff
+
+* ui
+stuff to show minus name and icon
+ * means referance
+** defence
+hp
+debuffs
+type
+power
+stability
+** turret
+*stats
+procs
+attacks
+type
+properties
+power
+stability
+** enemy
+*stats
+procs
+attacks
+type
+properties
+** module
+hp
+effect
+power
+stability
+type
+in range
+** orb - damageable
+debuffs
+hp
+regen
+type

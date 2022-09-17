@@ -47,6 +47,37 @@ namespace Modulo{
 			return mask;
 		}
 
+		public override void Click(ClickEventHandler e){
+			List<AreaAttack> attackList = new List<AreaAttack>();
+			Debug.Log(e);
+			foreach(Attack a in attacks){
+				if(a.t==AttackType.Area &&
+				   (a.attackProperties() & SpecialProperties.predictive)!=0 &&
+				   (a.attackProperties() & SpecialProperties.homing)==0){
+				    //show funny target
+				    attackList.Add((AreaAttack)(a));
+				}
+			}
+			if(attackList.Count>0){
+				Debug.Log(attackList.Count);
+				GameObject target = new GameObject();
+				SpriteRenderer r =target.AddComponent<SpriteRenderer>();
+				r.sprite=Item.GetGraphic("target");
+				target.transform.position=attackList[0].center;
+
+				void nextClick(Vector3 worldPoint){
+					worldPoint.z=0;
+					foreach(AreaAttack a in attackList){
+						a.center=worldPoint;
+					}
+					target.transform.position=worldPoint;
+					attackList.Clear();
+					Despawn d = target.AddComponent<Despawn>();
+					d.deathTimer=0.4f;
+				}
+				e.todoList.Enqueue(nextClick);
+			}
+		}
 		public virtual void RemoveStats(Stats changes){
 			maxHealth-=changes.maxHealth;
 			regen-=changes.HpRegen;

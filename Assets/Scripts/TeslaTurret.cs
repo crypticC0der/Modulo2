@@ -29,10 +29,10 @@ namespace Modulo{
 		List<Collider2D> greatestHits=new List<Collider2D>();
 		public override Vector3 AtFunc(GameObject o)
 		{
-			Vector3 d = o.transform.position-perent.transform.position;
-			RaycastHit2D[] rh = Physics2D.RaycastAll(perent.transform.position,d,attackRange(),perent.layerMask(false));
+			Vector3 d = o.transform.position-center;
+			RaycastHit2D[] rh = Physics2D.RaycastAll(center,d,attackRange(),perent.layerMask(false));
 			List<Vector3> hitPos = new List<Vector3>();
-			Vector3 previous=perent.transform.position;
+			Vector3 previous=center;
 
 			void HitTarget(Damageable hit){
 				Vector3[] zigs =Zig(previous,hit.transform.position);
@@ -45,7 +45,7 @@ namespace Modulo{
 			}
 
 			if(rh.Length>0){
-				hitPos.Add(perent.transform.position);
+				hitPos.Add(center);
 				for(int i=0;i<rh.Length;i++){
 					greatestHits.Add(rh[i].collider);
 					Damageable hit = rh[i].collider.GetComponent<Damageable>();

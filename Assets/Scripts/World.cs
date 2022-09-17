@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using MeshGen;
 
 namespace Modulo{
 	public static class World
@@ -53,13 +54,16 @@ namespace Modulo{
 		}
 
 		public static void MapGen(){
-			ItemRatio.table[8].item.FromTemplate(1,1).ToGameObject(NearestHex(new Vector3(6,6,0)));
+			Item it = ItemRatio.table[8].item.FromTemplate(1,1);
+			GameObject g= it.ToGameObject(NearestHex(new Vector3(6,6,0)));
 			// EnemyFsm o = MeshGens.ObjGen(Shapes.star,MatColour.white);
 			// o.transform.position=new Vector3(-6,-6);
+			EnemyFsm o=null;
 			for(int i=0;i<3;i++){
-				EnemyFsm o = MeshGens.ObjGen((Shapes.circle),MatColour.white);
+				o = EnemyGeneration.ObjGen((Shapes.circle),MatColour.white);
 				o.transform.position = new Vector3(2*i-11,-5);
 			}
+			// g.GetComponent<Damageable>().Draw(f);
 		}
 
 		public static void Print(){

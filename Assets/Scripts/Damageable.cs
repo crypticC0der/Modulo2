@@ -101,6 +101,7 @@ namespace Modulo{
 	}
 
 	public class Damageable : MonoBehaviour{
+		public static string[] EntityNames = new string[7]{"Module", "Defence", "Turret", "Orb", "Player", "Enemy", "Other"};
 		public float health;
 		public float maxHealth=50;
 		public float regen=0; //rate of regen
@@ -111,6 +112,10 @@ namespace Modulo{
 		public List<Debuff> debuffs = new List<Debuff>();
 		public Bar b;
 		public Priority priority;
+
+		public virtual void Click(ClickEventHandler e){
+			Debug.Log("fuck");
+		}
 
 		protected virtual void Start(){
 			switch (type) {

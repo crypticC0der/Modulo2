@@ -120,6 +120,15 @@ namespace Modulo{
 			ico.transform.localScale=card.transform.localScale*0.6f*widthRatio;
 			ico.transform.localPosition=Vector3.zero;
 		}
+
+		public static Sprite GetGraphic(string graphicPath){
+			Sprite s =Resources.Load<Sprite>("cardSprites/" + graphicPath);
+			if(s==null){
+				s = Resources.Load<Sprite>("assets/"+graphicPath);
+			}
+			return s;
+		}
+
 		public Sprite GetGraphic(){
 			Sprite s =Resources.Load<Sprite>("cardSprites/" + graphicPath);
 			if(s==null){

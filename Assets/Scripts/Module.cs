@@ -12,6 +12,7 @@ namespace Modulo{
 	public abstract class Module : Item{
 		public ModuleType t;
 		public float range;
+		public string effect;
 		public abstract void onApply(Combatant perent);
 		public abstract void onRemove(Combatant perent);
 

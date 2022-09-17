@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Modulo{
+namespace MeshGen{
 
 	public static class MeshGens{
 
@@ -122,7 +122,6 @@ namespace Modulo{
 					for(int k=0;k<4;k++){
 						uvs[p+k]=points[p+k];
 					}
-					Debug.Log(m);
 					tris[m]=p+3;
 					tris[m+1]=p+1;
 					tris[m+2]=p;
@@ -276,7 +275,7 @@ namespace Modulo{
 			"spikedHexagonOuter"
 		};
 		static Mesh[] meshes = new Mesh[14];
-		static Material[] colors= new Material[14];
+		static Material[] colors= new Material[16];
 
 		[RuntimeInitializeOnLoadMethod]
 		static void StructureGen(){
@@ -284,78 +283,11 @@ namespace Modulo{
 			ColourGen();
 		}
 
-		public static GameObject MinObjGen(Shapes shape,MatColour m){
+		public static GameObject MinObjGen(Shapes shape,MatColour m,int offset=0){
 			GameObject obj = new GameObject(shapeNames[(int)shape]);
 			obj.AddComponent<MeshFilter>().mesh=meshes[(int)shape];
-			obj.AddComponent<MeshRenderer>().material=colors[(int)m*2];
+			obj.AddComponent<MeshRenderer>().material=colors[(int)m*2+offset];
 			return obj;
-		}
-
-		public static EnemyFsm ObjGen(Shapes shape,MatColour m){
-			GameObject obj = new GameObject(shapeNames[(int)shape]);
-			obj.AddComponent<MeshFilter>().mesh=meshes[(int)shape];
-			obj.AddComponent<MeshRenderer>().material=colors[(int)m*2];
-
-			//genchild
-			GameObject child = new GameObject(shapeNames[(int)shape]+"_inner");
-			child.AddComponent<MeshFilter>().mesh=meshes[(int)shape];
-			child.AddComponent<MeshRenderer>().material=colors[(int)m*2+1];
-			child.transform.localScale=new Vector3(0.8f,0.8f,0);
-			child.transform.position+=new Vector3(0,0,-0.001f);
-			child.transform.SetParent(obj.transform);
-
-			obj.transform.position+=new Vector3(0,0,-0.1f);
-			obj.layer=6;
-			obj.AddComponent<CircleCollider2D>();
-			Rigidbody2D r  = obj.AddComponent<Rigidbody2D>();
-			r.constraints=RigidbodyConstraints2D.FreezeRotation;
-			r.gravityScale=0;
-			r.drag=2;
-			obj.AddComponent<followAi>().force=10;
-			obj.transform.localScale*=0.5f;
-
-			EnemyFsm e;
-			switch (shape) {
-				case Shapes.star:
-					e=obj.AddComponent<StarEnemy>();
-					child.transform.localScale=new Vector3(0.6f,0.6f,0);
-					break;
-				case Shapes.cross:
-					e=obj.AddComponent<CrossEnemy>();
-					child.transform.localScale=new Vector3(0.6f,0.6f,0);
-					break;
-				case Shapes.circle:
-					e=obj.AddComponent<CircleEnemy>();
-					break;
-				case Shapes.semicircle:
-					e=obj.AddComponent<SemicircleEnemy>();
-					break;
-				case Shapes.quaterfoil:
-					e=obj.AddComponent<QuaterfoilEnemy>();
-					break;
-				case Shapes.square:
-					e=obj.AddComponent<SquareEnemy>();
-					break;
-				case Shapes.rectangle:
-					e=obj.AddComponent<RectangleEnemy>();
-					break;
-				case Shapes.octogon:
-					e=obj.AddComponent<OctogonEnemy>();
-					break;
-				case Shapes.triangle:
-					e=obj.AddComponent<TriangleEnemy>();
-					break;
-				case Shapes.diamond:
-					e=obj.AddComponent<DiamondEnemy>();
-					break;
-				case Shapes.curvilinear:
-					e=obj.AddComponent<CurvilinearEnemy>();
-					break;
-				default:
-					e=obj.AddComponent<EnemyFsm>();
-					break;
-			}
-			return e;
 		}
 
 		static void MeshGen(){
@@ -396,10 +328,11 @@ namespace Modulo{
 			ColourMats(MatColour.blue,Color.blue);
 			ColourMats(MatColour.black,Color.black);
 			ColourMats(MatColour.foreground,ColorFromHex(0xa9b1d680));
+			ColourMats(MatColour.background,ColorFromHex(0x1a1f2aff));
 			ColourMats(MatColour.blue2,ColorFromHex(0x0715cdff));
 		}
 
-		static Color ColorFromHex(uint hex){
+		public static Color ColorFromHex(uint hex){
 			float[] rgba = new float[4];
 			for(int i=0;i<4;i++){
 				rgba[i]=((hex>>(8*(3-i)))&0xff)/(255f);
@@ -446,6 +379,7 @@ namespace Modulo{
 		green,
 		black,
 		foreground,
+		background,
 		blue2
 	}
 }

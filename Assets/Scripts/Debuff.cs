@@ -16,6 +16,7 @@ namespace Modulo{
 		public float timeLeft;
 		public int stacks=1;
 		public float chance=1;
+		public string actualName;
 
 		public abstract void Apply(Damageable d);
 		public virtual bool onUpdate(){
@@ -41,6 +42,7 @@ namespace Modulo{
 		}
 
 		public Burning(){
+			actualName="burning";
 			timeLeft=3;
 			name=DebuffName.Burning;
 		}

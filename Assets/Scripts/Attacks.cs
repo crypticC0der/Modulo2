@@ -28,6 +28,12 @@ namespace Modulo{
 	/// </summary>
 	public abstract class Attack : Damager
 	{
+		public static Vector3 RandomInCircle(float range){
+			float theata = Random.Range(0,2*Mathf.PI);
+			float r = (range-0.7f)*(Mathf.Sqrt(Random.value))+0.7f; //uniform probabilities
+			Vector3 d = new Vector3(r*Mathf.Cos(theata),r*Mathf.Sin(theata));
+			return d;
+		}
 		public LineRenderer MinimalRay(Color startColor,Color endColor,Vector3[] points){
 			GameObject g = new GameObject();
 			g.layer=7;
@@ -328,9 +334,7 @@ namespace Modulo{
 				Vector3 d=Vector2.zero;
 				if((attackProperties()& SpecialProperties.random)!=0){
 					hit=true;
-					float theata = Random.Range(0,2*Mathf.PI);
-					float r = (attackRange()-0.7f)*(Mathf.Sqrt(Random.value))+0.7f; //uniform probabilities
-					d = new Vector3(r*Mathf.Cos(theata),r*Mathf.Sin(theata));
+					d = RandomInCircle(attackRange());
 				} else if ((c = Target()) != null) {
 					d= AttackProjection(c.gameObject);
 					hit=true;
@@ -379,6 +383,8 @@ namespace Modulo{
 	//homing & predictive -> tries about 3 enemy locations and works out what will get the most hits
 	public abstract class AreaAttack : Attack
 	{
+		public Vector3 center;
+
 		public new int peirce()
 		{
 			return base.peirce()*perent.totalShots();
@@ -386,11 +392,37 @@ namespace Modulo{
 
 		public AreaAttack()
 		{
-			t = AttackType.Close;
+			t = AttackType.Area;
+			attackProps |= SpecialProperties.random;
 		}
 		public Collider2D[] Target()
 		{
-			return Physics2D.OverlapCircleAll(perent.transform.position, attackRange(), perent.layerMask(false));
+			if(( attackProperties()&SpecialProperties.homing )!=0){
+				//set center
+				Collider2D[] hits = Physics2D.OverlapCircleAll(perent.transform.position, 10*attackRange(), perent.layerMask(false));
+				int tries=1;
+				if((attackProperties() & SpecialProperties.predictive)==0){
+					tries=3;
+				}
+				int besthits=0;
+				Vector3 bestpos=perent.transform.position;
+				for(int i=0;i<tries;i++){
+					Vector3 p=hits[i].transform.position;
+					Collider2D[] inRange = Physics2D.OverlapCircleAll(p, attackRange(), perent.layerMask(false));
+					if(inRange.Length>=besthits){
+						besthits=inRange.Length;
+						bestpos=p;
+					}
+				}
+				center=bestpos;
+			}else if((attackProperties() & SpecialProperties.predictive)==0){
+				center=perent.transform.position;
+			}
+			if(( attackProperties()&SpecialProperties.random )!=0){
+				center+=RandomInCircle(5);
+			}
+			//predicive center is sorted out
+			return Physics2D.OverlapCircleAll(center, attackRange(), perent.layerMask(false));
 		}
 
 		public virtual void SingleAtFunc(){}
@@ -405,7 +437,7 @@ namespace Modulo{
 				}
 				Collider2D[] c=Target();
 				currentPeirce  = peirce();
-				bool notPlayer=false;
+				bool notPlayer=( attackProperties()&SpecialProperties.random )!=0;
 				for(int i=0;i<c.Length;i++){
 					if(c[i].gameObject.layer!=0){
 						notPlayer=true;
