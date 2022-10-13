@@ -103,8 +103,6 @@ all modules and towers blow up when you destroy them, this is the only way to ge
   all - done
 - polar
   only makes sense for ranged, which its done for
-- bouncing
-  only makes sense for dagger and ranged, undone
 *** rare - T1/T2/T3 (procables) ie on hit chance to make a explosion *purple*
 *** epic - T1/T2/T3 (really cool and fun things) ie tesla coil *fushcia*
 
@@ -406,3 +404,39 @@ debuffs
 hp
 regen
 type
+
+
+* melee attacks
+center and aim position need to be abstracted to a function
+- dagger (mid)
+    random -> attacks random directions at full distance
+    homing -> doesnt reset center
+    returning -> n/a
+    polar -> n/a
+- hand + sword (mid)
+    default -> arm goes half sword length away and then swipes, cant move while swiping
+    predictive -> predictive + always moving
+    random -> attacks random directions at within range
+    homing -> center slowly moves towards an enemy
+    returning -> n/a
+    polar -> n/a
+- tenticle (v.hard)
+    normal -> tentacle goes to enemy, the entire tenticle is collision boxes
+    random -> attacks random directions within range
+    homing -> it will become 2 tenticles, the middle focuses on one enemy, the other focuses on another
+    returning -> the start and end are at the center and it sorta loops back around on itself
+    now i know that sounds dumb BUT it will only look dumb if it is
+
+    homing and returning will need to be implemented in a way that you have one tentacle, this tentacle can be made of a bunch of seperate tentacles
+    so homing -> 1/2 at enemy 1, 1/2 at enemy 2
+    returning -> 1/2 at enemy 1, 1/2 at center
+    returning + homing -> 1/3 at enemy 1, 1/3 at enemy 2, 1/3 at center
+    this will be hard to do, but v interesting, modulo be like, spends days working on a synergy between 2 special properties on a single attack, we have like 12 unique attacks wtf
+    polar -> n/a fuck that shit
+- beam (easy)
+    normal -> goes to the nearest enemy and when going through them it deals damage, length will be equal to range
+    random -> spins, doesnt aim randomly, just spins
+    homing -> center moves to enemy
+        +random -> center goes around the range perimiter, maybe click to cycle through shapes
+    returning -> n/a
+    polar -> n/a

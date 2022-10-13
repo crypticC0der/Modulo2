@@ -67,7 +67,6 @@ namespace Ui{
 			TextMeshPro tm = (go).AddComponent<TextMeshPro>();
 			tm.color=MeshGens.ColorFromHex(0xa9b1d6ff);
 			size = Size(size);
-			Debug.Log(size);
 			pos.y+=size.y/2;
 			tm.transform.localPosition=Position(pos);
 			tm.text = o.ToString();
@@ -133,7 +132,6 @@ namespace Ui{
 			};
 			dropdown.colors=cb;
 			Transform label = dropdown.transform.GetChild(0);
-			Debug.Log(label.name);
 			TextMeshProUGUI tmp = label.GetComponent<TextMeshProUGUI>();
 			tmp.color=fg;
 			sr.GetComponent<Image>().color=bg;

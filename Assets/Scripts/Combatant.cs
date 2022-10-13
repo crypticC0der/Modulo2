@@ -2,7 +2,9 @@ using UnityEngine;
 using System.Collections.Generic;
 
 namespace Modulo{
+	[System.Serializable]
 	public enum SpecialProperties{
+		none=0,
 		random=1,
 		homing=2,
 		predictive=4,
@@ -19,6 +21,7 @@ namespace Modulo{
 	public class Combatant : Damageable{
 		public List<Proc> procs = new List<Proc>();
 		public List<Debuff> toApply = new List<Debuff>();
+		[SerializeReference]
 		public List<Attack> attacks = new List<Attack>();
 		public float dmgPlus=0;
 		public float dmgMultipler=1;
@@ -30,7 +33,11 @@ namespace Modulo{
 		public int peirce=0;
 		public int funnelShots=1;
 		public int crossShots=1;
-		public int totalShots(){return funnelShots*crossShots;}
+		public int totalShots(){
+			int t = funnelShots*crossShots;
+			if(t>18){return 18;}
+			else{return t;}
+		}
 		public SpecialProperties specialProperties;
 
 		//targeting works like so
@@ -168,6 +175,10 @@ namespace Modulo{
 		public override void FixedUpdate(){
 			base.FixedUpdate();
 			RunAttacks();
+		}
+
+		public bool hasProperties(SpecialProperties p){
+			return (specialProperties & p) !=0;
 		}
 	}
 }

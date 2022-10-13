@@ -53,13 +53,32 @@ namespace Modulo{
 			World.Generate(new int[]{72,44},new bool[72,44]);
 		}
 
+		public static float VecToAngle(Vector3 v){
+			float angle=90;
+			if(v.y!=0){
+				angle = -180*Mathf.Atan(v.x/v.y)/Mathf.PI;
+				if(v.y<0){
+				   angle+=180;
+				}
+			}else if(v.x>0){
+				angle=-90;
+			}else if(v.x==0){
+				angle=0;
+			}
+
+			if(angle<0){
+				angle+=360;
+			}
+			return angle;
+		}
+
 		public static void MapGen(){
-			Item it = ItemRatio.table[8].item.FromTemplate(1,1);
+			Item it = ItemRatio.table[11].item.FromTemplate(1,1);
 			GameObject g= it.ToGameObject(NearestHex(new Vector3(6,6,0)));
 			// EnemyFsm o = MeshGens.ObjGen(Shapes.star,MatColour.white);
 			// o.transform.position=new Vector3(-6,-6);
 			EnemyFsm o=null;
-			for(int i=0;i<3;i++){
+			for(int i=0;i<2;i++){
 				o = EnemyGeneration.ObjGen((Shapes.circle),MatColour.white);
 				o.transform.position = new Vector3(2*i-11,-5);
 			}

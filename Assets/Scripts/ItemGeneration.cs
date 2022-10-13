@@ -127,6 +127,46 @@ namespace Modulo{
 				"arrowTurret",5,s,new float[]{0,0,0,0,0,0},"areaBase",ItemTypes.Turret
 			);
 
+			s = new Stats();
+			s.maxHealth=150;
+			s.HpRegen=0;
+			s.damage=0;
+			s.dmgMultipler=1;
+			s.attackRate=1;
+			s.attackSpeed=0;
+			s.range=1;
+			s.shotSpeed=1;
+			new TurretTemplate<DaggerAttack>(
+				"daggerTurret",5,s,new float[]{0,0,0,0,0,0},"areaBase",ItemTypes.Turret
+			);
+
+
+			s = new Stats();
+			s.maxHealth=150;
+			s.HpRegen=0;
+			s.damage=0;
+			s.dmgMultipler=1;
+			s.attackRate=1;
+			s.attackSpeed=0;
+			s.range=1;
+			s.shotSpeed=1;
+			new TurretTemplate<TentacleAttack>(
+				"tentacleTurret",5,s,new float[]{0,0,0,0,0,0},"areaBase",ItemTypes.Turret
+			);
+
+			s = new Stats();
+			s.maxHealth=150;
+			s.HpRegen=0;
+			s.damage=0;
+			s.dmgMultipler=1;
+			s.attackRate=1;
+			s.attackSpeed=0;
+			s.range=1;
+			s.shotSpeed=1;
+			new TurretTemplate<ArmAttack>(
+				"armAttack",5,s,new float[]{0,0,0,0,0,0},"areaBase",ItemTypes.Turret
+			);
+
 			new ItemTemplate("wall",5,new float[]{0,0,0,0,0},"wallBase",ItemTypes.Defence);
 		}
 	}

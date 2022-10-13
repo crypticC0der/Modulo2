@@ -30,6 +30,9 @@ namespace Modulo{
 			foreach(Attack a in attacks){
 				if(a.attackRange()*8>distance){
 					a.Update();
+					if(a.t==AttackType.Area){
+						((AreaAttack)a).center=this.transform.position;
+					}
 				}
 			}
 		}
@@ -130,14 +133,7 @@ namespace Modulo{
 		}
 
 		public override void FixedUpdate(){
-			if(r.velocity.y!=0){
-				float angle;
-				angle = -180*Mathf.Atan(r.velocity.x/r.velocity.y)/Mathf.PI;
-				if(r.velocity.y<0){
-				   angle+=180;
-				}
-				transform.eulerAngles=new Vector3(0,0,angle);
-			}
+			transform.eulerAngles=new Vector3(0,0,World.VecToAngle(r.velocity));
 			base.FixedUpdate();
 		}
 	}

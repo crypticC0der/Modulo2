@@ -69,11 +69,15 @@ namespace Modulo{
 
 	public class RayTracking : Despawn{
 		public LineRenderer lineRenderer;
-		public Transform perent;
+		public Attack perent;
 		public override void FixedUpdate()
 		{
-			if(perent!=null){
-				lineRenderer.SetPosition(0,perent.position+Vector3.forward);
+			if(perent.perent!=null){
+				if(perent.t==AttackType.Area){
+					lineRenderer.SetPosition(0,((AreaAttack)(perent)).center);
+				}else{
+					lineRenderer.SetPosition(0,perent.perent.transform.position+Vector3.forward);
+				}
 			}
 			base.FixedUpdate();
 		}
@@ -147,7 +151,6 @@ namespace Modulo{
 
 			Vector3[] posititons = new Vector3[nodes+1];
 			posititons[0]=data.sender.transform.position;
-			float proc=perent.procCoefficent*Time.deltaTime*2;
 			int i=0;
 			aimNode = aims.First;
 			bool remainingEnemies=false;

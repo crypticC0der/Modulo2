@@ -7,7 +7,7 @@ namespace Modulo{
 	{
 		Ranged,
 		Close,
-		Random,
+		Melee,
 		Area
 	}
 
@@ -26,6 +26,7 @@ namespace Modulo{
 	/// <summary>
 	/// this is basically a contained fsm that can deal damage and target enemies independantly
 	/// </summary>
+	[System.Serializable]
 	public abstract class Attack : Damager
 	{
 		public static Vector3 RandomInCircle(float range){
@@ -72,7 +73,7 @@ namespace Modulo{
 			RayTracking d = line.gameObject.AddComponent<RayTracking>();
 			d.deathTimer=0.25f;
 			d.lineRenderer=line;
-			d.perent=perent.transform;
+			d.perent=this;
 			d.FixedUpdate();
 			return d;
 		}
@@ -169,11 +170,11 @@ namespace Modulo{
 			return g;
 		}
 
-		public virtual void DmgOverhead(DamageData d,Damageable hit){
+		public virtual void DmgOverhead(DamageData d,Damageable hit,float t=1){
 			d.sender=perent;
 			hit.TakeDamage(d);
-			perent.RunProc(procCoefficent,this,d.dmg,hit);
-			perent.ApplyDebuffs(procCoefficent,hit);
+			perent.RunProc(procCoefficent*t*2,this,d.dmg,hit);
+			perent.ApplyDebuffs(procCoefficent*t*2,hit);
 		}
 
 		protected Collider2D BestCollider(Collider2D[] col,bool checkLineOfSight=false){
@@ -182,21 +183,23 @@ namespace Modulo{
 			float dist=9999;
 			foreach(Collider2D c in col){
 				Damageable d = c.GetComponent<Damageable>();
-				float cdist = (c.transform.position-perent.transform.position).magnitude;
-				if(goodCol==null){
-					goodCol=c;
-					best=d.priority;
-					dist=cdist;
-				}
-				bool canSee=true;
-				if(checkLineOfSight){
-					canSee = (Physics2D.Raycast(perent.transform.position, c.transform.position - perent.transform.position)
-					&& c.gameObject != perent.gameObject);
-				}
-				if((d.priority>best || (d.priority==best&& cdist<dist)) && canSee){
-					goodCol=c;
-					best=d.priority;
-					dist=cdist;
+				if(d!=null){
+					float cdist = (c.transform.position-perent.transform.position).magnitude;
+					if(goodCol==null){
+						goodCol=c;
+						best=d.priority;
+						dist=cdist;
+					}
+					bool canSee=true;
+					if(checkLineOfSight){
+						canSee = (Physics2D.Raycast(perent.transform.position, c.transform.position - perent.transform.position)
+						&& c.gameObject != perent.gameObject);
+					}
+					if((d.priority>best || (d.priority==best&& cdist<dist)) && canSee){
+						goodCol=c;
+						best=d.priority;
+						dist=cdist;
+					}
 				}
 			}
 			return goodCol;
@@ -221,16 +224,19 @@ namespace Modulo{
 
 		public virtual float damage(){return (dmg+perent.dmgPlus)*perent.dmgMultipler;}
 		public virtual float attackRate(){
+			return attackRate(rapidFireShotCount,chargingPercent);
+		}
+		public virtual float attackRate(float rapid,float charge){
 			float r = perent.attackSpeed + timerMax;
 			if((attackProperties() & SpecialProperties.rapidFire)!=0){
-				if(rapidFireShotCount>=3){
+				if(rapid>=3){
 					r*=3;
 				}else{
 					r/=4;
 				}
 			}
 			if((attackProperties() & SpecialProperties.spdUp)!=0){
-				r*=Mathf.Lerp(1,0.2f,chargingPercent);
+				r*=Mathf.Lerp(1,0.2f,charge);
 			}
 			return Mathf.Max(r,0.03f);
 		}
@@ -239,7 +245,11 @@ namespace Modulo{
 		public virtual int peirce(){return perent.peirce+attackPeirce;}
 		public virtual SpecialProperties attackProperties(){return (attackProps | perent.specialProperties)&(~disabledProps);}
 
-		protected const int maxShots=18;
+		public bool hasProperties(SpecialProperties p){
+			return (attackProperties() & p) !=0;
+		}
+
+		public const int maxShots=18;
 	}
 
 	/// <summary>
@@ -308,7 +318,6 @@ namespace Modulo{
 				}
 			}
 			return d;
-
 		}
 
 		public RangedAttack()
@@ -349,7 +358,7 @@ namespace Modulo{
 					float initialMulti=perent.dmgMultipler;
 					int initialCross = perent.crossShots;
 					int initialFunnel = perent.funnelShots;
-					if(nShots>maxShots){
+					if(nShots>=maxShots){
 						perent.dmgMultipler*=nShots/maxShots;
 						perent.crossShots=1;
 						perent.funnelShots=maxShots;
@@ -375,12 +384,6 @@ namespace Modulo{
 		}
 	}
 
-
-
-	//TODO implement "smart/predictive aiming" and homing
-	//homing -> center of attack being nearby an enemy instead of tower
-	//predictive -> you can click on a spot on the map and it will aim there
-	//homing & predictive -> tries about 3 enemy locations and works out what will get the most hits
 	public abstract class AreaAttack : Attack
 	{
 		public Vector3 center;
@@ -390,10 +393,11 @@ namespace Modulo{
 			return base.peirce()*perent.totalShots();
 		}
 
+
 		public AreaAttack()
 		{
 			t = AttackType.Area;
-			attackProps |= SpecialProperties.random;
+			attackProps |= SpecialProperties.predictive;
 		}
 		public Collider2D[] Target()
 		{
@@ -462,6 +466,57 @@ namespace Modulo{
 		}
 	}
 
+	public abstract class MeleeAttack : Attack{
+		[SerializeReference]
+		public List<Weapon> weapons;
+		public override Vector3 AtFunc(GameObject o){return Vector3.zero;}
+
+		protected abstract Weapon basicWeapon();
+
+		public MeleeAttack(){
+			t=AttackType.Melee;
+			weapons=new List<Weapon>();
+		}
+		public Collider2D Target(){return null;}
+
+		protected float GetDirection(){
+			Collider2D[] cols = Physics2D.OverlapCircleAll(perent.transform.position,attackRange(),perent.layerMask(true));
+			float sum=0;
+			foreach(Collider2D c in cols){
+				Vector2 direction = c.transform.position-perent.transform.position;
+				float dot = Vector2.Dot(direction.normalized,weapons[0].self.transform.right);
+				if(dot!=0){
+					sum+=1/dot;
+				}
+			}
+			if(sum>0){return 1;}
+			else if(sum<0){return -1;}
+			else{return 0;}
+		}
+
+
+		public bool increase =false;
+		public override void Update(){
+			increase = false;
+			while(weapons.Count<perent.totalShots()){
+				Weapon w;
+				weapons.Add(w=basicWeapon());
+				w.number=weapons.Count-1;
+				increase=true;
+			}
+			while(weapons.Count>perent.totalShots()){
+				GameObject.Destroy(weapons[weapons.Count-1].self.gameObject);
+				weapons.Remove(weapons[weapons.Count-1]);
+			}
+
+			foreach(Weapon c in weapons){
+				c.Update();
+			}
+
+		}
+	}
+
+	//depricated
 	public abstract class CloseAttack : Attack
 	{
 		public new float damage()
@@ -471,6 +526,7 @@ namespace Modulo{
 
 		public CloseAttack()
 		{
+			Debug.Log("depricated,DNU, see melee\nAttacks.cs:461");
 			t = AttackType.Close;
 		}
 
