@@ -26,7 +26,7 @@ namespace Modulo{
 			range = 6;
 			timerMax = 0.03f;
 			procCoefficent = 1;
-			dmg = 2;
+			dmg = .08f;
 			impact = new FlameProc();
 		}
 	}
@@ -42,17 +42,14 @@ namespace Modulo{
 
 		public FlameProc()
 		{
-			procCoefficent = 0.063f;
+			procCoefficent = 0.1f;
 			chance = 1;
 			dmgMultiplier = 1;
 		}
 
-		public override Proc Go(float d, Attack perent)
-		{
-			Proc p = new FlameProc();
-			p.dmg = d*dmgMultiplier;
-			p.perent = perent;
-			return p;
+        public override Proc newSelf()
+        {
+			return new FlameProc();
 		}
 	}
 }

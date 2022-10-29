@@ -48,7 +48,7 @@ namespace Modulo{
 			strength=baseStrength+level*baseStrength;
 			speed=baseStats.speed+(level/10f)*baseStats.speed;
 			maxHealth=baseStats.maxHealth+(level/5)*baseStats.maxHealth;
-			dmgPlus=baseStats.damage+(level)*baseStats.damage;
+			baseDamage=baseStats.damage+(level)*baseStats.damage;
 			dmgMultipler=baseStats.dmgMultipler+(level/10)*baseStats.dmgMultipler;
 			health=maxHealth;
 		}
@@ -83,7 +83,7 @@ namespace Modulo{
 			AddAttack<SpinHit>();
 			baseStats=new Stats();
 			baseStats.shotSpeed=shotSpeed;
-			baseStats.damage=dmgPlus;
+			baseStats.damage=baseDamage;
 			baseStats.dmgMultipler=dmgMultipler;
 			baseStats.range=range;
 			baseStats.maxHealth=maxHealth;
@@ -140,7 +140,7 @@ namespace Modulo{
 
 	public class SemicircleEnemy: SpinEnemyFsm{
 		protected override void Start(){
-			maxHealth=50;
+			maxHealth=10;
 			base.Start();
 			enemyType|=EnemyTypes.WeakPoint;
 			strength=4;
@@ -160,7 +160,7 @@ namespace Modulo{
 	public class QuaterfoilEnemy:EnemyFsm{
 
 		protected override void Start(){
-			maxHealth=100; //2x regular health
+			maxHealth=20; //2x regular health
 			base.Start();
 			health/=2;
 			regening=true;
@@ -184,7 +184,7 @@ namespace Modulo{
 	public class StarEnemy : SpinEnemyFsm{
 		public int points;
 		protected override void Start(){
-			maxHealth=100;
+			maxHealth=20;
 			points=5;
 			enemyType|=EnemyTypes.WeakPoint;
 			strength=7;
@@ -214,7 +214,7 @@ namespace Modulo{
 
 	public class CrossEnemy : StarEnemy{
 		protected override void Start(){
-			maxHealth=50;
+			maxHealth=20;
 			points=4;
 			attackRate=4;
 			AddAttack<FlameAttack>();
@@ -228,7 +228,7 @@ namespace Modulo{
 
 	public class SquareEnemy : EnemyFsm{
 		protected override void Start(){
-			maxHealth=200;
+			maxHealth=40;
 			speed=0.5f;
 			dmgMultipler*=2;
 			strength=4;
@@ -239,7 +239,7 @@ namespace Modulo{
 
 	public class RectangleEnemy : SpinEnemyFsm{
 		protected override void Start(){
-			maxHealth=200;
+			maxHealth=40;
 			speed=1.5f;
 			dmgMultipler*=2;
 			enemyType|=EnemyTypes.Strong;
@@ -250,7 +250,7 @@ namespace Modulo{
 
 	public class TriangleEnemy : SpinEnemyFsm{
 		protected override void Start(){
-			maxHealth=50;
+			maxHealth=10;
 			speed=3f;
 			dmgMultipler*=2;
 			enemyType|=EnemyTypes.Fast;
@@ -262,7 +262,7 @@ namespace Modulo{
 	public class OctogonEnemy : EnemyFsm{
 
 		protected override void Start(){
-			maxHealth=800;
+			maxHealth=160;
 			dmgMultipler*=8;
 			speed=0.25f;
 			enemyType|=EnemyTypes.Boss | EnemyTypes.Strong;
@@ -309,7 +309,7 @@ namespace Modulo{
 
 	public class CircleEnemy : EnemyFsm{
 		protected override void Start(){
-			maxHealth=50;
+			maxHealth=10;
 			base.Start();
 		}
 	}
@@ -321,19 +321,21 @@ namespace Modulo{
 		}
 
 		public override Vector3 AtFunc(GameObject g){
-			g.GetComponent<Damageable>().TakeDamage(new DamageData{dmg=20,sender=perent,direction=g.transform.position-perent.transform.position});
+			g.GetComponent<Damageable>().TakeDamage(new DamageData{dmg=damage(),sender=perent,direction=g.transform.position-perent.transform.position});
 			return Vector3.zero;
 		}
+
 		public SpinHit() : base(){
 			range=.8f;
 			timerMax=1;
+			dmg=1;
 		}
 	}
 
 	public class SpinWheel : EnemyFsm{
 		public void Start(){
 			AddAttack<SpinHit>();
-			health=200;
+			health=20;
 			strength=6;
 		}
 	}

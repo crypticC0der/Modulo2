@@ -98,12 +98,14 @@ namespace Modulo{
 		protected override void Start(){
 			me=this;
 
+			// IEnumerator coroutine = World.MapGen();
+			// StartCoroutine(coroutine);
 			World.MapGen();
 
 			for(int i=0;i<6;i++){
 				componentSprites[i]=Resources.Load<Sprite>("assets/bloon");
 			}
-			maxHealth=200;
+			maxHealth=40;
 			type=EntityTypes.Player;
 			controller = GetComponent<UIControl>();
 			b=controller.bars[0];
@@ -167,6 +169,7 @@ namespace Modulo{
 		}
 
 		void OnCollisionEnter2D(Collision2D collision){
+			Debug.Log(collision);
 			if(collision.gameObject.name=="orb"){
 				AddToDeck(collision.gameObject.GetComponent<IsItem>().item);
 				collision.gameObject.GetComponent<Bar>().Delete();

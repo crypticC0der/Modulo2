@@ -8,9 +8,9 @@ namespace Modulo{
 		static void CreateProjectileTurret(){
 			HealthBar.barSprites = new Sprite[]{Resources.Load<Sprite>("assets/barOutlineB"),Resources.Load<Sprite>("assets/barInner")};
 			Stats s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -22,9 +22,9 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -36,9 +36,9 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -50,9 +50,9 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -63,9 +63,9 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -76,9 +76,9 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -89,9 +89,9 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -102,9 +102,9 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -115,9 +115,9 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
@@ -128,43 +128,56 @@ namespace Modulo{
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
 			s.range=1;
 			s.shotSpeed=1;
 			new TurretTemplate<DaggerAttack>(
-				"daggerTurret",5,s,new float[]{0,0,0,0,0,0},"areaBase",ItemTypes.Turret
+				"daggerTurret",5,s,new float[]{0,0,0,0,0,0},"daggerBase",ItemTypes.Turret
 			);
 
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
 			s.range=1;
 			s.shotSpeed=1;
 			new TurretTemplate<TentacleAttack>(
-				"tentacleTurret",5,s,new float[]{0,0,0,0,0,0},"areaBase",ItemTypes.Turret
+				"tentacleTurret",5,s,new float[]{0,0,0,0,0,0},"tentacleBase",ItemTypes.Turret
 			);
 
 			s = new Stats();
-			s.maxHealth=150;
+			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=0;
+			s.damage=10;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;
 			s.range=1;
 			s.shotSpeed=1;
 			new TurretTemplate<ArmAttack>(
-				"armAttack",5,s,new float[]{0,0,0,0,0,0},"areaBase",ItemTypes.Turret
+				"armAttack",5,s,new float[]{0,0,0,0,0,0},"armBase",ItemTypes.Turret
+			);
+
+			s = new Stats();
+			s.maxHealth=30;
+			s.HpRegen=0;
+			s.damage=10;
+			s.dmgMultipler=1;
+			s.attackRate=1;
+			s.attackSpeed=0;
+			s.range=1;
+			s.shotSpeed=1;
+			new TurretTemplate<SaberAttack>(
+				"saberAttack",5,s,new float[]{0,0,0,0,0,0},"saberBase",ItemTypes.Turret
 			);
 
 			new ItemTemplate("wall",5,new float[]{0,0,0,0,0},"wallBase",ItemTypes.Defence);

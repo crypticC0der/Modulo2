@@ -21,6 +21,7 @@ namespace Modulo{
 	{
 		public float procCoefficent;
 		public float dmg;
+		public abstract void DmgOverhead(DamageData d,Damageable hit,float t=1);
 	}
 
 	/// <summary>
@@ -170,11 +171,11 @@ namespace Modulo{
 			return g;
 		}
 
-		public virtual void DmgOverhead(DamageData d,Damageable hit,float t=1){
+		public override void DmgOverhead(DamageData d,Damageable hit,float t=1){
 			d.sender=perent;
 			hit.TakeDamage(d);
-			perent.RunProc(procCoefficent*t*2,this,d.dmg,hit);
-			perent.ApplyDebuffs(procCoefficent*t*2,hit);
+			perent.RunProc(procCoefficent*t,this,d.dmg,hit);
+			perent.ApplyDebuffs(procCoefficent*t,hit);
 		}
 
 		protected Collider2D BestCollider(Collider2D[] col,bool checkLineOfSight=false){
@@ -222,7 +223,7 @@ namespace Modulo{
 		protected float chargingPercent=0;
 		protected float rapidFireShotCount=0;
 
-		public virtual float damage(){return (dmg+perent.dmgPlus)*perent.dmgMultipler;}
+		public virtual float damage(){return (dmg)*perent.damage();}
 		public virtual float attackRate(){
 			return attackRate(rapidFireShotCount,chargingPercent);
 		}
@@ -256,6 +257,7 @@ namespace Modulo{
 	/// basically this is a hook you can apply to an object woo
 	/// dmg in this system is just a dmg*dmgMultiplier
 	/// </summary>
+	[System.Serializable]
 	abstract public class Proc : Damager
 	{
 		///<summary>
@@ -269,7 +271,21 @@ namespace Modulo{
 		///<summary>
 		///makes a new proc for an attack
 		///</summary>
-		abstract public Proc Go(float d, Attack perent);
+		public virtual Proc Go(float d, Attack perent){
+			Proc p = newSelf();
+			p.dmg=d*dmgMultiplier;
+			p.perent=perent;
+			return p;
+		}
+
+		public override void DmgOverhead(DamageData d,Damageable hit,float t=1){
+			d.sender=perent.perent;
+			hit.TakeDamage(d);
+			perent.perent.RunProc(procCoefficent*t,perent,d.dmg,hit);
+			perent.perent.ApplyDebuffs(procCoefficent*t,hit);
+		}
+
+		public abstract Proc newSelf();
 		public Attack perent;
 		public float chance;
 		public float dmgMultiplier;
@@ -536,6 +552,7 @@ namespace Modulo{
 			Collider2D[] cols = Physics2D.OverlapCircleAll(perent.transform.position, attackRange(), perent.layerMask(false));
 			return BestCollider(cols);
 		}
+
 		public override void Update()
 		{
 			if (timer <= 0)

@@ -27,7 +27,7 @@ namespace Modulo{
 			range = 10;
 			timerMax = 0.5f;
 			procCoefficent = 1;
-			dmg = 50;
+			dmg = 1;
 			impact = new GasProc();
 		}
 	}
@@ -46,13 +46,8 @@ namespace Modulo{
 			chance = 1;
 			dmgMultiplier = 1;
 		}
-
-		public override Proc Go(float d, Attack perent)
-		{
-			Proc p = new GasProc();
-			p.dmg = d*dmgMultiplier;
-			p.perent = perent;
-			return p;
+		public override Proc newSelf(){
+			return new GasProc();
 		}
 	}
 }

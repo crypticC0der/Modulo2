@@ -27,7 +27,7 @@ namespace Modulo{
 			range = 10;
 			timerMax = 1;
 			procCoefficent = 1;
-			dmg = 50;
+			dmg = 1;
 			attackProps|=SpecialProperties.homing;
 			impact = new RocketProc();
 		}
@@ -37,14 +37,7 @@ namespace Modulo{
 	{
 		public override void OnProc(Damageable d)
 		{
-			base.OnProc(d);
-			Collider2D[] hits = Physics2D.OverlapCircleAll(d.transform.position,3,perent.perent.layerMask(false));
-			foreach(Collider2D col in hits){
-				Damageable damageable = col.GetComponent<Damageable>();
-				if(damageable){
-					damageable.TakeDamage(new DamageData{dmg=dmg,sender=perent.perent,direction=d.transform.position - collider.position,properties=DamageProperties.bypassArmor});
-				}
-			}
+			Effects.Explode(d.transform.position,perent.damage()/10,this,perent.perent.layerMask(false));
 		}
 
 		public RocketProc()
@@ -54,12 +47,9 @@ namespace Modulo{
 			dmgMultiplier = 1;
 		}
 
-		public override Proc Go(float d, Attack perent)
-		{
-			Proc p = new RocketProc();
-			p.dmg = d*dmgMultiplier;
-			p.perent = perent;
-			return p;
+        public override Proc newSelf()
+        {
+			return new FlameProc();
 		}
 	}
 }

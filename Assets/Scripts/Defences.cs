@@ -22,7 +22,12 @@ namespace Modulo{
 	public class Turret : Combatant{
 		public new void Die(){
 			base.Die();
-			Effects.Explode(transform.position,1);
+			Effects.Explode(transform.position,1,null,layerMask(false));
+		}
+
+		public new void Start(){
+			base.Start();
+			AddProc<LaserBurst>();
 		}
 	}
 
@@ -36,7 +41,7 @@ namespace Modulo{
 			t.AddAttack<A>();
 			t.maxHealth=baseStats.maxHealth;
 			t.regen=baseStats.HpRegen;
-			t.dmgPlus=baseStats.damage;
+			t.baseDamage=baseStats.damage;
 			t.dmgMultipler=baseStats.dmgMultipler;
 			t.attackSpeed=baseStats.attackSpeed;
 			t.attackRate=baseStats.attackRate;

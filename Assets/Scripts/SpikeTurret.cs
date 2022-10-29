@@ -25,7 +25,7 @@ namespace Modulo{
 			timerMax = 1f;
 			procCoefficent = 0.2f;
 			attackPeirce=2;
-			dmg = 10;
+			dmg = .2f;
 			attackProps|=SpecialProperties.random;
 			impact = new SpikeProc();
 		}
@@ -46,12 +46,8 @@ namespace Modulo{
 			dmgMultiplier = 1;
 		}
 
-		public override Proc Go(float d, Attack perent)
-		{
-			Proc p = new SpikeProc();
-			p.dmg = d*dmgMultiplier;
-			p.perent = perent;
-			return p;
+		public override Proc newSelf(){
+			return new SpikeProc();
 		}
 	}
 }

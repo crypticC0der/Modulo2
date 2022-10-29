@@ -50,7 +50,7 @@ namespace Modulo{
 			range = 10;
 			timerMax = 0.5f;
 			procCoefficent = 1;
-			dmg = 50;
+			dmg = 1;
 			disabledProps|=SpecialProperties.predictive & SpecialProperties.returning;
 		}
 	}

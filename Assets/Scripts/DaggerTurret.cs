@@ -10,7 +10,7 @@ namespace Modulo{
 
 		protected override Weapon basicWeapon(){
 			GameObject obj = GameObject.Instantiate(Resources.Load<GameObject>("dagger"));
-			obj.transform.position=perent.transform.position+Vector3.up*.7f;
+			obj.transform.position=perent.transform.position+Vector3.up*1.525f;
 			Collider2D c= obj.GetComponent<Collider2D>();
 			obj.layer=7;
 			Dagger d = new Dagger();
@@ -79,7 +79,7 @@ namespace Modulo{
 			shotSpd=10;
 			timerMax = 1f;
 			procCoefficent = 1;
-			dmg = 50;
+			dmg = 1;
 		}
 	}
 
@@ -119,7 +119,7 @@ namespace Modulo{
 			shotSpd=10;
 			timerMax = 0.5f;
 			procCoefficent = 1;
-			dmg = 30;
+			dmg = 1;
 			attackPeirce=6;
 			hitTargets=new List<Collider2D>();
 			disabledProps = SpecialProperties.rapidFire | SpecialProperties.spdUp;
@@ -169,9 +169,56 @@ namespace Modulo{
 			shotSpd=10;
 			timerMax = 0.5f;
 			procCoefficent = 1;
-			dmg = 30;
+			dmg = 1;
 			attackPeirce=6;
 			hitTargets=new List<Collider2D>();
+		}
+	}
+
+	public class SaberAttack : MeleeAttack
+	{
+		public List<Collider2D> hitTargets;
+		public float t=0;
+
+		public override void Update(){
+			if(t>0.5f){
+				hitTargets.Clear();
+				foreach(Weapon w in weapons){
+					((Beam)w).CollisionUpdate();
+				}
+				t=0;
+			}else{
+				t+=Time.deltaTime;
+			}
+			base.Update();
+		}
+
+		public override void AddAttack(Combatant c)
+		{
+			c.AddAttack<SaberAttack>();
+		}
+
+		protected override Weapon basicWeapon(){
+			Beam t = new Beam();
+			t.perent=this;
+			t.center=perent.transform.position;
+			WeaponHitter h = t.self.transform.GetChild(0).gameObject.AddComponent<WeaponParticle>();
+			h.perent=this;
+			h.perentLayer=perent.layerMask(false);
+			t.collisionModule.collidesWith=perent.layerMask(false);
+			return t;
+		}
+
+		public SaberAttack() : base()
+		{
+			range = 5;
+			shotSpd=10;
+			timerMax = 0.5f;
+			procCoefficent = 1;
+			dmg = 1;
+			attackPeirce=6;
+			hitTargets=new List<Collider2D>();
+			disabledProps|= SpecialProperties.rapidFire;
 		}
 	}
 

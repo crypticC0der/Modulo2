@@ -440,3 +440,36 @@ center and aim position need to be abstracted to a function
         +random -> center goes around the range perimiter, maybe click to cycle through shapes
     returning -> n/a
     polar -> n/a
+
+* procs
+explosion on hit (total)
+pulls enemies in (base)
+shoots lasers to nearby enemies (total)
+makes an enemy leave a poisionous trail (base)
+stuns them (base)
+delayed explosion (total)
+pushes enemies away (base)
+knocks hit enemy back (total)
+slows enemy down (base)
+changes side (base)
+leaves a toxic splash on the floor (base)
+all enemies that touch it get poisioned (base)
+changes into a different enemy (na)
+decreases attack speed (base)
+increases own strength (base)
+turns gold and drops double cash (base)
+absorbs hits and then applies them to all enemies around it (base)
+spawns things that home onto enemies (total)
+halves its health (na)
+if below half health turn invincible for 5 secs, else kill (na)
+make all movement in the wrong direction (base)
+deal 5x damage (total)
+reset all cooldowns (na)
+make a saw orbit it (total)
+make the enemy constantly do tesla coil effect on nearby enemies (total)
+it takes damage for every meter itmoves (base)
+collapse risk of rain (base)
+if close 2x deal damage (na)
+heals perent for all the damage dealt (total)
+the faster an enemy is moving the more damage it takes (total)
+makes enemy do negative damage

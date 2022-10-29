@@ -28,7 +28,7 @@ namespace Modulo{
 			shotSpd=10;
 			timerMax = 0.5f;
 			procCoefficent = 1;
-			dmg = 50;
+			dmg = 1;
 			impact = new BulletProc();
 		}
 	}
@@ -48,12 +48,8 @@ namespace Modulo{
 			dmgMultiplier = 1;
 		}
 
-		public override Proc Go(float d, Attack perent)
-		{
-			Proc p = new BulletProc();
-			p.dmg = d*dmgMultiplier;
-			p.perent = perent;
-			return p;
+		public override Proc newSelf(){
+			return new BulletProc();
 		}
 	}
 }

@@ -10,6 +10,7 @@ namespace Modulo{
 	///debuffs stay attached to an object for a bit
 	///debuffs also dont care about the damage the attack did
 	///</summary>
+	[System.Serializable]
 	public abstract class Debuff{
 		public DebuffName name;
 		public Damageable perent;
@@ -35,7 +36,7 @@ namespace Modulo{
 	}
 
 	public class Burning:Debuff{
-		const int dmg=30;
+		const int dmg=2;
 
 		public override void Apply(Damageable d){
 			d.ApplyDebuff<Burning>();

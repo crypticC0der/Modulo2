@@ -72,13 +72,20 @@ namespace Modulo{
 			return angle;
 		}
 
+		// public static IEnumerator MapGen(){
 		public static void MapGen(){
-			Item it = ItemRatio.table[11].item.FromTemplate(1,1);
+			// while(true){
+			// 	yield return new WaitForSeconds(1);
+			// 	Effects.Explode(new Vector3(0,5),1,null);
+			// 	Effects.Explode(new Vector3(0,-5),2,null);
+			// }
+
+			Item it = ItemRatio.table[0].item.FromTemplate(1,1);
 			GameObject g= it.ToGameObject(NearestHex(new Vector3(6,6,0)));
 			// EnemyFsm o = MeshGens.ObjGen(Shapes.star,MatColour.white);
 			// o.transform.position=new Vector3(-6,-6);
 			EnemyFsm o=null;
-			for(int i=0;i<2;i++){
+			for(int i=0;i<7;i++){
 				o = EnemyGeneration.ObjGen((Shapes.circle),MatColour.white);
 				o.transform.position = new Vector3(2*i-11,-5);
 			}

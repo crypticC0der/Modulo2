@@ -34,7 +34,7 @@ namespace Modulo{
 			range = 2;
 			timerMax = 0.5f;
 			procCoefficent = .6f;
-			dmg = 10;
+			dmg = .2f;
 			attackPeirce=9;
 		}
 	}

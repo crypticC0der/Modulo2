@@ -12,20 +12,48 @@ namespace Modulo{
 		MidAttack
 	}
 
-	public class WeaponHit : MonoBehaviour{
+
+	public class WeaponHitter : MonoBehaviour{
 		public Attack perent;
 		public int perentLayer;
-		public void OnTriggerEnter2D(Collider2D c){
-			if((1<<c.gameObject.layer & perentLayer)!=0){
-				Damageable d = c.GetComponent<Damageable>();
+		public void OnHit(GameObject g,bool stay){
+			if((1<<g.gameObject.layer & perentLayer)!=0){
+				Damageable d = g.GetComponent<Damageable>();
 				if(d!=null){
-					DamageData data = new DamageData{
-						dmg=perent.damage()/perent.attackRate(),
-						sender=perent.perent
-					};
-					perent.DmgOverhead(data,d);
+					if(stay){
+						DamageData data = new DamageData{
+							dmg=perent.damage()*perent.perent.attackRate*Time.deltaTime/perent.attackRate(),
+							sender=perent.perent
+						};
+						perent.DmgOverhead(data,d,Time.deltaTime);
+					}else{
+						DamageData data = new DamageData{
+							dmg=perent.damage(),
+							sender=perent.perent
+						};
+						perent.DmgOverhead(data,d);
+					}
 				}
 			}
+		}
+	}
+
+
+	public class WeaponStay : WeaponHitter{
+		public void OnTriggerStay2D(Collider2D c){
+			OnHit(c.gameObject,true);
+		}
+	}
+
+	public class WeaponHit : WeaponHitter{
+		public void OnTriggerEnter2D(Collider2D c){
+			OnHit(c.gameObject,false);
+		}
+	}
+
+	public class WeaponParticle : WeaponHitter{
+		public void OnParticleCollision(GameObject g){
+			OnHit(g,true);
 		}
 	}
 
@@ -329,7 +357,7 @@ namespace Modulo{
 			r.GetPositions(positions);
 			List<Collider2D> pcol = new List<Collider2D>();
 			DamageData dataScaled = new DamageData{
-				dmg=perent.damage()*dmgTimer/perent.attackRate(),
+				dmg=perent.damage()*dmgTimer*perent.perent.attackRate/perent.attackRate(),
 				sender = perent.perent
 			};
 			for(int i=0;i<segments;i++){
@@ -499,9 +527,10 @@ namespace Modulo{
 		public Vector3 center;
 
 		public override Collider2D Target(bool smart){
-			Collider2D[] cols = Physics2D.OverlapCircleAll(perent.perent.transform.position,perent.attackRange(),perent.perent.layerMask(false));
+			outOfRangeTimer=0;
+			Collider2D[] cols = Physics2D.OverlapCircleAll(perent.perent.transform.position,perent.attackRange(),perent.perent.layerMask(true));
 			foreach(Collider2D col in cols){
-				if(!((ArmAttack)perent).hitTargets.Contains(col)){
+				if(!((ArmAttack)perent).hitTargets.Contains(col) && col!=c){
 					((ArmAttack)perent).hitTargets.Add(col);
 					return col;
 				}
@@ -600,7 +629,6 @@ namespace Modulo{
 			return  (perent.shotSpeed()) * timeStep()/10;
 		}
 
-
 		Vector3 Move(Vector2 pos,Vector2 want,float step=1){
 			float speed = MoveSpeed()*step;
 			Vector2 d = want-pos;
@@ -653,7 +681,7 @@ namespace Modulo{
 		public void CollisionUpdate(){
 			if(c==null){
 				c=Target(false);
-			}else if((c.transform.position-center).magnitude>1.5*perent.attackRange()){
+			}else if((c.transform.position-center).magnitude>1.5*perent.attackRange() || outOfRangeTimer>1f){
 				c=Target(false);
 			}else{
 				((ArmAttack)perent).hitTargets.Add(c);
@@ -700,7 +728,7 @@ namespace Modulo{
 			}
 		}
 
-
+		public float outOfRangeTimer=0;
 		float initialAngle;
 		public override void Update(){
 			self.transform.localScale=new Vector3(1,swordLength()/3,1);
@@ -729,7 +757,11 @@ namespace Modulo{
 						MoveCenter();
 						break;
 					case MeleeState.Attacking:
-						if((c.transform.position-points[2]).magnitude<swordLength()/2 || perent.hasProperties(SpecialProperties.predictive)){
+						if((perent.perent.transform.position-c.transform.position).magnitude>perent.attackRange()*5f/6){
+							outOfRangeTimer+=Time.deltaTime;
+						}
+						if((c.transform.position-points[2]).magnitude<swordLength()/2 || perent.hasProperties(SpecialProperties.predictive) ||
+						   (outOfRangeTimer>0.5f && (c.transform.position-points[2]).magnitude<swordLength() )){
 							float change = World.VecToAngle(c.transform.position-points[2])-self.transform.eulerAngles.z;
 							if(change>180){
 								change-=360;
@@ -761,6 +793,7 @@ namespace Modulo{
 						}
 						break;
 					case MeleeState.MidAttack:
+						outOfRangeTimer=0;
 						if(perent.hasProperties(SpecialProperties.predictive)&& (c.transform.position-points[2]).magnitude>swordLength()/2){
 							end=Move(end,c.transform.position);
 							// self.transform.position=points[2];
@@ -783,5 +816,224 @@ namespace Modulo{
 		}
 	}
 
+	public class Beam : Weapon{
+		const float offset=0.3f;
+		public Vector3 center;
+		public float beamRotation;
 
+		public override Collider2D Target(bool smart){
+			Collider2D[] cols = Physics2D.OverlapCircleAll(perent.perent.transform.position,perent.attackRange(),perent.perent.layerMask(true));
+			foreach(Collider2D col in cols){
+				if(!((SaberAttack)perent).hitTargets.Contains(col) && col!=c){
+					((SaberAttack)perent).hitTargets.Add(col);
+					return col;
+				}
+			}
+			return null;
+		}
+
+		float swingSpeed(){
+			return 24*perent.shotSpeed();
+		}
+
+		bool AdjustBeamAngle(float angl,float step=1){
+			float swingSpd= swingSpeed() *timeStep()*step;
+			float angleChange = angl-beamRotation;
+			if(angleChange>=360){
+				angleChange-=360;
+			}
+			if(angleChange< 0){
+				angleChange+=360;
+			}
+			float angle = beamRotation;
+			float absChang = Mathf.Abs(angleChange);
+			if(absChang>180){
+				absChang=360-absChang;
+			}
+			if(perent.hasProperties(SpecialProperties.predictive)){
+				swingSpd*=1+Mathf.InverseLerp(0,180,absChang)/2;
+				Debug.Log(1+Mathf.InverseLerp(0,180,absChang)/2);
+			}
+			if(absChang>swingSpd){
+				if(angleChange<180){
+					angle+=swingSpd;
+				}else{
+					angle-=swingSpd;
+				}
+				beamRotation=angle;
+				return true;
+			}else{
+				angle=angl;
+				beamRotation=angle;
+				return false;
+			}
+			return false;
+		}
+
+		float MoveSpeed(){
+			return  (perent.shotSpeed()) * timeStep()/10;
+		}
+
+		Vector3 Move(Vector2 pos,Vector2 want,float step=1){
+			float speed = MoveSpeed()*step;
+			Vector2 d = want-pos;
+			if(d.magnitude<speed){
+				return want;
+			}else{
+				return pos+d.normalized*speed;
+			}
+		}
+
+		public void MoveCenter(){
+			if((center-perent.perent.transform.position).magnitude<perent.attackRange() && perent.hasProperties(SpecialProperties.homing)){
+				if(c!=null){
+					center=Move(center,c.transform.position,0.2f);
+				}else{
+					center=Move(center,perent.perent.transform.position,0.4f);
+				}
+			}
+		}
+		float radOffset(){
+			float rad=0;
+			if(perent.perent.totalShots()>=18){
+				rad+=2*Mathf.PI*((float)(number)/perent.weapons.Count);
+			}else{
+				float funnel = number % perent.perent.funnelShots;
+				float cross = number / perent.perent.funnelShots;
+				rad += (cross*2*Mathf.PI/perent.perent.crossShots) - (Mathf.PI*(perent.perent.funnelShots-1)/Attack.maxShots);
+				rad+=funnel*2*Mathf.PI/Attack.maxShots;
+			}
+			return rad;
+		}
+
+        public override void Update()
+        {
+			if(perent.hasProperties(SpecialProperties.random)){
+				beamRotation=Time.time*swingSpeed()/Mathf.PI;
+				if(perent.hasProperties(SpecialProperties.homing)){
+					float d = perent.attackRange();
+					if(perent.hasProperties(SpecialProperties.returning)){
+						d*=(Mathf.Sin(Mathf.PI*Time.time*swingSpeed()/1800)+1)/2;
+					}
+					float r = Mathf.PI*Time.time*swingSpeed()/1800 + radOffset();
+					Vector3 v = new Vector3(Mathf.Sin(-r)*d,Mathf.Cos(r)*d);
+					center = perent.perent.transform.position+v;
+				}
+			}else{
+				if(number==0){
+					if(c!=null){
+						Vector3 aim;
+						AdjustBeamAngle(World.VecToAngle(c.transform.position-center));
+					}else{
+						if(chargingPercent<1){
+							chargingPercent+=Time.deltaTime/5;
+						}
+					}
+				}
+				if(perent.hasProperties(SpecialProperties.homing)){
+					MoveCenter();
+				}
+			}
+			ManageBeam();
+		}
+
+		public void CollisionUpdate(){
+			if(c==null){
+				c=Target(false);
+			}else if((c.transform.position-center).magnitude>1.5*perent.attackRange()){
+				c=Target(false);
+			}else{
+				((SaberAttack)perent).hitTargets.Add(c);
+			}
+		}
+
+		ParticleSystem.MainModule main;
+		public ParticleSystem.CollisionModule collisionModule;
+		const float initVel=10;
+		public Beam(){
+			beamRotation=0;
+			self=new GameObject("beam");
+			self.layer=7;
+			GameObject child = new GameObject();
+			child.transform.SetParent(self.transform);
+			ParticleSystem ps = child.AddComponent<ParticleSystem>();
+
+			main = ps.main;
+			main.startLifetime=1;
+			main.startSpeed=10;
+			main.startSize=0.8f;
+			main.startSize3D=false;
+			main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+			collisionModule = ps.collision;
+			collisionModule.enabled=true;
+			collisionModule.type=ParticleSystemCollisionType.World;
+			collisionModule.mode=ParticleSystemCollisionMode.Collision2D;
+			collisionModule.bounce=0.1f;
+			collisionModule.sendCollisionMessages=true;
+
+			ParticleSystem.EmissionModule em = ps.emission;
+			em.rateOverTime=15;
+
+			ParticleSystem.ShapeModule shape = ps.shape;
+			shape.shapeType=ParticleSystemShapeType.Rectangle;
+			shape.scale=new Vector3(0.4f,0.4f,0.4f);
+
+			ParticleSystem.LimitVelocityOverLifetimeModule limitVelocity = ps.limitVelocityOverLifetime;
+			limitVelocity.enabled=true;
+			ParticleSystem.MinMaxCurve curve = limitVelocity.limit;
+			curve.mode = ParticleSystemCurveMode.Curve;
+			curve.curve = new AnimationCurve(new Keyframe(0,initVel,-initVel,-initVel),new Keyframe(1,0,-initVel,-initVel));
+			limitVelocity.limit=curve;
+			limitVelocity.dampen=1;
+
+			ParticleSystem.InheritVelocityModule inheritVelocity = ps.inheritVelocity;
+			inheritVelocity.mode=ParticleSystemInheritVelocityMode.Initial;
+			inheritVelocity.enabled=true;
+
+			ParticleSystem.ColorOverLifetimeModule colour = ps.colorOverLifetime;
+			colour.enabled=true;
+			colour.color= new ParticleSystem.MinMaxGradient(Effects.BurnGradient());
+
+			ParticleSystemRenderer pr = child.GetComponent<ParticleSystemRenderer>();
+			pr.material=Resources.Load<Material>("particle material");
+
+			Rigidbody2D rb=self.AddComponent<Rigidbody2D>();
+			rb.bodyType=RigidbodyType2D.Kinematic;
+			// BoxCollider2D c = self.AddComponent<BoxCollider2D>();
+			// c.size=new Vector2(1,5);
+			// c.isTrigger=true;
+		}
+
+		public float BeamLength(){
+			if(!perent.hasProperties(SpecialProperties.homing)){
+				return perent.attackRange()-offset;
+			}else{
+				return perent.attackRange();
+			}
+		}
+
+		public void ManageBeam(){
+			Vector3 p=center;
+			float d = perent.attackRange()/2;
+			if(!perent.hasProperties(SpecialProperties.homing)){
+				d+=offset/2;
+			}
+			float r = Mathf.PI*((Beam)perent.weapons[0]).beamRotation/180 + radOffset();;
+			Vector3 v = new Vector3(Mathf.Sin(-r)*d,Mathf.Cos(r)*d);
+			p+=v;
+			self.transform.position=p;
+			Transform child = self.transform.GetChild(0);
+			if(perent.hasProperties(SpecialProperties.polar)){
+				main.simulationSpace=ParticleSystemSimulationSpace.World;
+			}else{
+				main.simulationSpace=ParticleSystemSimulationSpace.Local;
+			}
+			main.startLifetime=(2f/initVel) * (BeamLength() - 0.35f);
+			child.localPosition=new Vector3(0,-BeamLength()/2);
+			child.transform.localEulerAngles=new Vector3(-90,0,0);
+			// self.transform.localScale=new Vector3(1,BeamLength()/5,1);
+			self.transform.eulerAngles=new Vector3(0,0,r*180/Mathf.PI);
+		}
+	}
 }

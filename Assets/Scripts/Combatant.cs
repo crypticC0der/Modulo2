@@ -19,11 +19,13 @@ namespace Modulo{
 	/// you use this to create classes that can fight and have attacks
 	/// </summary>
 	public class Combatant : Damageable{
+		[SerializeReference]
 		public List<Proc> procs = new List<Proc>();
+		[SerializeReference]
 		public List<Debuff> toApply = new List<Debuff>();
 		[SerializeReference]
 		public List<Attack> attacks = new List<Attack>();
-		public float dmgPlus=0;
+		public float baseDamage=10;
 		public float dmgMultipler=1;
 		public float attackRate=1;
 		public float attackSpeed=0;
@@ -33,6 +35,9 @@ namespace Modulo{
 		public int peirce=0;
 		public int funnelShots=1;
 		public int crossShots=1;
+		public float damage(){
+			return baseDamage*dmgMultipler;
+		}
 		public int totalShots(){
 			int t = funnelShots*crossShots;
 			if(t>18){return 18;}
@@ -88,7 +93,7 @@ namespace Modulo{
 		public virtual void RemoveStats(Stats changes){
 			maxHealth-=changes.maxHealth;
 			regen-=changes.HpRegen;
-			dmgPlus-=changes.damage;
+			baseDamage-=changes.damage;
 			dmgMultipler-=changes.dmgMultipler;
 			attackSpeed-=changes.attackSpeed;
 			attackRate-=changes.attackRate;
@@ -105,7 +110,7 @@ namespace Modulo{
 		public virtual void ApplyStats(Stats changes){
 			maxHealth+=changes.maxHealth;
 			regen+=changes.HpRegen;
-			dmgPlus+=changes.damage;
+			baseDamage+=changes.damage;
 			dmgMultipler+=changes.dmgMultipler;
 			attackSpeed+=changes.attackSpeed;
 			attackRate+=changes.attackRate;

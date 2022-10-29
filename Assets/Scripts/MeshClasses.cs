@@ -275,7 +275,7 @@ namespace MeshGen{
 			"spikedHexagonOuter"
 		};
 		static Mesh[] meshes = new Mesh[14];
-		static Material[] colors= new Material[16];
+		static Material[] colors= new Material[20];
 
 		[RuntimeInitializeOnLoadMethod]
 		static void StructureGen(){
@@ -330,6 +330,8 @@ namespace MeshGen{
 			ColourMats(MatColour.foreground,ColorFromHex(0xa9b1d680));
 			ColourMats(MatColour.background,ColorFromHex(0x1a1f2aff));
 			ColourMats(MatColour.blue2,ColorFromHex(0x0715cdff));
+			ColourMats(MatColour.exRed,ColorFromHex(0x0715cdff));
+			ColourMats(MatColour.exYellow,ColorFromHex(0x0715cdff));
 		}
 
 		public static Color ColorFromHex(uint hex){
@@ -380,6 +382,8 @@ namespace MeshGen{
 		black,
 		foreground,
 		background,
-		blue2
+		blue2,
+		exRed,
+		exYellow,
 	}
 }

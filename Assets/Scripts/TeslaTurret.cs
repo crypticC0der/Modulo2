@@ -79,7 +79,7 @@ namespace Modulo{
 			range = 3;
 			timerMax = 0.25f;
 			procCoefficent = 0.2f;
-			dmg = 17;
+			dmg = .4f;
 			attackPeirce=3;
 		}
 	}

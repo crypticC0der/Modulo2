@@ -56,14 +56,14 @@ namespace Modulo{
 			SpriteSize ss  = GetSpriteSize();
 			sp.sprite = ss.sprite;
 			r.transform.localScale=ss.size;
-			d.maxHealth = 50 *(level)*power*StrengthModifier();
+			d.maxHealth = 10 *(level)*power*StrengthModifier();
 			d.regen=d.maxHealth/10;
 			IsItem i = r.AddComponent<IsItem>();
 			i.item=this;
 			r.AddComponent<PolygonCollider2D>();
 			r.layer=3;
 			if(type==ItemTypes.Orb){
-				d.maxHealth=500;
+				d.maxHealth=100;
 			}else{
 				int[] wop = World.WorldPos(p);
 				World.ChangeState(wop[0],wop[1],NodeState.wall,World.ChangeStateMethod.On);

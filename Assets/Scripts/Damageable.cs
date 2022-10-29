@@ -103,12 +103,13 @@ namespace Modulo{
 	public class Damageable : MonoBehaviour{
 		public static string[] EntityNames = new string[7]{"Module", "Defence", "Turret", "Orb", "Player", "Enemy", "Other"};
 		public float health;
-		public float maxHealth=50;
+		public float maxHealth=10;
 		public float regen=0; //rate of regen
 		public bool regening=false; //means it unconditionally regens
 		public float timeSinceDmg=0;
 		public DebuffName appliedDebuffs;
 		public EntityTypes type=EntityTypes.Other;
+		[SerializeReference]
 		public List<Debuff> debuffs = new List<Debuff>();
 		public Bar b;
 		public Priority priority;
