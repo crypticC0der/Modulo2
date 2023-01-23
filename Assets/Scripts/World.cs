@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using Unity.Jobs;
 using MeshGen;
 
 namespace Modulo{
 	public static class World
 	{
+		static List<JobHandle> jobs = new List<JobHandle>();
 		public static Transform orbTransform;
 		public const int maxDist=100;
 		public static GameObject gridObj=null;
@@ -85,6 +87,7 @@ namespace Modulo{
 			// EnemyFsm o = MeshGens.ObjGen(Shapes.star,MatColour.white);
 			// o.transform.position=new Vector3(-6,-6);
 			EnemyFsm o=null;
+			MeshGens.MinObjGen(Shapes.puddle,MatColour.white);
 			for(int i=0;i<7;i++){
 				o = EnemyGeneration.ObjGen((Shapes.circle),MatColour.white);
 				o.transform.position = new Vector3(2*i-11,-5);
@@ -125,15 +128,42 @@ namespace Modulo{
 
 		static List<Node> BorderNode=new List<Node>();
 		static Queue<Node> LookAt;
-		public static void PlaceOrb(int x,int y){
-			clearGrid(true);
-			grid[x,y].distance=0;
-			grid[x,y].realDistance=0;
-			grid[x,y].next=grid[x,y];
-			LookAt.Enqueue(grid[x,y]);
-			while(LookAt.Count>0){
-				CheckNode(LookAt.Dequeue());
+
+		static void EnsureIntegrity(){
+			foreach (JobHandle jh in jobs){
+				jh.Complete();
 			}
+			jobs.Clear();
+		}
+
+		struct PlaceOrbJob : IJob{
+			public int x,y;
+
+			public void Execute(){
+				clearGrid(true);
+				grid[x,y].distance=0;
+				grid[x,y].realDistance=0;
+				grid[x,y].next=grid[x,y];
+				LookAt.Enqueue(grid[x,y]);
+				while(LookAt.Count>0){
+					CheckNode(LookAt.Dequeue());
+				}
+			}
+
+		}
+
+		static JobHandle SafeJobHandler<J>(J job) where J : struct,IJob {
+			EnsureIntegrity();
+			JobHandle jobHandle = job.Schedule();
+			jobs.Add(jobHandle);
+			return jobHandle;
+
+		}
+
+		//handler for PlaceOrb Thread
+		public static JobHandle PlaceOrb(int x,int y){
+			return SafeJobHandler(new PlaceOrbJob(){x=x,y=y});
+
 		}
 
 		public struct StateData{
@@ -141,11 +171,20 @@ namespace Modulo{
 			public int y;
 			public NodeState s;
 		}
-		public static void ChangeStates(List<StateData> data){
-			foreach(StateData sd in data){
-				grid[sd.x,sd.y].state =sd.s;
+
+		struct ChangeStatesJob : IJob{
+			public List<StateData> data;
+			public void Execute(){
+				foreach(StateData sd in data){
+					grid[sd.x,sd.y].state =sd.s;
+				}
+				Reset();
 			}
-			Reset();
+		}
+
+		//handler for changestates method
+		public static JobHandle ChangeStates(List<StateData> data){
+			return SafeJobHandler(new ChangeStatesJob(){data=data});
 		}
 
 		public static void Reset(){
@@ -153,44 +192,78 @@ namespace Modulo{
 			PlaceOrb(wop[0],wop[1]);
 		}
 
-		public static void ChangeState(int x,int y,NodeState s,ChangeStateMethod m=ChangeStateMethod.Flip){
-			Node n=grid[x,y];
-			LookAt.Enqueue(n);
-			n.state|=NodeState.updating;
-			switch(m){
-				case ChangeStateMethod.On: n.state|=s;break;
-				case ChangeStateMethod.Off: n.state&=~s;break;
-				case ChangeStateMethod.Flip: n.state^=s;break;
+		struct ChangeStateJob : IJob{
+			public int x;
+			public int y;
+			public NodeState s;
+			public ChangeStateMethod m;
+			public void Execute(){
+				Node n=grid[x,y];
+				LookAt.Enqueue(n);
+				n.state|=NodeState.updating;
+				switch(m){
+					case ChangeStateMethod.On: n.state|=s;break;
+					case ChangeStateMethod.Off: n.state&=~s;break;
+					case ChangeStateMethod.Flip: n.state^=s;break;
+				}
+				ManageOutNodes();
 			}
-			ManageOutNodes();
+		}
+
+		//handler for changestates method
+		public static JobHandle ChangeState(int x,int y,NodeState s,ChangeStateMethod m=ChangeStateMethod.Flip){
+			ChangeStateJob csj = new ChangeStateJob{
+				x=x,y=y,s=s,m=m
+			};
+			return SafeJobHandler(csj);
 		}
 
 		public enum ChangeStateMethod{
 			On,Off,Flip
 		}
-		public static void ChangeStatesInRange(int x,int y,float range,NodeState s,ChangeStateMethod m=ChangeStateMethod.Flip){
-			float r2 = range*range;
-			float realX=x;
-			LookAt.Enqueue(grid[x,y]);
-			if(y%2!=0){realX+=0.5f;}
-			for(int i=Mathf.Max(0,x-(int)range);i<=x+(int)range && i < size[0];i++){
-				float dx=realX-i;
-				for(int j=Mathf.Max(0,y-(int)range);j<=y+(int)range && j < size[1];j++){
-					if(j%2!=0){dx-=0.5f;}
-					float dy = y-j;
-					float d2 = (dy*dy * 3/4) + dx*dx;
-					if(d2<=r2){
-						Node n = grid[i,j];
-						n.state|=NodeState.updating;
-						switch (m) {
-							case ChangeStateMethod.On: n.state|=s;break;
-							case ChangeStateMethod.Off: n.state&=~s;break;
-							case ChangeStateMethod.Flip: n.state^=s;break;
+
+		struct ChangeStatesInRangeJob : IJob{
+			public int x;
+			public int y;
+			public float range;
+			public NodeState s;
+			public ChangeStateMethod m;
+
+			public void Execute(){
+				float r2 = range*range;
+				float realX=x;
+				LookAt.Enqueue(grid[x,y]);
+				if(y%2!=0){realX+=0.5f;}
+				for(int i=Mathf.Max(0,x-(int)range);i<=x+(int)range && i < size[0];i++){
+					float dx=realX-i;
+					for(int j=Mathf.Max(0,y-(int)range);j<=y+(int)range && j < size[1];j++){
+						if(j%2!=0){dx-=0.5f;}
+						float dy = y-j;
+						float d2 = (dy*dy * 3/4) + dx*dx;
+						if(d2<=r2){
+							Node n = grid[i,j];
+							n.state|=NodeState.updating;
+							switch (m) {
+								case ChangeStateMethod.On: n.state|=s;break;
+								case ChangeStateMethod.Off: n.state&=~s;break;
+								case ChangeStateMethod.Flip: n.state^=s;break;
+							}
 						}
 					}
 				}
+				ManageOutNodes();
 			}
-			ManageOutNodes();
+		}
+
+		//handler for changestates method
+		public static JobHandle ChangeStatesInRange(int x,int y,float range,NodeState s,ChangeStateMethod m=ChangeStateMethod.Flip){
+			return SafeJobHandler(new ChangeStatesInRangeJob(){
+							x=x,
+							y=y,
+							range=range,
+							s=s,
+							m=m,
+							});
 		}
 
 		public static void ManageOutNodes(){

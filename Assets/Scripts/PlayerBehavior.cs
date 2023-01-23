@@ -87,7 +87,9 @@ namespace Modulo{
 		}
 
 		public override void Regen(){
-			base.Regen();
+			if(move.healTime>1){
+				base.Regen();
+			}
 		}
 
 		public override void Die(){
@@ -110,6 +112,7 @@ namespace Modulo{
 			controller = GetComponent<UIControl>();
 			b=controller.bars[0];
 			base.Start();
+			regen*=4;
 			deck = new StackDeck();
 			ItemTemplate itemTemplate = new ItemTemplate("wallBase",1,new float[]{0,0,0,0,0,0});
 			ItemTemplate orbT = new ItemTemplate("orb",5,new float[]{0,0,0,0,0},"sacred",ItemTypes.Orb);
@@ -169,7 +172,6 @@ namespace Modulo{
 		}
 
 		void OnCollisionEnter2D(Collision2D collision){
-			Debug.Log(collision);
 			if(collision.gameObject.name=="orb"){
 				AddToDeck(collision.gameObject.GetComponent<IsItem>().item);
 				collision.gameObject.GetComponent<Bar>().Delete();

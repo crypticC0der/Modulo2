@@ -352,30 +352,13 @@ namespace Modulo{
 
 		float dmgTimer=0;
 		public void DealDamage(){
-			int hits=0;
 			Vector3[] positions = new Vector3[numPoints];
 			r.GetPositions(positions);
-			List<Collider2D> pcol = new List<Collider2D>();
 			DamageData dataScaled = new DamageData{
 				dmg=perent.damage()*dmgTimer*perent.perent.attackRate/perent.attackRate(),
 				sender = perent.perent
 			};
-			for(int i=0;i<segments;i++){
-				RaycastHit2D[] cols = Physics2D.LinecastAll(positions[i],positions[i+1],perent.perent.layerMask(false));
-				for(int j=0;j<cols.Length;j++){
-					if(!pcol.Contains(cols[j].collider)){
-						pcol.Add(cols[j].collider);
-						Damageable d = cols[j].collider.GetComponent<Damageable>();
-						if(d){
-							perent.DmgOverhead(dataScaled,d,dmgTimer);
-							hits++;
-							if(hits>perent.peirce()){
-								return;
-							}
-						}
-					}
-				}
-			}
+			Globals.DealDmgAlongLine(positions,0,perent.perent.layerMask(false),(Damageable d) => {perent.DmgOverhead(dataScaled,d,dmgTimer);},perent.peirce(),positions.Length);
 		}
 
 		public void CollisionUpdate(){

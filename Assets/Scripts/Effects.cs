@@ -13,7 +13,7 @@ namespace Modulo{
 			foreach(Collider2D col in c){
 				Damageable D = col.GetComponent<Damageable>();
 				if(D){
-					D.ApplyDebuff<Burning>((int)(1*strength));
+					D.ApplyDebuff<Burning>(null,(int)(1*strength));
 					DamageData d = new DamageData{dmg=10*strength,direction=D.transform.position - center,properties=DamageProperties.bypassArmor};
 					if(sender==null){
 						D.TakeDamage(d);

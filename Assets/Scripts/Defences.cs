@@ -27,7 +27,8 @@ namespace Modulo{
 
 		public new void Start(){
 			base.Start();
-			AddProc<LaserBurst>();
+			// this.AddProc<PushOut>();
+			this.toApply.Add(new Slowed());
 		}
 	}
 

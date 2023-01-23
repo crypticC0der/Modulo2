@@ -10,7 +10,7 @@ namespace Modulo{
 			Stats s = new Stats();
 			s.maxHealth=30;
 			s.HpRegen=0;
-			s.damage=10;
+			s.damage=1;
 			s.dmgMultipler=1;
 			s.attackRate=1;
 			s.attackSpeed=0;

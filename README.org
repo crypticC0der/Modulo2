@@ -473,3 +473,11 @@ if close 2x deal damage (na)
 heals perent for all the damage dealt (total)
 the faster an enemy is moving the more damage it takes (total)
 makes enemy do negative damage
+turn into shrapnel
+shoot two shots in opposite directions
+confuses enemies
+black hole that pulls in everything
+creates a temporary mega high priority target
+creates a quaddirectional laser beam
+reverses any healing
+spawns a bouncy saw

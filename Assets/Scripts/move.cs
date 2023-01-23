@@ -23,6 +23,7 @@ namespace Modulo{
 		public int[] pwop;
 		float sprint=2;
 		float sprintTime=0;
+		public static float healTime=1;
 		void Update()
 		{
 			wop = World.WorldPos(World.orbTransform.position);
@@ -30,16 +31,26 @@ namespace Modulo{
 				World.PlaceOrb(wop[0],wop[1]);
 			}
 			Vector3 v=new Vector3(Input.GetAxis("Horizontal"),Input.GetAxis("Vertical"))*Time.deltaTime;
-			if(Input.GetButton("Sprint")&sprint>0){
-				v*=2;
-				sprintTime=0;
-				sprint-=Time.deltaTime;
-				PlayerBehavior.controller.bars[1].SetValue(sprint,2);
+			v*=PlayerBehavior.me.UniversalSpeedCalculator(1);
+			if(v.x==0 && v.y==0){
+				healTime+=Time.deltaTime;
+			}else{
+				healTime=0;
+				if(Input.GetButton("Sprint")&sprint>0){
+					v*=2;
+					sprintTime=0;
+					sprint-=Time.deltaTime;
+					PlayerBehavior.controller.bars[1].SetValue(sprint,2);
+				}
 			}
 			sprintTime+=Time.deltaTime;
-			if(sprintTime>2){
+			if(sprintTime>1f){
+				float multiplier=0.1f;
+				if(sprintTime>2){
+					multiplier=1;
+				}
 				if(sprint<2){
-					sprint+=Time.deltaTime;
+					sprint+=Time.deltaTime*multiplier;
 					PlayerBehavior.controller.bars[1].SetValue(sprint,2);
 				}else if(sprint>2){
 					sprint=2;

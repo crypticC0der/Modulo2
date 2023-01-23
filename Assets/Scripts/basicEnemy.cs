@@ -18,6 +18,9 @@ namespace Modulo{
 		protected EnemyTypes enemyType=0;
 		public int strength=6; // a metric  of how strong the enmy
 		public float speed=1;
+		public float Speed(){
+			return UniversalSpeedCalculator(speed);
+		}
 		public float speedBonus=1;
 		public float distance;
 		public EnemySpawner perent;

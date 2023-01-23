@@ -157,7 +157,7 @@ namespace Modulo{
 		public void ApplyDebuffs(float procCoefficent,Damageable d){
 			foreach(Debuff de in toApply){
 				if(Random.value<procCoefficent*de.chance){
-					de.Apply(d);
+					de.Apply(d,this);
 				}
 			}
 		}

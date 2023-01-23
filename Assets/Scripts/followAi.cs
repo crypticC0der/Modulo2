@@ -15,7 +15,7 @@ namespace Modulo{
 		public float force;
 		Rigidbody2D rb;
 		void Update(){
-			force=fsm.speed*10*fsm.speedBonus;
+			force=fsm.Speed()*10*fsm.speedBonus;
 			int[] wap = World.WorldPos(transform.position);
 			Node n = World.grid[wap[0],wap[1]].next;
 			Vector3 v;
@@ -26,7 +26,6 @@ namespace Modulo{
 				v=PlayerBehavior.me.transform.position-transform.position;
 				fsm.distance=v.magnitude;
 			}
-			v=v.normalized;
 			rb.AddForce(v.normalized*Time.deltaTime*force/0.02f);
 		}
 	}

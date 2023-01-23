@@ -114,6 +114,20 @@ namespace Modulo{
 		public Bar b;
 		public Priority priority;
 
+		public float UniversalSpeedCalculator(float speed){
+			if(HasDebuff(DebuffName.Stunned)){
+				return 0;
+			}else{
+				float s = speed;
+				Debuff slow;
+				if((slow = FindDebuff(DebuffName.Slowed))!=null){
+					s/=2*slow.stacks;
+				}
+				return s;
+			}
+
+		}
+
 		public virtual void Click(ClickEventHandler e){
 			Debug.Log("fuck");
 		}
@@ -150,34 +164,35 @@ namespace Modulo{
 		///both have versions where you can specifiy the number of stacks
 		///in ApplyDebuff(newDebuff) it assumes the stacks is newDebuff.stacks
 		///</summary>
-		public void ApplyDebuff<D>() where D : Debuff, new(){
-			ApplyDebuff<D>(1);
+		public void ApplyDebuff<D>(Combatant applier) where D : Debuff, new(){
+			ApplyDebuff<D>(applier,1);
 		}
 
-		public void ApplyDebuff<D>(int stacks) where D : Debuff, new(){
+		public void ApplyDebuff<D>(Combatant applier,int stacks) where D : Debuff, new(){
 			D newDebuff = new D();
 			newDebuff.stacks=stacks;
-			ApplyDebuff(newDebuff);
+			ApplyDebuff(newDebuff,applier);
 		}
-		public void ApplyDebuff(Debuff newDebuff){
+		public void ApplyDebuff(Debuff newDebuff,Combatant applier){
 			//do i have the debuff
 			Debuff foundDebuff = FindDebuff(newDebuff.name);
 			if(foundDebuff!=null){
 				//apply stack
 				foundDebuff.stacks+=newDebuff.stacks;
 				foundDebuff.timeLeft=newDebuff.timeLeft;
-				foundDebuff.onHit();
+				foundDebuff.onHit(applier);
 				return;
+			}else{
+				//add debuff
+				appliedDebuffs|=newDebuff.name;
+				newDebuff.perent=this;
+				newDebuff.onHit(applier);
+				debuffs.Add(newDebuff);
 			}
-			//add debuff
-			appliedDebuffs|=newDebuff.name;
-			newDebuff.perent=this;
-			newDebuff.onHit();
-			debuffs.Add(newDebuff);
 		}
-		public void ApplyDebuff(Debuff newDebuff,int stacks) {
+		public void ApplyDebuff(Debuff newDebuff,Combatant applier,int stacks) {
 			newDebuff.stacks=stacks;
-			ApplyDebuff(newDebuff);
+			ApplyDebuff(newDebuff,applier);
 		}
 
 
@@ -192,8 +207,17 @@ namespace Modulo{
 			return null;
 		}
 
+		public bool HasDebuff(DebuffName dn){
+			return (appliedDebuffs & dn)!=0;
+		}
+
 		public virtual void Die(){
 			b.Delete();
+
+			foreach(Debuff d in debuffs){
+				d.onEnd();
+			}
+
 			switch(type){
 				case EntityTypes.Module:
 					Module m = (Module)GetComponent<IsItem>().item;

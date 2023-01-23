@@ -44,6 +44,26 @@ namespace MeshGen{
 			return new PointData{p=points,u=uv};
 		}
 
+		static Mesh PuddlePoints(int v){
+			Vector3[] points = new Vector3[v];
+			Vector2[] uv = new Vector2[v];
+			float t=0;
+			float r=0;
+			float radius;
+			Vector2 seed = new Vector3(Random.Range(-7f,7f) ,Random.Range(-9f,9f));
+			for(int i=0;i<v;i++){
+				Debug.Log(seed);
+				radius = Mathf.LerpUnclamped(0.25f,0.5f,Mathf.PerlinNoise(r*0.7f+seed.x,r*0.9f + seed.y));
+				Vector2 v2 = new Vector3(radius*Mathf.Sin(r),radius*Mathf.Cos(r));
+				points[i] = v2;
+				uv[i]=v2;
+				r+=2*Mathf.PI/v;
+			}
+			int[] tris = GenTri(v);
+			return GenMesh(points,uv,tris);
+		}
+
+
 		static Mesh GenMesh(PointData d,int[] tris){
 			Mesh m = new Mesh();
 			m.vertices=d.p;
@@ -272,9 +292,10 @@ namespace MeshGen{
 			"curvilinear",
 			"hexagonOuter",
 			"hexagon",
-			"spikedHexagonOuter"
+			"spikedHexagonOuter",
+			"puddle"
 		};
-		static Mesh[] meshes = new Mesh[14];
+		static Mesh[] meshes = new Mesh[15];
 		static Material[] colors= new Material[20];
 
 		[RuntimeInitializeOnLoadMethod]
@@ -319,6 +340,8 @@ namespace MeshGen{
 			meshes[(int)Shapes.hexagon].name="hexagon";
 			meshes[(int)Shapes.spikedHexagonOuter]=CircleSpikedOutline(Mathf.Sqrt(3)/3,0.1f,6,1,0,0.92f);
 			meshes[(int)Shapes.spikedHexagonOuter].name="spikedHexagonOuter";
+			meshes[(int)Shapes.puddle]=PuddlePoints(20);
+			meshes[(int)Shapes.puddle].name="puddle";
 		}
 
 		static void ColourGen(){
@@ -371,7 +394,8 @@ namespace MeshGen{
 		curvilinear,
 		hexagonOuter,
 		hexagon,
-		spikedHexagonOuter
+		spikedHexagonOuter,
+		puddle
 	};
 
 	public enum MatColour{

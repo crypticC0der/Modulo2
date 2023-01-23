@@ -343,7 +343,7 @@ namespace Modulo{
 
 		public Collider2D Target()
 		{
-			Collider2D[] o = Physics2D.OverlapCircleAll(perent.transform.position, attackRange(),perent.layerMask(true));
+			Collider2D[] o = Physics2D.OverlapCircleAll(perent.transform.position, attackRange(),perent.layerMask(false));
 			return BestCollider(o);
 		}
 
