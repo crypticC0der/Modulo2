@@ -90,35 +90,35 @@ namespace Modulo{
 				e.todoList.Enqueue(nextClick);
 			}
 		}
-		public virtual void RemoveStats(Stats changes){
-			maxHealth-=changes.maxHealth;
-			regen-=changes.HpRegen;
-			baseDamage-=changes.damage;
-			dmgMultipler-=changes.dmgMultipler;
-			attackSpeed-=changes.attackSpeed;
-			attackRate-=changes.attackRate;
-			shotSpeed-=changes.shotSpeed;
-			range-=changes.range;
-			peirce-=changes.peirce;
-			funnelShots+=changes.funnelShots;
-			crossShots+=changes.crossShots;
+		public virtual void RemoveStats(Stats changes,float multiplier=1){
+			maxHealth-=changes.maxHealth*multiplier;
+			regen-=changes.HpRegen*multiplier;
+			baseDamage-=changes.damage*multiplier;
+			dmgMultipler-=changes.dmgMultipler*multiplier;
+			attackSpeed-=changes.attackSpeed*multiplier;
+			attackRate-=changes.attackRate*multiplier;
+			shotSpeed-=changes.shotSpeed*multiplier;
+			range-=changes.range*multiplier;
+			peirce-=(int)(changes.peirce*multiplier);
+			funnelShots+=(int)(changes.funnelShots*multiplier);
+			crossShots+=(int)(changes.crossShots*multiplier);
 			if(changes.range!=0 && type==EntityTypes.Turret){
 				ValidateRange(true);
 			}
 		}
 
-		public virtual void ApplyStats(Stats changes){
-			maxHealth+=changes.maxHealth;
-			regen+=changes.HpRegen;
-			baseDamage+=changes.damage;
-			dmgMultipler+=changes.dmgMultipler;
-			attackSpeed+=changes.attackSpeed;
-			attackRate+=changes.attackRate;
-			shotSpeed-=changes.shotSpeed;
-			range+=changes.range;
-			peirce+=changes.peirce;
-			funnelShots-=changes.funnelShots;
-			crossShots-=changes.crossShots;
+		public virtual void ApplyStats(Stats changes,float multiplier=1){
+			maxHealth+=changes.maxHealth*multiplier;
+			regen+=changes.HpRegen*multiplier;
+			baseDamage+=changes.damage*multiplier;
+			dmgMultipler+=changes.dmgMultipler*multiplier;
+			attackSpeed+=changes.attackSpeed*multiplier;
+			attackRate+=changes.attackRate*multiplier;
+			shotSpeed-=changes.shotSpeed*multiplier;
+			range+=changes.range*multiplier;
+			peirce+=(int)(changes.peirce*multiplier);
+			funnelShots-=(int)(changes.funnelShots*multiplier);
+			crossShots-=(int)(changes.crossShots*multiplier);
 			if(changes.range!=0 && type==EntityTypes.Turret){
 				ValidateRange(false);
 			}
@@ -156,8 +156,15 @@ namespace Modulo{
 
 		public void ApplyDebuffs(float procCoefficent,Damageable d){
 			foreach(Debuff de in toApply){
-				if(Random.value<procCoefficent*de.chance){
-					de.Apply(d,this);
+				float chance = procCoefficent*de.chance;
+				if(de.modulePerent!=null){
+					chance*=de.modulePerent.power;
+					if (de.perent.type==EntityTypes.Turret){
+						chance*=Module.DistanceMultiplier((Turret)de.perent,de.modulePerent.me);
+					}
+				}
+				if(Random.value<chance){
+					de.Apply(d,this,Mathf.Max(1,chance));
 				}
 			}
 		}

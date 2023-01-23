@@ -11,6 +11,11 @@ namespace Modulo{
 		Area
 	}
 
+	public interface ModuleEffect{
+		public void ApplySpawnStats(float power,float stability){
+
+		}
+	}
 
 	/// <summary>
 	/// damager i barely know her

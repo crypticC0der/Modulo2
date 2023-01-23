@@ -23,7 +23,7 @@ namespace Modulo{
 				fsm.distance=n.realDistance;
 				v = n.WorldPos()-transform.position;
 			}else{
-				v=PlayerBehavior.me.transform.position-transform.position;
+				v=World.orbTransform.transform.position-transform.position;
 				fsm.distance=v.magnitude;
 			}
 			rb.AddForce(v.normalized*Time.deltaTime*force/0.02f);

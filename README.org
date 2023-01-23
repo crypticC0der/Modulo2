@@ -481,3 +481,27 @@ creates a temporary mega high priority target
 creates a quaddirectional laser beam
 reverses any healing
 spawns a bouncy saw
+
+* currently programmed "things"
+walls:
+    power linearly effects health
+
+towers:
+    power effects dmg, max health, attack rate by the function f(power)=pow(power,1/3)
+
+special properties modules:
+    cannot be stacked
+    hrngr
+attack modules:
+    can be stacked
+    f(power,multiplier) { (dmg,attackRate) *= sqrt(power*multiplier)}
+    stacking purely adds another attack, though i could have it go through the list of attacks and have it add to the power and multiplier
+
+proc modules:
+    can be stacked
+    stacks are applied easily
+    the multiplier and power will need to be done creatively for each module
+
+stat modules:
+    stacks easily
+    multiplies easily

@@ -67,14 +67,14 @@ namespace Modulo{
 			return level;
 		}
 
-		public override void RemoveStats(Stats changes){
-			speed-=changes.speed;
-			base.RemoveStats(changes);
+		public override void RemoveStats(Stats changes,float multiplier){
+			speed-=changes.speed*multiplier;
+			base.RemoveStats(changes,multiplier);
 		}
 
-		public override void ApplyStats(Stats changes){
-			speed+=changes.speed;
-			base.ApplyStats(changes);
+		public override void ApplyStats(Stats changes,float multiplier){
+			speed+=changes.speed*multiplier;
+			base.ApplyStats(changes,multiplier);
 		}
 
 		protected override void Start(){
@@ -106,9 +106,6 @@ namespace Modulo{
 				PlayerBehavior.SpawnComponent(Component.lowDensityMetal,strength,transform.position);
 			}
 			Debuff d = FindDebuff(DebuffName.Burning);
-			if(d!=null){
-				PlayerBehavior.SpawnComponent(Component.combustine,d.stacks,transform.position);
-			}
 			if(PlayerBehavior.controller!=null){
 				Vector3 dist = PlayerBehavior.controller.transform.position-transform.position;
 				if(dist.magnitude<2){

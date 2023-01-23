@@ -8,6 +8,8 @@ namespace Modulo{
 		Slowed=8
 	}
 
+	public enum DebuffMode{STACKING,ENLONGING};
+
 	///<summary>
 	///debuffs are not procs, procs do a thing on hit
 	///debuffs stay attached to an object for a bit
@@ -18,11 +20,13 @@ namespace Modulo{
 		public DebuffName name;
 		public Damageable perent;
 		public float timeLeft;
-		public int stacks=1;
+		public float stacks=1;
 		public float chance=1;
 		public string actualName;
+		public DebuffModule modulePerent;
+		public DebuffMode mode = DebuffMode.STACKING;
 
-		public abstract void Apply(Damageable d,Combatant applier);
+		public abstract void Apply(Damageable d,Combatant applier,float stacks=1);
 		public virtual bool onUpdate(){
 			timeLeft-=Time.deltaTime;
 			if(timeLeft<0){
@@ -41,8 +45,8 @@ namespace Modulo{
 	public class Burning:Debuff{
 		const int dmg=2;
 
-		public override void Apply(Damageable d,Combatant applier){
-			d.ApplyDebuff<Burning>(applier);
+		public override void Apply(Damageable d,Combatant applier,float stacks=1){
+			d.ApplyDebuff<Burning>(applier,stacks);
 		}
 
 		public Burning(){
@@ -173,8 +177,8 @@ namespace Modulo{
 		public GreenTrail(bool all=true):base(all){}
 		public GreenTrail():base(true){}
 
-		public override void Apply(Damageable d,Combatant applier){
-			d.ApplyDebuff<GreenTrail>(applier);
+		public override void Apply(Damageable d,Combatant applier,float stacks=1){
+			d.ApplyDebuff<GreenTrail>(applier,stacks);
 		}
 
 		protected override void Initialize(){
@@ -190,8 +194,8 @@ namespace Modulo{
 	}
 
 	public class Stunned : Debuff{
-		public override void Apply(Damageable d,Combatant applier){
-			d.ApplyDebuff<Stunned>(applier);
+		public override void Apply(Damageable d,Combatant applier,float stacks=1){
+			d.ApplyDebuff<Stunned>(applier,stacks);
 		}
 		public Stunned(){
 			actualName="stunned";
@@ -202,8 +206,8 @@ namespace Modulo{
 	}
 
 	public class Slowed: Debuff{
-		public override void Apply(Damageable d,Combatant applier){
-			d.ApplyDebuff<Slowed>(applier);
+		public override void Apply(Damageable d,Combatant applier,float stacks=1){
+			d.ApplyDebuff<Slowed>(applier,stacks);
 		}
 		public Slowed(){
 			actualName="slowed";

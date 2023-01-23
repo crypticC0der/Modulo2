@@ -164,13 +164,13 @@ namespace Modulo{
 		///both have versions where you can specifiy the number of stacks
 		///in ApplyDebuff(newDebuff) it assumes the stacks is newDebuff.stacks
 		///</summary>
-		public void ApplyDebuff<D>(Combatant applier) where D : Debuff, new(){
-			ApplyDebuff<D>(applier,1);
-		}
-
-		public void ApplyDebuff<D>(Combatant applier,int stacks) where D : Debuff, new(){
+		public void ApplyDebuff<D>(Combatant applier,float stacks) where D : Debuff, new(){
 			D newDebuff = new D();
-			newDebuff.stacks=stacks;
+			if(newDebuff.mode == DebuffMode.STACKING){
+				newDebuff.stacks=stacks;
+			}else{
+				newDebuff.timeLeft*=stacks;
+			}
 			ApplyDebuff(newDebuff,applier);
 		}
 		public void ApplyDebuff(Debuff newDebuff,Combatant applier){
@@ -190,7 +190,7 @@ namespace Modulo{
 				debuffs.Add(newDebuff);
 			}
 		}
-		public void ApplyDebuff(Debuff newDebuff,Combatant applier,int stacks) {
+		public void ApplyDebuff(Debuff newDebuff,Combatant applier,float stacks) {
 			newDebuff.stacks=stacks;
 			ApplyDebuff(newDebuff,applier);
 		}
@@ -220,10 +220,11 @@ namespace Modulo{
 
 			switch(type){
 				case EntityTypes.Module:
+					IsItem it = GetComponent<IsItem>();
 					Module m = (Module)GetComponent<IsItem>().item;
 					List<Damageable> nearbyTurrets = m.GetNearby(transform.position);
 					foreach (Damageable turret in nearbyTurrets){
-						m.onRemove((Turret)turret);
+						m.onRemove((Turret)turret,it);
 					}
 					break;
 				default:

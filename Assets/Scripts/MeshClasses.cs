@@ -32,6 +32,38 @@ namespace MeshGen{
 			return CirclePoints(new Vector2(size,size),v,offset);
 		}
 
+		static Mesh Arrow(Vector2 size){
+			Vector3[] points = new Vector3[4+3];
+			Vector2[] uvs = new Vector2[4+3];
+			//so what? no head
+			points[0] = new Vector3(0,size.y/2);
+			points[1] = new Vector3(-size.x/2,size.y*1/4);
+			points[2] = new Vector3(size.x/2,size.y*1/4);
+
+			points[3] = new Vector3(-size.x/4,-size.y*1/4);
+			points[4] = new Vector3(-size.x/4,size.y*1/4);
+			points[5] = new Vector3(size.x/4,size.y*1/4);
+			points[6] = new Vector3(size.x/4,-size.y*1/4);
+
+			for(int i=0;i<7;i++){
+				uvs[i]=points[i];
+			}
+
+			int[] tris = new int[3*(1+2)];
+			tris[0]=0;
+			tris[1]=2;
+			tris[2]=1;
+
+			tris[3]=3;
+			tris[4]=4;
+			tris[5]=5;
+			tris[6]=5;
+			tris[7]=6;
+			tris[8]=3;
+
+			return GenMesh(points,uvs,tris);
+		}
+
 		static PointData CirclePoints(Vector2 size,int v,float offset=0){
 			Vector3[] points = new Vector3[v];
 			Vector2[] uv = new Vector2[v];
@@ -293,10 +325,11 @@ namespace MeshGen{
 			"hexagonOuter",
 			"hexagon",
 			"spikedHexagonOuter",
-			"puddle"
+			"puddle",
+			"arrow"
 		};
-		static Mesh[] meshes = new Mesh[15];
-		static Material[] colors= new Material[20];
+		static Mesh[] meshes = new Mesh[16];
+		static Material[] colors= new Material[26];
 
 		[RuntimeInitializeOnLoadMethod]
 		static void StructureGen(){
@@ -342,6 +375,8 @@ namespace MeshGen{
 			meshes[(int)Shapes.spikedHexagonOuter].name="spikedHexagonOuter";
 			meshes[(int)Shapes.puddle]=PuddlePoints(20);
 			meshes[(int)Shapes.puddle].name="puddle";
+			meshes[(int)Shapes.arrow]=Arrow(new Vector2(.3f,1));
+			meshes[(int)Shapes.arrow].name="arrow";
 		}
 
 		static void ColourGen(){
@@ -355,6 +390,9 @@ namespace MeshGen{
 			ColourMats(MatColour.blue2,ColorFromHex(0x0715cdff));
 			ColourMats(MatColour.exRed,ColorFromHex(0x0715cdff));
 			ColourMats(MatColour.exYellow,ColorFromHex(0x0715cdff));
+			ColourMats(MatColour.rebeccaPurple,ColorFromHex(0xdf73ffff));
+			ColourMats(MatColour.rebeccaOrange,ColorFromHex(0xe79e00ff));
+			ColourMats(MatColour.rebeccaOrangeAnti,ColorFromHex(0x00D73300ff));
 		}
 
 		public static Color ColorFromHex(uint hex){
@@ -395,7 +433,8 @@ namespace MeshGen{
 		hexagonOuter,
 		hexagon,
 		spikedHexagonOuter,
-		puddle
+		puddle,
+		arrow
 	};
 
 	public enum MatColour{
@@ -409,5 +448,8 @@ namespace MeshGen{
 		blue2,
 		exRed,
 		exYellow,
+		rebeccaPurple,
+		rebeccaOrange,
+		rebeccaOrangeAnti
 	}
 }

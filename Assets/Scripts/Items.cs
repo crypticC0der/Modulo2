@@ -31,8 +31,8 @@ namespace Modulo{
 
 	public class Item : ItemTemplate{
 		public float power=1; //how many components went into it
-		public float stability=1; //how likely it is to mutate
-		public float level=1;
+		public float stability=1; //the error in the ratio
+								  //effects the falloff for modules
 
 		public int StrengthModifier(){
 			switch (type) {
@@ -56,7 +56,10 @@ namespace Modulo{
 			SpriteSize ss  = GetSpriteSize();
 			sp.sprite = ss.sprite;
 			r.transform.localScale=ss.size;
-			d.maxHealth = 10 *(level)*power*StrengthModifier();
+			d.maxHealth = 10 *StrengthModifier();
+			if (ItemTypes.Defence == type){
+				d.maxHealth*=power;
+			}
 			d.regen=d.maxHealth/10;
 			IsItem i = r.AddComponent<IsItem>();
 			i.item=this;

@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 
 namespace Modulo{
+
 	public class IsItem : MonoBehaviour{
 		public Item item;
 	}

@@ -477,12 +477,17 @@ namespace Modulo{
 		public int x;public int y;
 
 		public GameObject RenderNode(){
-			GameObject o =MeshGens.MinObjGen(Shapes.hexagonOuter,MatColour.black);
-			o.AddComponent<NodeView>().n=this;
+			GameObject o =MeshGens.MinObjGen(Shapes.hexagonOuter,MatColour.rebeccaOrangeAnti);
+			GameObject a = MeshGens.MinObjGen(Shapes.arrow,MatColour.rebeccaOrange);
 			sint=(int)state;
 			Vector3 p =WorldPos();
 			o.transform.SetParent(World.gridObj.transform);
 			o.transform.localPosition=p;
+			a.transform.SetParent(o.transform);
+			Vector3 nextDist =next.WorldPos() - p;
+			a.transform.localPosition=(nextDist)/2;
+			a.transform.eulerAngles = new Vector3(0,0,World.VecToAngle(nextDist));
+			a.transform.localScale=new Vector3(1,nextDist.magnitude,1);
 			return o;
 		}
 
