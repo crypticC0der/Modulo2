@@ -24,7 +24,7 @@ namespace Modulo{
 
 		public GasAttack() : base()
 		{
-			range = 10;
+			range = 3;
 			timerMax = 0.5f;
 			procCoefficent = 1;
 			dmg = 1;
