@@ -129,21 +129,25 @@ public class Combatant : Damageable {
         }
     }
 
+    //reset is when you are shrinking the range
     public void ValidateRange(bool reset = false) {
-        int[] wop = World.WorldPos(transform.position);
-        if (reset) {
-            World.ChangeStatesInRange(wop[0], wop[1], maxRange,
-                                      NodeState.targeted,
-                                      World.ChangeStateMethod.Off);
+        HexCoord pos = HexCoord.NearestHex(transform.position);
+        if(reset){
+            World.UpdateState(pos,
+                              NodeState.targeted,
+                              ChangeStateMethod.Off,
+                              maxRange);
         }
-        maxRange = 0;
+        maxRange=0;
         foreach (Attack a in attacks) {
             if (a.attackRange() > maxRange) {
                 maxRange = a.attackRange();
             }
         }
-        World.ChangeStatesInRange(wop[0], wop[1], maxRange, NodeState.targeted,
-                                  World.ChangeStateMethod.On);
+        World.UpdateState(pos,
+                          NodeState.targeted,
+                          ChangeStateMethod.On,
+                          maxRange);
     }
 
     public void AddAttack<A>()
@@ -154,10 +158,11 @@ public class Combatant : Damageable {
 
         if (a.attackRange() > maxRange && type == EntityTypes.Turret) {
             maxRange = a.attackRange();
-            int[] wop = World.WorldPos(transform.position);
-            World.ChangeStatesInRange(wop[0], wop[1], maxRange,
-                                      NodeState.targeted,
-                                      World.ChangeStateMethod.On);
+            HexCoord pos = HexCoord.NearestHex(transform.position);
+            World.UpdateState(pos,
+                              NodeState.targeted,
+                              ChangeStateMethod.On,
+                              maxRange);
         }
     }
 

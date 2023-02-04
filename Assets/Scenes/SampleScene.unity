@@ -5698,6 +5698,7 @@ GameObject:
   - component: {fileID: 519420035}
   - component: {fileID: 519420036}
   - component: {fileID: 519420037}
+  - component: {fileID: 519420038}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -5860,7 +5861,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f24258369843d9745900b0511ea7b477, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interval: 3
 --- !u!114 &519420036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5883,6 +5883,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ba7509fd6962c69e4b40452f62652565, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &519420038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4597c1b352bd0f16bb3e68b5fcb9e55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &555178683
@@ -6052,6 +6064,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SendPointerHoverToParent: 1
   m_HorizontalAxis: Horizontal
   m_VerticalAxis: Vertical
   m_SubmitButton: Submit
@@ -7601,8 +7614,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   force: 500
-  wop: 
-  pwop: 
 --- !u!50 &1993914999
 Rigidbody2D:
   serializedVersion: 4

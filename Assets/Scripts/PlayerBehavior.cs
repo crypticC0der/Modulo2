@@ -108,15 +108,17 @@ public class PlayerBehavior : Damageable {
 
     public override void Die() {
         base.Die();
-        World.clearGrid(false);
+        if(World.orbTransform==transform){
+            World.stable=false;
+        }
     }
 
     protected override void Start() {
         me = this;
 
-        // IEnumerator coroutine = World.MapGen();
-        // StartCoroutine(coroutine);
-        World.MapGen();
+        IEnumerator coroutine = World.MapGen();
+        StartCoroutine(coroutine);
+        // World.MapGen();
 
         for (int i = 0; i < 6; i++) {
             componentSprites[i] = Resources.Load<Sprite>("assets/bloon");
@@ -158,7 +160,6 @@ public class PlayerBehavior : Damageable {
         if (t.type == ItemTypes.Orb) {
             World.orbTransform = transform;
             priority = Priority.Orb;
-            World.Reset();
         }
         deck.Add(t);
         controller.Render();
@@ -171,12 +172,13 @@ public class PlayerBehavior : Damageable {
             // check if targets arent near
             if (!Physics2D.OverlapCircle(p, 1f, ((1 << 6) + (1 << 0)))) {
                 p.z = 0;
-                GameObject o = holding.ToGameObject(World.NearestHex(p));
+                HexCoord hex = HexCoord.NearestHex(p);
+                GameObject o = holding.ToGameObject(
+                    hex.position());
                 if (holding.type == ItemTypes.Orb) {
                     World.orbTransform = o.transform;
                     PlayerBehavior.me.priority = Priority.Combatant;
-                    World.Reset(); // reset cos the orb is changing places
-                                   // entirely
+                    World.SetOrb(hex);
                 }
                 holding = null;
             }

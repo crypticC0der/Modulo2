@@ -8,24 +8,22 @@ public class move : MonoBehaviour {
     Rigidbody2D rb;
     void Start() {
         rb = GetComponent<Rigidbody2D>();
-        wop = World.WorldPos(transform.position);
-        World.PlaceOrb(wop[0], wop[1]);
-        pwop = wop;
+        // wop = WorldPos(transform.position);
+        // World.PlaceOrb(wop[0], wop[1]);
+        // pwop = wop;
+        World.SetOrb(HexCoord.NearestHex(transform.position));
         World.orbTransform = transform;
     }
 
     // Update is called once per frame
     public float force;
-    public int[] wop;
-    public int[] pwop;
     float sprint = 2;
     float sprintTime = 0;
     public static float healTime = 1;
     void Update() {
-        wop = World.WorldPos(World.orbTransform.position);
-        if (wop[0] != pwop[0] || wop[1] != pwop[1]) {
-            World.PlaceOrb(wop[0], wop[1]);
-        }
+        HexCoord pos = HexCoord.NearestHex(transform.position);
+        World.RenderAround(pos);
+        World.SetOrb(pos);
         Vector3 v = new Vector3(Input.GetAxis("Horizontal"),
                                 Input.GetAxis("Vertical")) *
                     Time.deltaTime;
@@ -56,7 +54,6 @@ public class move : MonoBehaviour {
             }
         }
         rb.AddForce(v * force / 0.02f);
-        pwop = wop;
     }
 }
 }

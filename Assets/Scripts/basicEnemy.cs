@@ -14,6 +14,7 @@ public enum EnemyTypes {
 }
 
 public class EnemyFsm : Combatant {
+    public static List<EnemyFsm> enemiesList = new List<EnemyFsm>();
     public static int enemies = 0;
     protected EnemyTypes enemyType = 0;
     public int strength = 6; // a metric  of how strong the enmy

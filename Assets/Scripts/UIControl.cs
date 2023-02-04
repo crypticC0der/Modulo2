@@ -69,11 +69,11 @@ public class UIControl : MonoBehaviour {
         }
 
         if (Input.GetButtonDown("uiToggle")) {
-            if (World.gridObj != null) {
-                GameObject.Destroy(World.gridObj);
-                World.gridObj = null;
+            if (WorldDebugger.gridObj != null) {
+                GameObject.Destroy(WorldDebugger.gridObj);
+                WorldDebugger.gridObj = null;
             } else {
-                World.GenGrid();
+                WorldDebugger.GenGrid();
             }
         }
 
@@ -90,7 +90,8 @@ public class UIControl : MonoBehaviour {
             holdimg.transform.localScale = ss.size;
             inWorldClone.transform.localScale = ss.size;
             holdimg.gameObject.transform.position = p;
-            inWorldClone.gameObject.transform.position = World.NearestHex(p);
+            inWorldClone.gameObject.transform.position =
+                HexCoord.NearestHex(p).position();
         } else {
             holdimg.sprite = null;
             inWorldClone.sprite = null;

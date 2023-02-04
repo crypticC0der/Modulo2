@@ -13,18 +13,21 @@ public class followAi : MonoBehaviour {
     public float force;
     Rigidbody2D rb;
     void Update() {
-        force = fsm.Speed() * 10 * fsm.speedBonus;
-        int[] wap = World.WorldPos(transform.position);
-        Node n = World.grid[wap[0], wap[1]].next;
-        Vector3 v;
-        if (n != null) {
-            fsm.distance = n.realDistance;
-            v = n.WorldPos() - transform.position;
-        } else {
-            v = World.orbTransform.transform.position - transform.position;
-            fsm.distance = v.magnitude;
+        if(World.stable){
+            Node current = World.HexCoordToNode(
+                HexCoord.NearestHex(transform.position));
+            force = fsm.Speed() * 10 * fsm.speedBonus;
+            Node n = current.next;
+            Vector3 v;
+            if (n != null) {
+                fsm.distance = n.realDistance;
+                v = n.hc.position() - transform.position;
+            } else {
+                v = World.orbTransform.transform.position - transform.position;
+                fsm.distance = v.magnitude;
+            }
+            rb.AddForce(v.normalized * Time.deltaTime * force / 0.02f);
         }
-        rb.AddForce(v.normalized * Time.deltaTime * force / 0.02f);
     }
 }
 }
