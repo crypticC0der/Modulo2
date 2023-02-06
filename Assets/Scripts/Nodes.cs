@@ -327,33 +327,34 @@ public class NodePerent : Node {
         }
     }
 
-    public delegate void DoNode(Node n);
-    public void ForChildren(DoNode func){
+    IEnumerable<HexCoord> ChildCoords(){
         for (int i = 0; i < World.optimizationCubeSize; i++) {
             for (int j = 0; j < World.optimizationCubeSize; j++) {
-                Node n = World.GetNode(hc + new HexCoord(i, j));
-                func(n);
+                yield return (hc + new HexCoord(i, j));
+            }
+        }
+    }
+
+    IEnumerable<Node> Children(){
+        for (int i = 0; i < World.optimizationCubeSize; i++) {
+            for (int j = 0; j < World.optimizationCubeSize; j++) {
+                yield return World.GetNode(hc + new HexCoord(i, j));
             }
         }
     }
 
     public void Conglomerate() {
         if (!HasState(NodeState.big)) {
-            for (int i = 0; i < World.optimizationCubeSize; i++) {
-                for (int j = 0; j < World.optimizationCubeSize; j++) {
-                    if (World.GetNode(hc + new HexCoord(i, j)).state !=
-                        state) {
-                        return;
-                    }
+            foreach(Node child in this.Children()){
+                if (child.state != state) {
+                    return;
                 }
             }
 
             state |= NodeState.big;
-            for (int i = 0; i < World.optimizationCubeSize; i++) {
-                for (int j = 0; j < World.optimizationCubeSize; j++) {
-                    if (j != 0 || i != 0) {
-                        World.nodes.Remove(hc + new HexCoord(i, j));
-                    }
+            foreach(HexCoord coord in this.ChildCoords()){
+                if (coord!=hc) {
+                    World.nodes.Remove(coord);
                 }
             }
             FundementalChange();
@@ -362,14 +363,9 @@ public class NodePerent : Node {
 
     public void Severance(){
         state &= ~NodeState.big;
-        for (int i = 0; i < World.optimizationCubeSize; i++) {
-            for (int j = 0; j < World.optimizationCubeSize; j++) {
-                if (j != 0 || i != 0) {
-                    new Node(
-                        hc + new HexCoord(i,j),
-                        state
-                        );
-                }
+        foreach(HexCoord coord in this.ChildCoords()){
+            if (coord!=hc) {
+                new Node(coord, state);
             }
         }
         FundementalChange();

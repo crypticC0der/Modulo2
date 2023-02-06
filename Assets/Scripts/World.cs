@@ -264,8 +264,9 @@ public static class World {
 
     public static void UpdateState(HexCoord hc,NodeState ns,
                                    ChangeStateMethod mode,float range){
-        hc.ForEachInRange((int)Mathf.Ceil(range),
-                       (HexCoord cord) => UpdateState(cord,ns,mode));
+        foreach(HexCoord cord in hc.InRange((int)Mathf.Ceil(range))){
+            UpdateState(cord,ns,mode);
+        }
         ConstructMap();
     }
 

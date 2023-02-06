@@ -77,18 +77,17 @@ public class HexCoord {
             + Mathf.Abs(a.r - b.r)) / 2;
     }
 
-    public List<HexCoord> Range(int range){
-        List<HexCoord> ret = new List<HexCoord>();
-        ForEachInRange(range,(HexCoord hc) => ret.Add(hc));
-        return ret;
-    }
+    // public List<HexCoord> Range(int range){
+    //     List<HexCoord> ret = new List<HexCoord>();
+    //     ForEachInRange(range,(HexCoord hc) => ret.Add(hc));
+    //     return ret;
+    // }
 
-    public delegate void HexDo(HexCoord hc);
-    public void ForEachInRange(int range,HexDo func){
+    public IEnumerable<HexCoord> InRange(int range){
         for(int q =-range;q<=range;q++){
             for(int r =Mathf.Max(-range,-q-range);
-              r<=Mathf.Min(range,-q+range);r++){
-                func(this + new HexCoord(q,-r));
+            r<=Mathf.Min(range,-q+range);r++){
+                yield return (this + new HexCoord(q,-r));
             }
         }
     }
