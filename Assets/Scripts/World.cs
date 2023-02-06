@@ -187,7 +187,7 @@ public static class World {
         }
     }
 
-    static bool debug=false;
+    static bool debug=true;
     static List<GameObject> fucked = new List<GameObject>();
     public static void AStar(Node start){
         astrCalls++;
@@ -202,7 +202,6 @@ public static class World {
         Node goal=null;
         while(toCheck.Count>0){
             Node checking = toCheck.Dequeue();
-            Debug.Log(checking.hc);
             //if neccicary add the ability to accidently run into anothers pass
             if(checking.HasState(NodeState.orb) || checking.next!=null){
                 //win

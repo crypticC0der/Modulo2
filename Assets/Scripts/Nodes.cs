@@ -47,13 +47,14 @@ public class Node {
     public NodeState state {get;protected set;}
     public HexCoord hc { get; private set; }
     public Node next=null;
+    bool valid=false;
+    List<Line> neighbors = new List<Line>();
+
 
     public void ChangeState(NodeState ns,ChangeStateMethod csm,HexCoord at){
         bool changing = (csm == ChangeStateMethod.On && !HasState(ns))
             || (csm == ChangeStateMethod.Off && HasState(ns))
             || csm==ChangeStateMethod.Flip;
-
-
 
         if(changing && HasState(NodeState.big)){
             ((NodePerent)(this)).Severance();
@@ -79,7 +80,6 @@ public class Node {
 
     private void AttemptConglomeration(){
         if(World.HexCoordToNode(hc.RectCenter()).state==state){
-            Debug.Log("begin");
             ((NodePerent)World.HexCoordToNode(hc.RectCenter())).Conglomerate();
         }
     }
@@ -92,6 +92,7 @@ public class Node {
         this.hc = hc;
         this.state = ns;
         World.nodes.Add(hc, this);
+        FundementalChange();
     }
 
     public float Heuristic(){
@@ -103,7 +104,22 @@ public class Node {
         realDistance = n.realDistance + HexCoord.Distance(this.hc,n.hc);
     }
 
+    protected void FundementalChange(){
+        this.Invalidate();
+        foreach(Line l in Neighbors()){
+            l.to.Invalidate();
+        }
+    }
+
+    public void Invalidate(){
+        valid=false;
+        neighbors.Clear();
+    }
+
     public List<Line> Neighbors() {
+        if(valid){
+            return neighbors;
+        }
         List<Line> ret = new List<Line>();
         if (HasState(NodeState.placeholder)) {
             return ret;
@@ -192,7 +208,6 @@ public class Node {
                 ret.Add(new Line(Focus));
             }
 
-            return ret;
         } else {
             for (int i = 0; i < 3; i++) {
                 Node n= World.GetNode(hc + World.Neighbors[i]);
@@ -228,8 +243,10 @@ public class Node {
                     ret.Add(a);
                 }
             }
-            return ret;
         }
+        neighbors = ret;
+        valid=true;
+        return ret;
     }
 
     public float StateToCost() {
@@ -326,13 +343,11 @@ public class NodePerent : Node {
                 for (int j = 0; j < World.optimizationCubeSize; j++) {
                     if (World.GetNode(hc + new HexCoord(i, j)).state !=
                         state) {
-                        Debug.Log("faliure");
                         return;
                     }
                 }
             }
 
-            Debug.Log("success");
             state |= NodeState.big;
             for (int i = 0; i < World.optimizationCubeSize; i++) {
                 for (int j = 0; j < World.optimizationCubeSize; j++) {
@@ -341,6 +356,7 @@ public class NodePerent : Node {
                     }
                 }
             }
+            FundementalChange();
         }
     }
 
@@ -356,7 +372,7 @@ public class NodePerent : Node {
                 }
             }
         }
-
+        FundementalChange();
     }
 }
 }
