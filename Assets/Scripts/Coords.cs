@@ -4,6 +4,8 @@ using UnityEngine;
 using System;
 
 namespace Modulo {
+
+[System.Serializable]
 public class HexCoord {
     public int q, r;
     public static Vector2 Q =

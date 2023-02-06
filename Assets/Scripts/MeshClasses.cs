@@ -353,9 +353,13 @@ public static class MeshGens {
 
     public static GameObject MinObjGen(Shapes shape, MatColour m,
                                        int offset = 0) {
+        return MinObjGen(shape,colors[(int)m * 2 + offset]);
+    }
+
+    public static GameObject MinObjGen(Shapes shape, Material m) {
         GameObject obj = new GameObject(shapeNames[(int)shape]);
         obj.AddComponent<MeshFilter>().mesh = meshes[(int)shape];
-        obj.AddComponent<MeshRenderer>().material = colors[(int)m * 2 + offset];
+        obj.AddComponent<MeshRenderer>().material = m;
         return obj;
     }
 
@@ -423,17 +427,21 @@ public static class MeshGens {
 
     const float blackness = 1 / 8f;
     static void ColourMats(MatColour color, Color c) {
+        colors[(int)color * 2] = ColorToMat(c);
+        colors[(int)color * 2 + 1]= ColorToMat(
+            new Color(blackness * c.r, blackness * c.g, blackness * c.b));
+    }
+
+    public static Material ColorToMat(Color c){
         Shader s;
         if (c.a != 1) {
             s = Shader.Find("Standard");
         } else {
             s = Shader.Find("Unlit/Color");
         }
-        colors[(int)color * 2] = new Material(s);
-        colors[(int)color * 2].color = c;
-        colors[(int)color * 2 + 1] = new Material(s);
-        colors[(int)color * 2 + 1].color =
-            new Color(blackness * c.r, blackness * c.g, blackness * c.b);
+        Material m = new Material(s);
+        m.color=c;
+        return m;
     }
 }
 

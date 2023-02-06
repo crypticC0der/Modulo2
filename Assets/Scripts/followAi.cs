@@ -12,6 +12,8 @@ public class followAi : MonoBehaviour {
     EnemyFsm fsm;
     public float force;
     Rigidbody2D rb;
+    float PathTime;
+    float AllTime;
     void Update() {
         if (World.stable) {
             Node current =
@@ -22,10 +24,13 @@ public class followAi : MonoBehaviour {
             if (n != null) {
                 fsm.distance = n.realDistance;
                 v = n.hc.position() - transform.position;
+                PathTime+=Time.deltaTime;
             } else {
                 v = World.orbTransform.position - transform.position;
                 fsm.distance = v.magnitude;
             }
+            AllTime+=Time.deltaTime;
+            Debug.Log(100*PathTime/AllTime);
             rb.AddForce(v.normalized * Time.deltaTime * force / 0.02f);
         }
     }

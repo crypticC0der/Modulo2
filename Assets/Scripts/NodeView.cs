@@ -7,4 +7,10 @@ public class NodeView : MonoBehaviour {
     public float heuristic;
 }
 
+public class CostView : MonoBehaviour {
+    public float cost;
+    public HexCoord hc;
+    public Color c;
+}
+
 }

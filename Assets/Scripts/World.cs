@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Jobs;
 using MeshGen;
+using static MeshGen.MeshGens;
 using Utils;
 using System;
 
@@ -15,8 +17,8 @@ public static class World {
     public static Node orbPoint;
     public static Transform orbTransform;
     public static bool stable = true;
-
     public static List<HexCoord> Neighbors;
+    static JobHandle handle;
 
     public static bool PowerOfTwo(int f) {
         return (f != 0) && ((f & (f - 1)) == 0);
@@ -68,10 +70,6 @@ public static class World {
                 HexCoord c =
                     center + (optimizationCubeSize * new HexCoord(i, j));
                 NodePerent np = (NodePerent)(HexCoordToNode(c));
-                if (c != np.hc) {
-                    Debug.Log(c);
-                    Debug.Log(np.hc);
-                }
                 np.Render();
             }
         }
@@ -133,11 +131,21 @@ public static class World {
     static void ConstructMap() { constructCalls++; }
 
     static void MapFix() {
-        foreach (KeyValuePair<HexCoord, Node> entry in nodes) {
-            entry.Value.next = null;
+        RepathPrerecs();
+
+        if(debug){
+            RepathEnemies();
+        }else{
+            RepathJob rj = new RepathJob();
+            handle = rj.Schedule();
         }
-        RepathEnemies();
     }
+
+    struct RepathJob : IJob{
+        public void Execute(){
+            RepathEnemies();
+        }
+    };
 
     static int astrCalls = 0;
     static int earlyExits = 0;
@@ -146,26 +154,51 @@ public static class World {
             astrCalls = 0;
             earlyExits = 0;
             MapFix();
-            Debug.Log(astrCalls);
-            Debug.Log(earlyExits);
+            if(debug){
+                Debug.Log(astrCalls);
+                Debug.Log(earlyExits);
+            }
         }
         constructCalls = 0;
     }
 
-    public static void RepathEnemies() {
+    public static void DebugToggle(){
+        WorldDebugger.ToggleGrid();
+        EnsureIntegrety();
+        debug=!debug;
+    }
+
+    public static void RepathPrerecs(){
+
+        foreach (KeyValuePair<HexCoord, Node> entry in nodes) {
+            entry.Value.next = null;
+        }
+
         foreach (GameObject x in fucked) {
             GameObject.Destroy(x);
         }
         fucked.Clear();
+
+        EnsureIntegrety();
+
+        EnemyPos.Clear();
         Vector3 orb = orbPoint.hc.position();
         Comparison<EnemyFsm> comp = (EnemyFsm a, EnemyFsm b) => {
             return (int)((a.transform.position - orb).magnitude -
                          (b.transform.position - orb).magnitude);
         };
         EnemyFsm.enemiesList.Sort(comp);
-        foreach (EnemyFsm enemy in EnemyFsm.enemiesList) {
+        foreach(EnemyFsm e in EnemyFsm.enemiesList){
+            EnemyPos.Add(e.transform.position);
+        }
+
+    }
+
+    static List<Vector3> EnemyPos = new List<Vector3>();
+    public static void RepathEnemies() {
+        foreach (Vector3 pos in EnemyPos) {
             Node current =
-                HexCoordToNode(HexCoord.NearestHex(enemy.transform.position));
+                HexCoordToNode(HexCoord.NearestHex(pos));
             if (current.next == null) {
                 List<Line> neighbors = current.Neighbors();
                 bool nearbyNeighbor = false;
@@ -188,8 +221,13 @@ public static class World {
         }
     }
 
-    static bool debug = true;
+    static bool debug = false;
     static List<GameObject> fucked = new List<GameObject>();
+
+    static void EnsureIntegrety(){
+        handle.Complete();
+    }
+
     public static void AStar(Node start) {
         astrCalls++;
         PriorityQueue<Node, float> toCheck = new PriorityQueue<Node, float>();
@@ -259,19 +297,21 @@ public static class World {
             }
             return;
         }
-        Debug.Log("epic Fail");
     }
 
     public static void UpdateState(HexCoord hc, NodeState ns,
                                    ChangeStateMethod mode) {
+        EnsureIntegrety();
         HexCoordToNode(hc).ChangeState(ns, mode, hc);
         ConstructMap();
     }
 
     public static void UpdateState(HexCoord hc, NodeState ns,
                                    ChangeStateMethod mode, float range) {
+        EnsureIntegrety();
+        Debug.Log(ns);
         foreach (HexCoord cord in hc.InRange((int)Mathf.Ceil(range))) {
-            UpdateState(cord, ns, mode);
+            HexCoordToNode(cord).ChangeState(ns, mode, cord);
         }
         ConstructMap();
     }
@@ -299,7 +339,25 @@ public static class World {
 }
 
 public static class WorldDebugger {
-    public static GameObject gridObj;
-    public static void GenGrid() { gridObj = new GameObject(); }
+    static GameObject gridObj;
+    public static void ToggleGrid() {
+        if(gridObj){
+            GameObject.Destroy(gridObj);
+        }else{
+            gridObj = new GameObject();
+            foreach(KeyValuePair<HexCoord,Node> n in World.nodes){
+                Color c = Color.Lerp(Color.green,Color.red,
+                                    (n.Value.StateToCost()));
+                Material m = ColorToMat(c);
+                GameObject o = MinObjGen(Shapes.hexagonOuter, m);
+                o.transform.SetParent(gridObj.transform);
+                o.transform.position = n.Value.hc.position();
+                CostView cv = o.AddComponent<CostView>();
+                cv.cost=n.Value.StateToCost();
+                cv.hc = n.Value.hc;
+                cv.c=c;
+            }
+        }
+    }
 }
 }

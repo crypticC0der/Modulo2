@@ -69,12 +69,7 @@ public class UIControl : MonoBehaviour {
         }
 
         if (Input.GetButtonDown("uiToggle")) {
-            if (WorldDebugger.gridObj != null) {
-                GameObject.Destroy(WorldDebugger.gridObj);
-                WorldDebugger.gridObj = null;
-            } else {
-                WorldDebugger.GenGrid();
-            }
+            World.DebugToggle();
         }
 
         inventory.Update();
