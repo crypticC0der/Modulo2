@@ -64,10 +64,8 @@ public class Item : ItemTemplate {
         if (type == ItemTypes.Orb) {
             d.maxHealth = 100;
         } else {
-            World.UpdateState(
-                HexCoord.NearestHex(p),
-                NodeState.wall,
-                ChangeStateMethod.On);
+            World.UpdateState(HexCoord.NearestHex(p), NodeState.wall,
+                              ChangeStateMethod.On);
         }
         return r;
     }

@@ -108,8 +108,8 @@ public class PlayerBehavior : Damageable {
 
     public override void Die() {
         base.Die();
-        if(World.orbTransform==transform){
-            World.stable=false;
+        if (World.orbTransform == transform) {
+            World.stable = false;
         }
     }
 
@@ -173,8 +173,7 @@ public class PlayerBehavior : Damageable {
             if (!Physics2D.OverlapCircle(p, 1f, ((1 << 6) + (1 << 0)))) {
                 p.z = 0;
                 HexCoord hex = HexCoord.NearestHex(p);
-                GameObject o = holding.ToGameObject(
-                    hex.position());
+                GameObject o = holding.ToGameObject(hex.position());
                 if (holding.type == ItemTypes.Orb) {
                     World.orbTransform = o.transform;
                     PlayerBehavior.me.priority = Priority.Combatant;
@@ -190,9 +189,7 @@ public class PlayerBehavior : Damageable {
         base.FixedUpdate();
     }
 
-    void LateUpdate(){
-        World.Run();
-    }
+    void LateUpdate() { World.Run(); }
 
     void OnCollisionEnter2D(Collision2D collision) {
         if (collision.gameObject.name == "orb") {

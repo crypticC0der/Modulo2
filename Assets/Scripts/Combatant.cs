@@ -129,24 +129,20 @@ public class Combatant : Damageable {
         }
     }
 
-    //reset is when you are shrinking the range
+    // reset is when you are shrinking the range
     public void ValidateRange(bool reset = false) {
         HexCoord pos = HexCoord.NearestHex(transform.position);
-        if(reset){
-            World.UpdateState(pos,
-                              NodeState.targeted,
-                              ChangeStateMethod.Off,
+        if (reset) {
+            World.UpdateState(pos, NodeState.targeted, ChangeStateMethod.Off,
                               maxRange);
         }
-        maxRange=0;
+        maxRange = 0;
         foreach (Attack a in attacks) {
             if (a.attackRange() > maxRange) {
                 maxRange = a.attackRange();
             }
         }
-        World.UpdateState(pos,
-                          NodeState.targeted,
-                          ChangeStateMethod.On,
+        World.UpdateState(pos, NodeState.targeted, ChangeStateMethod.On,
                           maxRange);
     }
 
@@ -159,9 +155,7 @@ public class Combatant : Damageable {
         if (a.attackRange() > maxRange && type == EntityTypes.Turret) {
             maxRange = a.attackRange();
             HexCoord pos = HexCoord.NearestHex(transform.position);
-            World.UpdateState(pos,
-                              NodeState.targeted,
-                              ChangeStateMethod.On,
+            World.UpdateState(pos, NodeState.targeted, ChangeStateMethod.On,
                               maxRange);
         }
     }

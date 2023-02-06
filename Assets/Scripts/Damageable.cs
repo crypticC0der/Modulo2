@@ -238,10 +238,8 @@ public class Damageable : MonoBehaviour {
         }
 
         if ((int)type < 3) {
-            World.UpdateState(
-                HexCoord.NearestHex(transform.position),
-                NodeState.wall,
-                ChangeStateMethod.Off);
+            World.UpdateState(HexCoord.NearestHex(transform.position),
+                              NodeState.wall, ChangeStateMethod.Off);
             if (type == EntityTypes.Turret) {
                 float maxRange = 0;
                 foreach (Attack a in ((Combatant)(this)).attacks) {
@@ -251,11 +249,9 @@ public class Damageable : MonoBehaviour {
                     }
                 }
 
-                World.UpdateState(
-                    HexCoord.NearestHex(transform.position),
-                    NodeState.targeted,
-                    ChangeStateMethod.Off,
-                    maxRange);
+                World.UpdateState(HexCoord.NearestHex(transform.position),
+                                  NodeState.targeted, ChangeStateMethod.Off,
+                                  maxRange);
             }
         }
         GameObject.Destroy(gameObject);

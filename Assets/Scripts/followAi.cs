@@ -13,9 +13,9 @@ public class followAi : MonoBehaviour {
     public float force;
     Rigidbody2D rb;
     void Update() {
-        if(World.stable){
-            Node current = World.HexCoordToNode(
-                HexCoord.NearestHex(transform.position));
+        if (World.stable) {
+            Node current =
+                World.HexCoordToNode(HexCoord.NearestHex(transform.position));
             force = fsm.Speed() * 10 * fsm.speedBonus;
             Node n = current.next;
             Vector3 v;
