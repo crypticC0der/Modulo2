@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using MeshGen;
 
 namespace Modulo {
 public enum NodeState {
@@ -28,13 +29,13 @@ public class Line {
 
     public float Cost(Node start){
         float d = HexCoord.Distance(start.hc,to.hc);
-        float m = to.StateToMultiplier();
+        float m = to.StateToCost();
         for(int i=0;i<over.Count;i++){
             if(over[i]!=null){
-                m+=over[i].StateToMultiplier()-1;
+                m+=over[i].StateToCost();
             }
         }
-        return d*m;
+        return d+m;
     }
 }
 
@@ -51,6 +52,9 @@ public class Node {
         bool changing = (csm == ChangeStateMethod.On && !HasState(ns))
             || (csm == ChangeStateMethod.Off && HasState(ns))
             || csm==ChangeStateMethod.Flip;
+
+
+
         if(changing && HasState(NodeState.big)){
             ((NodePerent)(this)).Severance();
             World.HexCoordToNode(hc).ChangeState(ns,csm,hc);
@@ -75,11 +79,13 @@ public class Node {
 
     private void AttemptConglomeration(){
         if(World.HexCoordToNode(hc.RectCenter()).state==state){
+            Debug.Log("begin");
             ((NodePerent)World.HexCoordToNode(hc.RectCenter())).Conglomerate();
         }
     }
 
     public bool HasState(NodeState ns) { return (state & ns) != 0; }
+
 
     delegate void UpdateOffset(int update);
     public Node(HexCoord hc, NodeState ns) {
@@ -89,7 +95,7 @@ public class Node {
     }
 
     public float Heuristic(){
-        return HexCoord.Distance(World.orbPoint.hc,hc);
+        return Mathf.Pow(HexCoord.Distance(World.orbPoint.hc,hc),1);
     }
 
     public void SetNext(Node n){
@@ -114,7 +120,7 @@ public class Node {
                 if(Focus!=null){
                     ret.Add(new Line(Focus));
                 }
-                if (Focus.HasState(NodeState.big)) {
+                if (Focus != null && Focus.HasState(NodeState.big)) {
                     uo(World.optimizationCubeSize);
                 } else {
                     for (int i = 0; i < World.optimizationCubeSize - 1; i++) {
@@ -185,6 +191,7 @@ public class Node {
             if(Focus!=null){
                 ret.Add(new Line(Focus));
             }
+
             return ret;
         } else {
             for (int i = 0; i < 3; i++) {
@@ -225,24 +232,24 @@ public class Node {
         }
     }
 
-    public float StateToMultiplier() {
-        float multiplier = 1;
+    public float StateToCost() {
+        float cost = 0;
         if (HasState(NodeState.wall)) {
-            multiplier *= 6;
+            cost += 3;
         }
         if (HasState(NodeState.targeted)) {
-            multiplier *= 8;
+            cost += 1;
         }
         if (HasState(NodeState.ground)) {
-            multiplier *= 128;
+            cost += 128;
         }
-        if (HasState(NodeState.big)) {
-            multiplier *= 4;
+        if (HasState(NodeState.orb)) {
+            cost = 0;
         }
-        return multiplier;
+        return cost;
     }
 
-    public override bool Equals(object obj) { return Equals(obj as HexCoord); }
+    public override bool Equals(object obj) { return Equals(obj as Node); }
 
     public bool Equals(Node n) { return hc.Equals(n.hc); }
 
@@ -253,7 +260,6 @@ public class Node {
 
 public class NodePerent : Node {
     public List<Renderer> attachedRenderers = new List<Renderer>();
-    public bool rectUpdated = false;
 
     public NodePerent(HexCoord hc)
         : base(hc, NodeState.placeholder | NodeState.big) {
@@ -265,9 +271,26 @@ public class NodePerent : Node {
     }
 
     public bool Generate() {
-        state &= ~NodeState.placeholder;
+        if(HasState(NodeState.big)){
+            state &= ~NodeState.placeholder;
+        }else{
+            for (int i = 0; i < World.optimizationCubeSize; i++) {
+                for (int j = 0; j < World.optimizationCubeSize; j++) {
+                    HexCoord pos = hc + new HexCoord(i, j);
+                    Node n = World.GetNode(pos);
+                    n.ChangeState(NodeState.placeholder,
+                                  ChangeStateMethod.Off, pos);
+                }
+            }
+        }
+
+        // GameObject o = MeshGens.MinObjGen(
+        //     Shapes.hexagon,MatColour.rebeccaPurple);
+        // o.transform.position = hc.position();
+        // ChangeState(NodeState.wall,ChangeStateMethod.On,hc);
         return true;
     }
+
     public void Render() {
         if (HasState(NodeState.placeholder)) {
             if (!Generate()) {
@@ -287,17 +310,29 @@ public class NodePerent : Node {
         }
     }
 
+    public delegate void DoNode(Node n);
+    public void ForChildren(DoNode func){
+        for (int i = 0; i < World.optimizationCubeSize; i++) {
+            for (int j = 0; j < World.optimizationCubeSize; j++) {
+                Node n = World.GetNode(hc + new HexCoord(i, j));
+                func(n);
+            }
+        }
+    }
+
     public void Conglomerate() {
-        if (rectUpdated && !HasState(NodeState.big)) {
+        if (!HasState(NodeState.big)) {
             for (int i = 0; i < World.optimizationCubeSize; i++) {
                 for (int j = 0; j < World.optimizationCubeSize; j++) {
                     if (World.GetNode(hc + new HexCoord(i, j)).state !=
                         state) {
+                        Debug.Log("faliure");
                         return;
                     }
                 }
             }
 
+            Debug.Log("success");
             state |= NodeState.big;
             for (int i = 0; i < World.optimizationCubeSize; i++) {
                 for (int j = 0; j < World.optimizationCubeSize; j++) {

@@ -190,6 +190,10 @@ public class PlayerBehavior : Damageable {
         base.FixedUpdate();
     }
 
+    void LateUpdate(){
+        World.Run();
+    }
+
     void OnCollisionEnter2D(Collision2D collision) {
         if (collision.gameObject.name == "orb") {
             AddToDeck(collision.gameObject.GetComponent<IsItem>().item);

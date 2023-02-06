@@ -8,9 +8,10 @@ using System;
 namespace Modulo {
 
 public static class World {
+    public static float hexSize = 1/Mathf.Sqrt(3);
     public static Vector2 hexVec = new Vector2(1f / 2, Mathf.Sqrt(3) / 2);
     public static Dictionary<HexCoord, Node> nodes;
-    public const int optimizationCubeSize = 4;
+    public const int optimizationCubeSize = 8;
     public static Node orbPoint;
     public static Transform orbTransform;
     public static bool stable=true;
@@ -25,12 +26,12 @@ public static class World {
     public static void Initialize() {
         nodes = new Dictionary<HexCoord,Node>();
         Neighbors = new List<HexCoord>();
-        Neighbors.Add(new HexCoord(0, -1));
-        Neighbors.Add(new HexCoord(1, -1));
+        Neighbors.Add(new HexCoord(0, +1));
+        Neighbors.Add(new HexCoord(1, +1));
         Neighbors.Add(new HexCoord(1, 0));
 
-        Neighbors.Add(new HexCoord(1, -2));
-        Neighbors.Add(new HexCoord(2, -1));
+        Neighbors.Add(new HexCoord(1, +2));
+        Neighbors.Add(new HexCoord(2, +1));
         Neighbors.Add(new HexCoord(1, 1));
 
         if(!PowerOfTwo(optimizationCubeSize)){
@@ -44,17 +45,32 @@ public static class World {
                         j * optimizationCubeSize));
             }
         }
+
+
+
+        for (int i = -100; i <= 100; i++) {
+            for (int j = -100; j <= 100; j++) {
+                HexCoord hc = new HexCoord(i,j);
+                if(hc != HexCoord.NearestHex(hc.position())){
+                    throw(new ArgumentException(hc.ToString() + " -> " + hc.position().ToString() + " -> " + HexCoord.NearestHex(hc.position()).ToString()));
+                }
+            }
+        }
     }
 
     public static void RenderAround(HexCoord hc) {
         // visability Range
         HexCoord center = hc.RectCenter();
         const int vr = 5;
-        for (int i = -vr; i < vr; i++) {
-            for (int j = -vr; j < vr; j++) {
+        for (int i = -vr; i <= vr; i++) {
+            for (int j = -vr; j <= vr; j++) {
+                HexCoord c = center + (optimizationCubeSize * new HexCoord(i, j));
                 NodePerent np =
-                    (NodePerent)(HexCoordToNode(center +
-                                optimizationCubeSize * new HexCoord(i, j)));
+                    (NodePerent)(HexCoordToNode(c));
+                if(c!=np.hc){
+                    Debug.Log(c);
+                    Debug.Log(np.hc);
+                }
                 np.Render();
             }
         }
@@ -98,25 +114,48 @@ public static class World {
     }
 
     public static void SetOrb(HexCoord orbCoord){
-        if(orbPoint ==null || orbCoord!=orbPoint.hc){
+        if(orbPoint == null || orbCoord!=orbPoint.hc){
             if(orbPoint!=null){
                 orbPoint.ChangeState(NodeState.orb,ChangeStateMethod.Off,orbPoint.hc);
             }
             Node orb = HexCoordToNode(orbCoord);
             orbPoint=orb;
+            orbPoint.realDistance=0;
+            orbPoint.ChangeState(NodeState.orb,ChangeStateMethod.On,orbPoint.hc);
             ConstructMap();
         }
     }
 
+    static int constructCalls=0;
     static void ConstructMap(){
+        constructCalls++;
+    }
+
+    static void MapFix(){
         foreach(KeyValuePair<HexCoord,Node> entry in nodes){
             entry.Value.next=null;
         }
         RepathEnemies();
+    }
 
+    static int astrCalls=0;
+    static int earlyExits=0;
+    public static void Run(){
+        if(constructCalls>0){
+            astrCalls=0;
+            earlyExits=0;
+            MapFix();
+            Debug.Log(astrCalls);
+            Debug.Log(earlyExits);
+        }
+        constructCalls=0;
     }
 
     public static void RepathEnemies(){
+        foreach (GameObject x in fucked){
+            GameObject.Destroy(x);
+        }
+        fucked.Clear();
         Vector3 orb = orbPoint.hc.position();
         Comparison<EnemyFsm> comp = (EnemyFsm a,EnemyFsm b) =>{
             return (int)((a.transform.position - orb).magnitude -
@@ -148,21 +187,28 @@ public static class World {
         }
     }
 
+    static bool debug=false;
+    static List<GameObject> fucked = new List<GameObject>();
     public static void AStar(Node start){
+        astrCalls++;
         PriorityQueue<Node,float> toCheck = new PriorityQueue<Node,float>();
         toCheck.Enqueue(start,0);
 
         Dictionary<Node,float> costs = new Dictionary<Node,float>();
         Dictionary<Node,Node> cameFrom = new Dictionary<Node,Node>();
 
+        costs[start]=0;
+
         Node goal=null;
         while(toCheck.Count>0){
             Node checking = toCheck.Dequeue();
+            Debug.Log(checking.hc);
             //if neccicary add the ability to accidently run into anothers pass
-            if(checking.HasState(NodeState.orb)){
+            if(checking.HasState(NodeState.orb) || checking.next!=null){
                 //win
-                checking.realDistance=0;
-                checking.next=checking;
+                if(!checking.HasState(NodeState.orb)){
+                    earlyExits++;
+                }
                 goal = checking;
                 break;
             }
@@ -170,11 +216,32 @@ public static class World {
             List<Line> neighbors = checking.Neighbors();
             foreach(Line neighbor in neighbors){
                 float newCost = costs[checking] + neighbor.Cost(checking);
-                if (neighbor.to.next == null || newCost < costs[neighbor.to]){
+                if (!costs.ContainsKey(neighbor.to) || newCost < costs[neighbor.to]){
                     costs[neighbor.to] = newCost;
                     float priority = newCost + neighbor.to.Heuristic();
+
+                    if(debug){
+                        GameObject o = MeshGens.MinObjGen(
+                            Shapes.hexagonOuter,MatColour.rebeccaOrangeAnti);
+                        o.transform.position = neighbor.to.hc.position();
+                        fucked.Add(o);
+                        NodeView nv = o.AddComponent<NodeView>();
+                        nv.priority=priority;
+                        nv.newCost= newCost;
+                        nv.heuristic = neighbor.to.Heuristic();
+
+                        GameObject a = MeshGens.MinObjGen(
+                            Shapes.arrow,MatColour.rebeccaOrange);
+                        a.transform.SetParent(o.transform);
+
+                        Vector3 fromDist =(checking.hc.position() - neighbor.to.hc.position());
+                        a.transform.position = (fromDist)/2 + neighbor.to.hc.position();
+                        a.transform.eulerAngles = new Vector3(0,0,World.VecToAngle(-fromDist));
+                        a.transform.localScale=new Vector3(1,1.2f*fromDist.magnitude,1);
+                    }
+
                     toCheck.Enqueue(neighbor.to,priority);
-                    cameFrom.Add(neighbor.to,checking);
+                    cameFrom[neighbor.to] = checking;
                 }
             }
         }
@@ -185,18 +252,22 @@ public static class World {
                 cameFrom[backChecking].SetNext(backChecking);
                 backChecking = cameFrom[backChecking];
             }
+            return;
         }
+        Debug.Log("epic Fail");
     }
 
     public static void UpdateState(HexCoord hc,NodeState ns
                                    ,ChangeStateMethod mode){
         HexCoordToNode(hc).ChangeState(ns,mode,hc);
+        ConstructMap();
     }
 
     public static void UpdateState(HexCoord hc,NodeState ns,
                                    ChangeStateMethod mode,float range){
         hc.ForEachInRange((int)Mathf.Ceil(range),
                        (HexCoord cord) => UpdateState(cord,ns,mode));
+        ConstructMap();
     }
 
     public static IEnumerator MapGen(){
@@ -209,7 +280,7 @@ public static class World {
     	GameObject g= it.ToGameObject(HexCoord.NearestHex(new Vector3(6,6,0)).position());
     	// EnemyFsm o = MeshGens.ObjGen(Shapes.star,MatColour.white);
     	// o.transform.position=new Vector3(-6,-6);
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(3.7f);
     	// MeshGens.MinObjGen(Shapes.puddle,MatColour.white);
     	EnemyFsm o=null;
     	for(int i=0;i<7;i++){

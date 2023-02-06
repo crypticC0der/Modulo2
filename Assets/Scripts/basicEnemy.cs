@@ -90,6 +90,8 @@ public class EnemyFsm : Combatant {
         baseStats.attackRate = attackRate;
         baseStats.speed = speed;
         baseStrength = strength;
+
+        enemiesList.Add(this);
     }
 
     public override void Die() {

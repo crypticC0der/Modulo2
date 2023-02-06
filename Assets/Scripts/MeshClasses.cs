@@ -86,7 +86,6 @@ public static class MeshGens {
         Vector2 seed =
             new Vector3(Random.Range(-7f, 7f), Random.Range(-9f, 9f));
         for (int i = 0; i < v; i++) {
-            Debug.Log(seed);
             radius = Mathf.LerpUnclamped(
                 0.25f, 0.5f,
                 Mathf.PerlinNoise(r * 0.7f + seed.x, r * 0.9f + seed.y));

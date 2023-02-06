@@ -23,7 +23,7 @@ public class followAi : MonoBehaviour {
                 fsm.distance = n.realDistance;
                 v = n.hc.position() - transform.position;
             } else {
-                v = World.orbTransform.transform.position - transform.position;
+                v = World.orbTransform.position - transform.position;
                 fsm.distance = v.magnitude;
             }
             rb.AddForce(v.normalized * Time.deltaTime * force / 0.02f);
