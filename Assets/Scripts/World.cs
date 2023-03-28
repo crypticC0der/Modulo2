@@ -13,7 +13,7 @@ public static class World {
     public static float hexSize = 1 / Mathf.Sqrt(3);
     public static Vector2 hexVec = new Vector2(1f / 2, Mathf.Sqrt(3) / 2);
     public static Dictionary<HexCoord, Node> nodes;
-    public const int optimizationCubeSize = 8;
+    public const int optimizationCubeSize = 4;
     public static Node orbPoint;
     public static Transform orbTransform;
     public static bool stable = true;
@@ -59,6 +59,7 @@ public static class World {
                 }
             }
         }
+
     }
 
     public static void RenderAround(HexCoord hc) {
@@ -112,18 +113,37 @@ public static class World {
         return angle;
     }
 
-    public static void SetOrb(HexCoord orbCoord) {
+    static int inaccuracy=999;
+    public static void SetOrb() {
+        HexCoord orbCoord =HexCoord.NearestHex(orbTransform.position);
+        // Debug.Log(orbTransform);
+        // Debug.Log(orbCoord);
+        if(orbPoint!=null){
+            // Debug.Log(orbPoint.hc);
+        }
         if (orbPoint == null || orbCoord != orbPoint.hc) {
             if (orbPoint != null) {
+                // Debug.Log("a");
                 orbPoint.ChangeState(NodeState.orb, ChangeStateMethod.Off,
                                      orbPoint.hc);
             }
             Node orb = HexCoordToNode(orbCoord);
+            orb.ChangeState(NodeState.orb, ChangeStateMethod.On,
+                                 orbCoord);
+            orb = HexCoordToNode(orbCoord);
+            if (orbPoint != null) {
+                HexCoordToNode(orbPoint.hc).next= orb;
+            }
             orbPoint = orb;
             orbPoint.realDistance = 0;
-            orbPoint.ChangeState(NodeState.orb, ChangeStateMethod.On,
-                                 orbPoint.hc);
-            ConstructMap();
+            inaccuracy++;
+
+            if(inaccuracy>2){
+                inaccuracy=0;
+                ConstructMap();
+            }
+        }else{
+            // Debug.Log("b");
         }
     }
 
@@ -182,7 +202,7 @@ public static class World {
         EnsureIntegrety();
 
         EnemyPos.Clear();
-        Vector3 orb = orbPoint.hc.position();
+        Vector3 orb = orbPoint.Position();
         Comparison<EnemyFsm> comp = (EnemyFsm a, EnemyFsm b) => {
             return (int)((a.transform.position - orb).magnitude -
                          (b.transform.position - orb).magnitude);
@@ -221,10 +241,10 @@ public static class World {
         }
     }
 
-    static bool debug = false;
+    public static bool debug {get;private set;} = false;
     static List<GameObject> fucked = new List<GameObject>();
 
-    static void EnsureIntegrety(){
+    public static void EnsureIntegrety(){
         handle.Complete();
     }
 
@@ -262,7 +282,7 @@ public static class World {
                     if (debug) {
                         GameObject o = MeshGens.MinObjGen(
                             Shapes.hexagonOuter, MatColour.rebeccaOrangeAnti);
-                        o.transform.position = neighbor.to.hc.position();
+                        o.transform.position = neighbor.to.Position();
                         fucked.Add(o);
                         NodeView nv = o.AddComponent<NodeView>();
                         nv.priority = priority;
@@ -273,10 +293,10 @@ public static class World {
                             Shapes.arrow, MatColour.rebeccaOrange);
                         a.transform.SetParent(o.transform);
 
-                        Vector3 fromDist = (checking.hc.position() -
-                                            neighbor.to.hc.position());
+                        Vector3 fromDist = (checking.Position() -
+                                            neighbor.to.Position());
                         a.transform.position =
-                            (fromDist) / 2 + neighbor.to.hc.position();
+                            (fromDist) / 2 + neighbor.to.Position();
                         a.transform.eulerAngles =
                             new Vector3(0, 0, World.VecToAngle(-fromDist));
                         a.transform.localScale =
@@ -301,15 +321,13 @@ public static class World {
 
     public static void UpdateState(HexCoord hc, NodeState ns,
                                    ChangeStateMethod mode) {
-        EnsureIntegrety();
         HexCoordToNode(hc).ChangeState(ns, mode, hc);
         ConstructMap();
     }
 
     public static void UpdateState(HexCoord hc, NodeState ns,
                                    ChangeStateMethod mode, float range) {
-        EnsureIntegrety();
-        Debug.Log(ns);
+
         foreach (HexCoord cord in hc.InRange((int)Mathf.Ceil(range))) {
             HexCoordToNode(cord).ChangeState(ns, mode, cord);
         }
@@ -351,11 +369,11 @@ public static class WorldDebugger {
                 Material m = ColorToMat(c);
                 GameObject o = MinObjGen(Shapes.hexagonOuter, m);
                 o.transform.SetParent(gridObj.transform);
-                o.transform.position = n.Value.hc.position();
+                o.transform.position = n.Value.Position();
                 CostView cv = o.AddComponent<CostView>();
                 cv.cost=n.Value.StateToCost();
                 cv.hc = n.Value.hc;
-                cv.c=c;
+                cv.n=n.Value;
             }
         }
     }

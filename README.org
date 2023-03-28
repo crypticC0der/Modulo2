@@ -505,3 +505,31 @@ proc modules:
 stat modules:
     stacks easily
     multiplies easily
+
+
+
+* components
+ugh ook so im revisitng this after like a *while*
+now i had a concept for components but uhhh now i do not
+
+basically it will go as such,
+you have a grey orb, this can be fasioned into either a red orb or a green orb
+there are also blue orbs dropped by your towers
+
+now red orbs are made in a red orb machine, they take log2 time of how much you make, they also sap health away from any thing in its radius, the more things nearby the faster it saps
+
+green orbs are made in a green orb machine the time they take is constant no matter how many you put in but it relies on you being there for the entire time
+
+all orbs are dropped based on the power of the damageable object
+enemies drop grey orbs based on their level
+towers drop blue orbs based on their power
+
+blue orbs are collected by enemies, and they level up based off an exponential graph
+the amount of xp to level up is determined by 2^(level-1)
+
+i think generally this should be good
+
+why the fuck did i implment components
+
+components will be spawned by running
+playerbehavior.me.SpawnComponent(

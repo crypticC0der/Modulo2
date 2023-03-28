@@ -104,7 +104,15 @@ public enum Priority {
     Other = 0
 }
 
-public class Damageable : MonoBehaviour {
+public interface HasMask{
+    GameObject gameObject {get;}
+    public int simpleLayerMask() {
+        // dont hit self or bullet, everythign else is fair game
+        return ~((1 << gameObject.layer) | (1 << 7));
+    }
+}
+
+public class Damageable : MonoBehaviour,Clickable,HasMask {
     public static string[] EntityNames =
         new string[7] { "Module", "Defence", "Turret", "Orb",
                         "Player", "Enemy",   "Other" };
@@ -120,6 +128,8 @@ public class Damageable : MonoBehaviour {
     public Bar b;
     public Priority priority;
 
+    public int simpleLayerMask()=>(this as HasMask).simpleLayerMask();
+
     public float UniversalSpeedCalculator(float speed) {
         if (HasDebuff(DebuffName.Stunned)) {
             return 0;
@@ -133,7 +143,8 @@ public class Damageable : MonoBehaviour {
         }
     }
 
-    public virtual void Click(ClickEventHandler e) { Debug.Log("fuck"); }
+    public virtual void LeftClick(ClickEventHandler e){}
+    public virtual void RightClick(ClickEventHandler e){}
 
     protected virtual void Start() {
         switch (type) {
@@ -238,8 +249,13 @@ public class Damageable : MonoBehaviour {
         }
 
         if ((int)type < 3) {
+            IsItem it = GetComponent<IsItem>();
+            Component.SpawnComponent(Component.Id.Blue,
+                                          (int)Mathf.Floor(it.item.power),
+                                          transform.position);
             World.UpdateState(HexCoord.NearestHex(transform.position),
                               NodeState.wall, ChangeStateMethod.Off);
+
             if (type == EntityTypes.Turret) {
                 float maxRange = 0;
                 foreach (Attack a in ((Combatant)(this)).attacks) {
@@ -248,11 +264,11 @@ public class Damageable : MonoBehaviour {
                         maxRange = r;
                     }
                 }
-
                 World.UpdateState(HexCoord.NearestHex(transform.position),
                                   NodeState.targeted, ChangeStateMethod.Off,
                                   maxRange);
             }
+
         }
         GameObject.Destroy(gameObject);
     }
@@ -291,11 +307,11 @@ public class Damageable : MonoBehaviour {
     }
 
     public virtual void TakeDamage(DamageData d) {
-        if (d.sender != null) {
-            if (d.dmg > health && d.sender.type == EntityTypes.Enemy) {
-                ((EnemyFsm)d.sender).LevelUp();
-            }
-        }
+        // if (d.sender != null) {
+        //     if (d.dmg > health && d.sender.type == EntityTypes.Enemy) {
+        //         ((EnemyFsm)d.sender).LevelUp();
+        //     }
+        // }
         timeSinceDmg = 0;
         health -= d.dmg;
         if (health <= 0) {

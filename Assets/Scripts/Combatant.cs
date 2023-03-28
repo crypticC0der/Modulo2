@@ -55,16 +55,14 @@ public class Combatant : Damageable {
     // that arent players are in it as well so the player will get hit, but only
     // in crossfire
     public int layerMask(bool targeting) {
-        int mask = ~(
-            (1 << gameObject.layer) |
-            (1 << 7)); // dont hit self or bullet, everythign else is fair game
+        int mask = simpleLayerMask();
         if (targeting && type != EntityTypes.Enemy) {
             mask &= ~(1 << 0); // dont aim at player if ur a thingy
         }
         return mask;
     }
 
-    public override void Click(ClickEventHandler e) {
+    public new void LeftClick(ClickEventHandler e) {
         List<AreaAttack> attackList = new List<AreaAttack>();
         Debug.Log(e);
         foreach (Attack a in attacks) {
@@ -92,7 +90,7 @@ public class Combatant : Damageable {
                 Despawn d = target.AddComponent<Despawn>();
                 d.deathTimer = 0.4f;
             }
-            e.todoList.Enqueue(nextClick);
+            e.todoList[0].Enqueue(nextClick);
         }
     }
     public virtual void RemoveStats(Stats changes, float multiplier = 1) {

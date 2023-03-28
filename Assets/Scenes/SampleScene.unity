@@ -5873,6 +5873,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ca797450f9f2e0d594958dd58f781bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  heuristic: 0
+  pos: []
 --- !u!114 &519420037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5897,6 +5899,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4597c1b352bd0f16bb3e68b5fcb9e55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speed: 0.02
 --- !u!1 &555178683
 GameObject:
   m_ObjectHideFlags: 0
@@ -7632,8 +7635,8 @@ Rigidbody2D:
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_SleepingMode: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!114 &1993915001
 MonoBehaviour:

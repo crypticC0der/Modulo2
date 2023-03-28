@@ -71,9 +71,8 @@ public class HexCoord {
     public static bool operator !=(HexCoord a, HexCoord b) => !a.Equals(b);
 
     public static float Distance(HexCoord a, HexCoord b) {
-        return (Mathf.Abs(a.q - b.q) + Mathf.Abs(a.q + a.r - b.q - b.r) +
-                Mathf.Abs(a.r - b.r)) /
-               2;
+        return (Mathf.Abs(a.q - b.q) + Mathf.Abs(a.q - a.r - b.q + b.r) +
+                Mathf.Abs(a.r - b.r)) / 2;
     }
 
     // public List<HexCoord> Range(int range){

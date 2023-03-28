@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using MeshGen;
 
 namespace Modulo {
+[System.Serializable]
 public enum NodeState {
-    empty = 1,
+    empty = 0,
     orb = 2,
     targeted = 4,
     wall = 8,
@@ -28,7 +28,7 @@ public class Line {
     }
 
     public float Cost(Node start) {
-        float d = HexCoord.Distance(start.hc, to.hc);
+        float d = HexCoord.Distance(start.AdjustedCoord(), to.AdjustedCoord());
         float m = to.StateToCost();
         for (int i = 0; i < over.Count; i++) {
             if (over[i] != null) {
@@ -44,20 +44,33 @@ public enum ChangeStateMethod { On, Off, Flip }
 [System.Serializable]
 public class Node {
     public float realDistance;
-    public NodeState state { get; protected set; }
+    [SerializeReference]
+    public NodeState state;
     public HexCoord hc { get; private set; }
+    [SerializeReference]
     public Node next = null;
+    [SerializeField]
     bool valid = false;
+    [SerializeReference]
     List<Line> neighbors = new List<Line>();
 
+    public Vector3 Position(){
+        return AdjustedCoord().position();
+    }
+
+    public virtual HexCoord AdjustedCoord(){
+        return hc;
+    }
+
     public void ChangeState(NodeState ns, ChangeStateMethod csm, HexCoord at) {
+
         bool changing = (csm == ChangeStateMethod.On && !HasState(ns)) ||
                         (csm == ChangeStateMethod.Off && HasState(ns)) ||
                         csm == ChangeStateMethod.Flip;
 
         if (changing && HasState(NodeState.big)) {
             ((NodePerent)(this)).Severance();
-            World.HexCoordToNode(hc).ChangeState(ns, csm, hc);
+            World.HexCoordToNode(at).ChangeState(ns, csm, at);
             return;
         } else if (changing) {
             switch (csm) {
@@ -94,30 +107,33 @@ public class Node {
     }
 
     public float Heuristic() {
-        return Mathf.Pow(HexCoord.Distance(World.orbPoint.hc, hc), 1);
+        return HexCoord.Distance(World.orbPoint.hc, AdjustedCoord());
     }
 
     public void SetNext(Node n) {
         next = n;
-        realDistance = n.realDistance + HexCoord.Distance(this.hc, n.hc);
+        realDistance = n.realDistance + HexCoord.Distance(this.AdjustedCoord(), n.AdjustedCoord());
     }
 
     protected void FundementalChange() {
+        World.EnsureIntegrety();
         this.Invalidate();
-        foreach (Line l in Neighbors()) {
+        List<Line> lines = Neighbors();
+        foreach (Line l in lines) {
             l.to.Invalidate();
         }
     }
 
     public void Invalidate() {
         valid = false;
-        neighbors.Clear();
+        // neighbors.Clear();
     }
 
     public List<Line> Neighbors() {
         if (valid) {
             return neighbors;
         }
+        neighbors.Clear();
         List<Line> ret = new List<Line>();
         if (HasState(NodeState.placeholder)) {
             return ret;
@@ -273,6 +289,13 @@ public class Node {
 
 public class NodePerent : Node {
     public List<Renderer> attachedRenderers = new List<Renderer>();
+
+    public override HexCoord AdjustedCoord(){
+        if(HasState(NodeState.big)){
+            return (hc+ new HexCoord(World.optimizationCubeSize>>1,World.optimizationCubeSize>>1));
+        }
+        return base.AdjustedCoord();
+    }
 
     public NodePerent(HexCoord hc)
         : base(hc, NodeState.placeholder | NodeState.big) {

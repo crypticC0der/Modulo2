@@ -68,9 +68,10 @@ public struct Stats {
 
 public class Turret : Combatant {
     public float stability;
-    public new void Die() { base.Die();
-    Effects.Explode(transform.position, 1, null, layerMask(false));
-}
+    public new void Die() {
+        base.Die();
+        Effects.Explode(transform.position, 1, null, layerMask(false));
+    }
 
 public new void Start() { base.Start();
 // this.AddProc<PushOut>();

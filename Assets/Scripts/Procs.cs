@@ -75,7 +75,7 @@ public class LaserBurst : Proc {
                             properties = DamageProperties.bypassArmor
                         },
                         D);
-                    LineRenderer lr = perent.MinimalRay(
+                    LineRenderer lr = Attack.MinimalRay(
                         new Color(0.98f, 0.92f, 0.68f),
                         new Color(0.98f, 0.8f, 0.14f), points);
                     Despawn despawn = lr.gameObject.AddComponent<Despawn>();

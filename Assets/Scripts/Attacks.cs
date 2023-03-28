@@ -33,7 +33,7 @@ public abstract class Attack : Damager {
         Vector3 d = new Vector3(r * Mathf.Cos(theata), r * Mathf.Sin(theata));
         return d;
     }
-    public LineRenderer MinimalRay(Color startColor, Color endColor,
+    public static LineRenderer MinimalRay(Color startColor, Color endColor,
                                    Vector3[] points) {
         GameObject g = new GameObject();
         g.layer = 7;
@@ -357,7 +357,7 @@ public abstract class RangedAttack : Attack {
 
     public Collider2D Target() {
         Collider2D[] o = Physics2D.OverlapCircleAll(
-            perent.transform.position, attackRange(), perent.layerMask(false));
+            perent.transform.position, attackRange(), perent.layerMask(true));
         return BestCollider(o);
     }
 
@@ -421,76 +421,77 @@ public abstract class AreaAttack : Attack {
     public new int peirce() { return base.peirce() * perent.totalShots();
 }
 
-public AreaAttack() {
-    t = AttackType.Area;
-    attackProps |= SpecialProperties.predictive;
-}
-public Collider2D[] Target() {
-    if ((attackProperties() & SpecialProperties.homing) != 0) {
-        // set center
-        Collider2D[] hits = Physics2D.OverlapCircleAll(
-            perent.transform.position, 10 * attackRange(),
-            perent.layerMask(false));
-        int tries = 1;
-        if ((attackProperties() & SpecialProperties.predictive) == 0) {
-            tries = 3;
-        }
-        int besthits = 0;
-        Vector3 bestpos = perent.transform.position;
-        for (int i = 0; i < tries; i++) {
-            Vector3 p = hits[i].transform.position;
-            Collider2D[] inRange = Physics2D.OverlapCircleAll(
-                p, attackRange(), perent.layerMask(false));
-            if (inRange.Length >= besthits) {
-                besthits = inRange.Length;
-                bestpos = p;
+    public AreaAttack() {
+        t = AttackType.Area;
+        attackProps |= SpecialProperties.predictive;
+    }
+    public Collider2D[] Target() {
+        if ((attackProperties() & SpecialProperties.homing) != 0) {
+            // set center
+            Collider2D[] hits = Physics2D.OverlapCircleAll(
+                perent.transform.position, 10 * attackRange(),
+                perent.layerMask(false));
+            int tries = 1;
+            if ((attackProperties() & SpecialProperties.predictive) == 0) {
+                tries = 3;
             }
+            int besthits = 0;
+            Vector3 bestpos = perent.transform.position;
+            for (int i = 0; i < tries; i++) {
+                Vector3 p = hits[i].transform.position;
+                Collider2D[] inRange = Physics2D.OverlapCircleAll(
+                    p, attackRange(), perent.layerMask(false));
+                if (inRange.Length >= besthits) {
+                    besthits = inRange.Length;
+                    bestpos = p;
+                }
+            }
+            center = bestpos;
+        } else if ((attackProperties() & SpecialProperties.predictive) == 0) {
+            center = perent.transform.position;
         }
-        center = bestpos;
-    } else if ((attackProperties() & SpecialProperties.predictive) == 0) {
-        center = perent.transform.position;
+        if ((attackProperties() & SpecialProperties.random) != 0) {
+            center += RandomInCircle(5);
+        }
+        // predicive center is sorted out
+        return Physics2D.OverlapCircleAll(center, attackRange(),
+                                        perent.layerMask(false));
     }
-    if ((attackProperties() & SpecialProperties.random) != 0) {
-        center += RandomInCircle(5);
-    }
-    // predicive center is sorted out
-    return Physics2D.OverlapCircleAll(center, attackRange(),
-                                      perent.layerMask(false));
-}
 
-public virtual void SingleAtFunc() {}
+    public virtual void SingleAtFunc() {}
 
-public int currentPeirce;
-public override void Update() {
-    if (timer <= 0) {
-        if (chargingPercent < 1) {
-            chargingPercent += Time.deltaTime / 5;
-        }
-        Collider2D[] c = Target();
-        currentPeirce = peirce();
-        bool notPlayer = (attackProperties() & SpecialProperties.random) != 0;
-        for (int i = 0; i < c.Length; i++) {
-            if (c[i].gameObject.layer != 0) {
-                notPlayer = true;
-                break;
+    public int currentPeirce;
+    public override void Update() {
+        if (timer <= 0) {
+            if (chargingPercent < 1) {
+                chargingPercent += Time.deltaTime / 5;
             }
-        }
-        if (notPlayer) {
-            SingleAtFunc();
-            for (int i = 0; i < c.Length && 0 < currentPeirce; i++) {
-                AtFunc(c[i].gameObject);
-                currentPeirce--;
+            Collider2D[] c = Target();
+            currentPeirce = peirce();
+            bool notPlayer =
+                (attackProperties() & SpecialProperties.random) != 0;
+            for (int i = 0; i < c.Length; i++) {
+                if (c[i].gameObject.layer != 0) {
+                    notPlayer = true;
+                    break;
+                }
             }
+            if (notPlayer) {
+                SingleAtFunc();
+                for (int i = 0; i < c.Length && 0 < currentPeirce; i++) {
+                    AtFunc(c[i].gameObject);
+                    currentPeirce--;
+                }
+            }
+            if (c.Length > 0 || !notPlayer) {
+                rapidFireShotCount = (rapidFireShotCount + 1) % 4;
+            }
+            timer = attackRate() + perent.attackSpeed;
+        } else if (chargingPercent > 0) {
+            chargingPercent -= 2 * Time.deltaTime / 5;
         }
-        if (c.Length > 0 || !notPlayer) {
-            rapidFireShotCount = (rapidFireShotCount + 1) % 4;
-        }
-        timer = attackRate() + perent.attackSpeed;
-    } else if (chargingPercent > 0) {
-        chargingPercent -= 2 * Time.deltaTime / 5;
+        timer -= Time.deltaTime * perent.attackRate;
     }
-    timer -= Time.deltaTime * perent.attackRate;
-}
 }
 
 public abstract class MeleeAttack : Attack {
@@ -551,34 +552,34 @@ public abstract class MeleeAttack : Attack {
 // depricated
 public abstract class CloseAttack : Attack {
     public new float damage() { return base.damage() * perent.totalShots();
-}
-
-public CloseAttack() {
-    Debug.Log("depricated,DNU, see melee\nAttacks.cs:461");
-    t = AttackType.Close;
-}
-
-public Collider2D Target() {
-    Collider2D[] cols = Physics2D.OverlapCircleAll(
-        perent.transform.position, attackRange(), perent.layerMask(false));
-    return BestCollider(cols);
-}
-
-public override void Update() {
-    if (timer <= 0) {
-        if (chargingPercent < 1) {
-            chargingPercent += Time.deltaTime / 5;
-        }
-        Collider2D c;
-        if ((c = Target()) != null) {
-            AtFunc(c.gameObject);
-            timer = attackRate() + perent.attackSpeed;
-            rapidFireShotCount = (rapidFireShotCount + 1) % 4;
-        }
-    } else if (chargingPercent > 0) {
-        chargingPercent -= 2 * Time.deltaTime / 5;
     }
-    timer -= Time.deltaTime * perent.attackRate;
-}
+
+    public CloseAttack() {
+        Debug.Log("depricated,DNU, see melee\nAttacks.cs:461");
+        t = AttackType.Close;
+    }
+
+    public Collider2D Target() {
+        Collider2D[] cols = Physics2D.OverlapCircleAll(
+            perent.transform.position, attackRange(), perent.layerMask(false));
+        return BestCollider(cols);
+    }
+
+    public override void Update() {
+        if (timer <= 0) {
+            if (chargingPercent < 1) {
+                chargingPercent += Time.deltaTime / 5;
+            }
+            Collider2D c;
+            if ((c = Target()) != null) {
+                AtFunc(c.gameObject);
+                timer = attackRate() + perent.attackSpeed;
+                rapidFireShotCount = (rapidFireShotCount + 1) % 4;
+            }
+        } else if (chargingPercent > 0) {
+            chargingPercent -= 2 * Time.deltaTime / 5;
+        }
+        timer -= Time.deltaTime * perent.attackRate;
+    }
 }
 }

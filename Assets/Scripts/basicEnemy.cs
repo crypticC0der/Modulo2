@@ -13,17 +13,18 @@ public enum EnemyTypes {
     Boss = 32,
 }
 
-public class EnemyFsm : Combatant {
+public class EnemyFsm : Combatant,PicksComponent {
     public static List<EnemyFsm> enemiesList = new List<EnemyFsm>();
     public static int enemies = 0;
     protected EnemyTypes enemyType = 0;
     public int strength = 6; // a metric  of how strong the enmy
+    public float xp=0;
     public float speed = 1;
     public float Speed() { return UniversalSpeedCalculator(speed); }
     public float speedBonus = 1;
     public float distance;
     public EnemySpawner perent;
-    public int level = 0;
+    public int level = 1;
     public int baseStrength;
     public Stats baseStats;
 
@@ -49,6 +50,24 @@ public class EnemyFsm : Combatant {
         dmgMultipler =
             baseStats.dmgMultipler + (level / 10) * baseStats.dmgMultipler;
         health = maxHealth;
+        transform.localScale=Vector3.one*(1+Mathf.Log(level)/Mathf.Log(2))/2;
+    }
+
+    public int XpThreshold(){
+        return 1<<(level-1);
+    }
+
+    public void CollectComponent(ComponentData data){
+        xp+=data.amount;
+        int levels=0;
+        while(xp>=XpThreshold()){
+            xp-=XpThreshold();
+            levels++;
+        }
+        if(levels>0){
+            Debug.Log("leveled up " + levels.ToString() + " times");
+            LevelUp(levels);
+        }
     }
 
     public int LevelUp(int levels) {
@@ -57,9 +76,7 @@ public class EnemyFsm : Combatant {
         return level;
     }
     public int LevelUp() {
-        ++level;
-        LevelUpStats();
-        return level;
+        return LevelUp(1);
     }
 
     public override void RemoveStats(Stats changes, float multiplier) {
@@ -95,28 +112,10 @@ public class EnemyFsm : Combatant {
     }
 
     public override void Die() {
-        // give components
-        if ((EnemyTypes.Boss | EnemyTypes.Strong & enemyType) != 0) {
-            PlayerBehavior.SpawnComponent(Component.sparkon, strength,
-                                          transform.position);
-        }
-        if ((EnemyTypes.Fast & enemyType) != 0) {
-            PlayerBehavior.SpawnComponent(Component.lowDensityMetal, strength,
-                                          transform.position);
-        }
-        Debuff d = FindDebuff(DebuffName.Burning);
-        if (PlayerBehavior.controller != null) {
-            Vector3 dist = PlayerBehavior.controller.transform.position -
-                           transform.position;
-            if (dist.magnitude < 2) {
-                PlayerBehavior.SpawnComponent(Component.soul, strength,
-                                              transform.position);
-            }
-        }
-        PlayerBehavior.SpawnComponent(Component.bladeParts, strength,
+        Component.SpawnComponent(Component.Id.Grey, strength,
                                       transform.position);
-
         enemies--;
+        enemiesList.Remove(this);
         // actually die
         base.Die();
     }
@@ -125,6 +124,11 @@ public class EnemyFsm : Combatant {
         speedBonus = 1;
         base.FixedUpdate();
     }
+
+	public Vector3 Distance(Vector3 point){
+        return transform.position - point;
+    }
+
 }
 
 public class SpinEnemyFsm : EnemyFsm {

@@ -11,8 +11,8 @@ public class move : MonoBehaviour {
         // wop = WorldPos(transform.position);
         // World.PlaceOrb(wop[0], wop[1]);
         // pwop = wop;
-        World.SetOrb(HexCoord.NearestHex(transform.position));
         World.orbTransform = transform;
+        World.SetOrb();
     }
 
     // Update is called once per frame
@@ -20,10 +20,10 @@ public class move : MonoBehaviour {
     float sprint = 2;
     float sprintTime = 0;
     public static float healTime = 1;
-    void Update() {
+    void FixedUpdate() {
         HexCoord pos = HexCoord.NearestHex(transform.position);
         World.RenderAround(pos);
-        World.SetOrb(pos);
+        World.SetOrb();
         Vector3 v = new Vector3(Input.GetAxis("Horizontal"),
                                 Input.GetAxis("Vertical")) *
                     Time.deltaTime;

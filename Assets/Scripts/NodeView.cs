@@ -5,12 +5,13 @@ public class NodeView : MonoBehaviour {
     public float priority;
     public float newCost;
     public float heuristic;
+
 }
 
 public class CostView : MonoBehaviour {
     public float cost;
     public HexCoord hc;
-    public Color c;
+    public Node n;
 }
 
 }
