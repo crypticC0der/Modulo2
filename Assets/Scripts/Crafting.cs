@@ -43,6 +43,11 @@ namespace Modulo{
 
 	public class RefiningAlter : Alter{
 		private const float timeToRun=5;
+
+		public void Start(){
+			toProduce=Component.Id.Yellow;
+		}
+
 		protected override void Effect(){}
 		protected override bool Condition(){
 			return (PlayerBehavior.me.transform.position - transform.position)
