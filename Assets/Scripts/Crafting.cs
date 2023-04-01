@@ -1,28 +1,36 @@
 using UnityEngine;
 namespace Modulo{
 	public abstract class Alter : MonoBehaviour,Clickable{
-		[SerializeField]
-		protected int effectRange {private set;get;} = 3;
-
-		protected float timer=0;
-		protected Component.Id toProduce;
-		private int contains=0;
-		private bool running=false;
+		[SerializeField] protected int effectRange {private set;get;} = 3;
+		[SerializeField] protected float timerStart=0;
+		[SerializeField] protected Component.Id toProduce;
+		[SerializeField] private float timer=0;
+		[SerializeField] private int contains=0;
+		[SerializeField] private bool running=false;
 
 		protected abstract bool Condition();
 		protected abstract void Effect();
-		protected abstract int Speed();
+		protected abstract float Speed();
 
 		public void LeftClick(ClickEventHandler e){
-			int inc = contains+1;
-			if(PlayerBehavior.me.componentCount[0]>inc){
-				PlayerBehavior.me.componentCount[0]-=inc;
-				contains += inc;
-				timer+=1;
+			if(!running){
+				int inc = contains+1;
+				if(PlayerBehavior.me.componentCount[0]>inc){
+					PlayerBehavior.me.componentCount[0]-=inc;
+					Component.UpdateComponentUI(Component.Id.Grey,
+											PlayerBehavior.me.componentCount[0]);
+					contains += inc;
+					timerStart+=1;
+				}
 			}
 		}
 
-		public virtual void RightClick(ClickEventHandler e){running=true;}
+		public virtual void RightClick(ClickEventHandler e){
+			if(!running){
+				running=true;
+				timer=timerStart;
+			}
+		}
 
 		public void Update(){
 			if(running){
@@ -34,6 +42,7 @@ namespace Modulo{
 											 transform.position);
 					contains=0;
 					timer=0;
+					timerStart=0;
 					running=false;
 				}
 			}
@@ -51,20 +60,20 @@ namespace Modulo{
 		protected override void Effect(){}
 		protected override bool Condition(){
 			return (PlayerBehavior.me.transform.position - transform.position)
-			   .magnitude>effectRange;
+			   .magnitude<=effectRange;
 		}
-		protected override int Speed() => 1;
+		protected override float Speed() => 1;
 
 		public override void RightClick(ClickEventHandler e){
-			timer=timeToRun;
+			timerStart=timeToRun;
 			base.RightClick(e);
 		}
-
 	}
 
 	public class SharpeningAlter : Alter, HasMask{
 		private const float dps=1;
 		private bool runEffect=false;
+		private const bool healthSafety=true;
 
 		public void Start(){
 			toProduce=Component.Id.Pink;
@@ -72,24 +81,33 @@ namespace Modulo{
 
 		protected override void Effect(){}
 		protected override bool Condition() => true;
-		public int simpleLayerMask()=>(this as HasMask).simpleLayerMask();
+		public int simpleLayerMask()=>(this as HasMask).slm();
 
-		protected override int Speed(){
+		protected override float Speed(){
 			Collider2D[] cols = Physics2D.OverlapCircleAll(
 				transform.position,
 				effectRange, this.simpleLayerMask());
 
+			float spd=0;
+			float dmg = dps*timerStart;
 			DamageData d =
-				new DamageData { dmg = dps*Time.deltaTime,
-									properties = DamageProperties.bypassArmor };
+				new DamageData {properties = DamageProperties.bypassArmor,
+								dmg=dmg*Time.deltaTime};
 			foreach(Collider2D c in cols){
-				Damageable D = c.GetComponent<Damageable>();
-				if(D){
-					d.direction = D.transform.position-transform.position;
-					D.TakeDamage(d);
+				Damageable target = c.GetComponent<Damageable>();
+				if(target){
+					if(!healthSafety){
+						d.dmg = Mathf.Min(dmg,target.maxHealth);
+						d.dmg*=Time.deltaTime;
+						spd+=d.dmg/dmg;
+					}else{
+						spd++;
+					}
+					d.direction = target.transform.position-transform.position;
+					target.TakeDamage(d);
 				}
 			}
-			return cols.Length;
+			return spd;
 		}
 
 	}

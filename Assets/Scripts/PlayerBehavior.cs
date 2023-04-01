@@ -20,6 +20,8 @@ public class PlayerBehavior : Damageable,PicksComponent {
 
     public void CollectComponent(ComponentData data) {
         componentCount[data.id] += data.amount;
+        Component.UpdateComponentUI((Component.Id)data.id,
+                                    componentCount[data.id]);
     }
 
 	public Vector3 Distance(Vector3 point){
@@ -62,6 +64,11 @@ public class PlayerBehavior : Damageable,PicksComponent {
         }
         AddToDeck(orbT.FromTemplate(0, 0));
         r = GetComponent<Rigidbody2D>();
+
+        for(int i=0;i<4;i++){
+            Component.UpdateComponentUI((Component.Id)i,
+                                        componentCount[i]);
+        }
     }
 
     public static void TakeFromDeck(int i) {

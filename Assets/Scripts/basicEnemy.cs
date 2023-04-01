@@ -114,10 +114,13 @@ public class EnemyFsm : Combatant,PicksComponent {
     public override void Die() {
         Component.SpawnComponent(Component.Id.Grey, strength,
                                       transform.position);
-        enemies--;
-        enemiesList.Remove(this);
         // actually die
         base.Die();
+    }
+
+    public void OnDestroy(){
+        enemies--;
+        enemiesList.Remove(this);
     }
 
     public override void FixedUpdate() {

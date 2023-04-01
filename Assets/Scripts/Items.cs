@@ -42,6 +42,7 @@ public class Item : ItemTemplate {
     public virtual GameObject ToGameObject(Vector3 p) {
         return this.ToGameObject<Damageable>(p);
     }
+
     public virtual GameObject ToGameObject<D>(Vector3 p)
         where D : Damageable {
         GameObject r = new GameObject(name);
@@ -61,6 +62,10 @@ public class Item : ItemTemplate {
         i.item = this;
         r.AddComponent<PolygonCollider2D>();
         r.layer = 3;
+
+        Rigidbody2D rb = r.AddComponent<Rigidbody2D>();
+        rb.bodyType=RigidbodyType2D.Static;
+
         if (type == ItemTypes.Orb) {
             d.maxHealth = 100;
         } else {

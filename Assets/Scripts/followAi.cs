@@ -12,6 +12,7 @@ public class followAi : MonoBehaviour {
     EnemyFsm fsm;
     public float force;
     Rigidbody2D rb;
+    bool valid=true;
     // float PathTime;
     // float AllTime;
     void Update() {
@@ -19,7 +20,15 @@ public class followAi : MonoBehaviour {
             Node current =
                 World.HexCoordToNode(HexCoord.NearestHex(transform.position));
             force = fsm.Speed() * 10 * fsm.speedBonus;
-            Node n = current.next;
+            Node n=null;
+            if(current.valid){
+                n = current.next;
+            }else{
+                if(valid){
+                    World.HotfixNode(current);
+                }
+            }
+            valid= current.valid;
             Vector3 v;
             if (n != null) {
                 fsm.distance = n.realDistance;

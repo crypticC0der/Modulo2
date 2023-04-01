@@ -167,6 +167,27 @@ public static class World {
         }
     };
 
+    struct RepathNodeJob : IJob{
+        public int q;
+        public int r;
+        public void Execute(){
+            RepathNode(World.GetNode(new HexCoord(q,r)));
+        }
+    }
+
+    public static void HotfixNode(Node n){
+        EnsureIntegrety();
+        if(debug){
+            RepathNode(n);
+        }else{
+            RepathNodeJob rnj = new RepathNodeJob();
+            rnj.q=n.hc.q;
+            rnj.r=n.hc.r;
+            handle = rnj.Schedule();
+        }
+    }
+
+
     static int astrCalls = 0;
     static int earlyExits = 0;
     public static void Run() {
@@ -189,7 +210,6 @@ public static class World {
     }
 
     public static void RepathPrerecs(){
-
         foreach (KeyValuePair<HexCoord, Node> entry in nodes) {
             entry.Value.next = null;
         }
@@ -202,41 +222,42 @@ public static class World {
         EnsureIntegrety();
 
         EnemyPos.Clear();
-        Vector3 orb = orbPoint.Position();
-        Comparison<EnemyFsm> comp = (EnemyFsm a, EnemyFsm b) => {
-            return (int)((a.transform.position - orb).magnitude -
-                         (b.transform.position - orb).magnitude);
-        };
-        EnemyFsm.enemiesList.Sort(comp);
         foreach(EnemyFsm e in EnemyFsm.enemiesList){
             EnemyPos.Add(e.transform.position);
         }
-
+        Vector3 orb = orbPoint.Position();
+        Comparison<Vector3> comp = (Vector3 a, Vector3 b) => {
+            return (int)((a - orb).magnitude -
+                         (b - orb).magnitude);
+        };
+        EnemyPos.Sort(comp);
     }
 
+    //pathfinding can improve by not nulling the nexts
     static List<Vector3> EnemyPos = new List<Vector3>();
     public static void RepathEnemies() {
         foreach (Vector3 pos in EnemyPos) {
-            Node current =
-                HexCoordToNode(HexCoord.NearestHex(pos));
-            if (current.next == null) {
-                List<Line> neighbors = current.Neighbors();
-                bool nearbyNeighbor = false;
-                foreach (Line neighbor in neighbors) {
-                    if (neighbor.to.next != null) {
-                        bool validPath = neighbor.to.state <= current.state;
-                        foreach (Node n in neighbor.over) {
-                            validPath &= neighbor.to.state <= current.state;
-                        }
-                        if (validPath) {
-                            nearbyNeighbor = true;
-                            current.SetNext(neighbor.to);
-                        }
+            Node current = HexCoordToNode(HexCoord.NearestHex(pos));
+            RepathNode(current);
+        }
+    }
+
+    static void RepathNode(Node current){
+        if (current.next == null) {
+            List<Line> neighbors = current.Neighbors();
+            bool nearbyNeighbor = false;
+            foreach (Line neighbor in neighbors) {
+                if (neighbor.to.next != null) {
+                    bool validPath = neighbor.to.state <= current.state &&
+                        neighbor.over.Count==0;
+                    if (validPath) {
+                        nearbyNeighbor = true;
+                        current.SetNext(neighbor.to);
                     }
                 }
-                if (!nearbyNeighbor) {
-                    AStar(current);
-                }
+            }
+            if (!nearbyNeighbor) {
+                AStar(current);
             }
         }
     }
@@ -248,6 +269,7 @@ public static class World {
         handle.Complete();
     }
 
+    //why didnt i flip astar hmmm
     public static void AStar(Node start) {
         astrCalls++;
         PriorityQueue<Node, float> toCheck = new PriorityQueue<Node, float>();
@@ -340,18 +362,23 @@ public static class World {
         // 	Effects.Explode(new Vector3(0,5),1,null);
         // 	Effects.Explode(new Vector3(0,-5),2,null);
         // }
+
+        Component.CreateAlter(Component.Id.Pink,new HexCoord(5,0));
+        Component.CreateAlter(Component.Id.Yellow,new HexCoord(-5,0));
+
         Item it = ItemRatio.table[0].item.FromTemplate(1, 1);
         GameObject g = it.ToGameObject(
             HexCoord.NearestHex(new Vector3(6, 6, 0)).position());
         // EnemyFsm o = MeshGens.ObjGen(Shapes.star,MatColour.white);
         // o.transform.position=new Vector3(-6,-6);
         yield return new WaitForSeconds(3.7f);
+
         // MeshGens.MinObjGen(Shapes.puddle,MatColour.white);
-        EnemyFsm o = null;
-        for (int i = 0; i < 7; i++) {
-            o = EnemyGeneration.ObjGen((Shapes.circle), MatColour.white);
-            o.transform.position = new Vector3(2 * i - 11, -5);
-        }
+        // EnemyFsm o = null;
+        // for (int i = 0; i < 7; i++) {
+        //     o = EnemyGeneration.ObjGen((Shapes.circle), MatColour.white);
+        //     o.transform.position = new Vector3(2 * i - 11, -5);
+        // }
         // g.GetComponent<Damageable>().Draw(f);
     }
 }

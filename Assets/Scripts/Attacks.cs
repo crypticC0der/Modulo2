@@ -192,6 +192,18 @@ public abstract class Attack : Damager {
         perent.ApplyDebuffs(procCoefficent * t, hit);
     }
 
+    public static bool ValidLineOfSight(GameObject a,GameObject b){
+        RaycastHit2D[] rh=
+            Physics2D.RaycastAll(a.transform.position,
+                                b.transform.position - a.transform.position);
+        foreach(RaycastHit2D hit in rh){
+            if(hit.collider.gameObject!=a && hit.collider.gameObject!=b){
+                return false;
+            }
+        }
+        return true;
+    }
+
     protected Collider2D BestCollider(Collider2D[] col,
                                       bool checkLineOfSight = false) {
         Collider2D goodCol = null;
@@ -202,22 +214,14 @@ public abstract class Attack : Damager {
             if (d != null) {
                 float cdist = (c.transform.position - perent.transform.position)
                                   .magnitude;
-                if (goodCol == null) {
-                    goodCol = c;
-                    best = d.priority;
-                    dist = cdist;
-                }
                 bool canSee = true;
                 if (checkLineOfSight) {
-                    canSee =
-                        (Physics2D.Raycast(perent.transform.position,
-                                           c.transform.position -
-                                               perent.transform.position) &&
-                         c.gameObject != perent.gameObject);
+                    canSee = ValidLineOfSight(perent.gameObject,c.gameObject);
                 }
-                if ((d.priority > best ||
-                     (d.priority == best && cdist < dist)) &&
-                    canSee) {
+                bool betterCollider = canSee &&
+                    (d.priority > best ||
+                     d.priority == best && cdist < dist);
+                if (betterCollider) {
                     goodCol = c;
                     best = d.priority;
                     dist = cdist;
@@ -358,7 +362,7 @@ public abstract class RangedAttack : Attack {
     public Collider2D Target() {
         Collider2D[] o = Physics2D.OverlapCircleAll(
             perent.transform.position, attackRange(), perent.layerMask(true));
-        return BestCollider(o);
+        return BestCollider(o,true);
     }
 
     public override void Update() {

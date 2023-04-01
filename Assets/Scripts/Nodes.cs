@@ -50,7 +50,7 @@ public class Node {
     [SerializeReference]
     public Node next = null;
     [SerializeField]
-    bool valid = false;
+    public bool valid = false;
     [SerializeReference]
     List<Line> neighbors = new List<Line>();
 
@@ -109,6 +109,7 @@ public class Node {
     public float Heuristic() {
         return HexCoord.Distance(World.orbPoint.hc, AdjustedCoord());
     }
+
 
     public void SetNext(Node n) {
         next = n;

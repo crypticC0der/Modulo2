@@ -57,7 +57,7 @@ public class Combatant : Damageable {
     public int layerMask(bool targeting) {
         int mask = simpleLayerMask();
         if (targeting && type != EntityTypes.Enemy) {
-            mask &= ~(1 << 0); // dont aim at player if ur a thingy
+            // mask &= ~(1 << 0); // dont aim at player if ur a thingy
         }
         return mask;
     }

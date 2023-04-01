@@ -72,7 +72,7 @@ public class HealthBar : MonoBehaviour, Bar {
 
     public void SetValue(float current, float max) {
         Vector3 s = bar.transform.localScale;
-        float v = Mathf.Min(current / max, 1);
+        float v = Mathf.Clamp(current / max, 0,1);
         s.x = v;
         bar.color = ColorAt(v);
         Vector3 p = bar.transform.localPosition;
@@ -106,7 +106,7 @@ public enum Priority {
 
 public interface HasMask{
     GameObject gameObject {get;}
-    public int simpleLayerMask() {
+    public int slm() {
         // dont hit self or bullet, everythign else is fair game
         return ~((1 << gameObject.layer) | (1 << 7));
     }
@@ -128,7 +128,7 @@ public class Damageable : MonoBehaviour,Clickable,HasMask {
     public Bar b;
     public Priority priority;
 
-    public int simpleLayerMask()=>(this as HasMask).simpleLayerMask();
+    public int simpleLayerMask()=>(this as HasMask).slm();
 
     public float UniversalSpeedCalculator(float speed) {
         if (HasDebuff(DebuffName.Stunned)) {

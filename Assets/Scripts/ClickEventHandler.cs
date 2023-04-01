@@ -11,7 +11,7 @@ public class ClickEventHandler : MonoBehaviour {
 
     public void Update() {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Collider2D hit;
+        Collider2D[] hits;
         Vector3 worldPoint =
             Camera.main.ScreenToWorldPoint(Input.mousePosition);
         for(int i=0;i<2;i++){
@@ -19,8 +19,8 @@ public class ClickEventHandler : MonoBehaviour {
                 if (todoList[i].Count != 0) {
                     todoList[i].Dequeue()(worldPoint);
                 } else {
-                    hit = Physics2D.OverlapCircle(worldPoint, 0.5f);
-                    if (hit) {
+                    hits = Physics2D.OverlapCircleAll(worldPoint, 0.5f);
+                    foreach(Collider2D hit in hits) {
                         Debug.Log(hit.name);
                         Clickable d = hit.GetComponent<Clickable>();
                         if (d!=null) {

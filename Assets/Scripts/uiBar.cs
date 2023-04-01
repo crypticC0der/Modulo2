@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 namespace Modulo {
 public interface Bar {
@@ -13,15 +14,16 @@ public interface Bar {
 }
 
 public class uiBar : MonoBehaviour, Bar {
+    public TextMeshPro text;
     public Color[] colors;
     public float[] intervals;
-    public Transform angle;
     public void Reset() {
         transition = 0;
         current = 1;
         aim = 1;
         SetValue(1, 1);
     }
+
     public void Zero() { UpdateValue(0, 1); }
     SpriteRenderer renderer;
     float current;
@@ -32,6 +34,7 @@ public class uiBar : MonoBehaviour, Bar {
         renderer = GetComponent<SpriteRenderer>();
         Reset();
     }
+
     public void UpdateValue(float current, float max) {
         this.aim = current / max;
         transition = 3;
@@ -62,20 +65,17 @@ public class uiBar : MonoBehaviour, Bar {
     }
 
     public void SetValue(float current, float max) {
-        Color c = Remap(current / max);
-        renderer.color = c;
-        renderer.gameObject.GetComponent<SpriteRenderer>().enabled =
-            current >= 0.002f;
-        Vector3 p = transform.localPosition;
         Vector3 s = transform.localScale;
-        float scale = 4.8f + 1.125f * p.y;
-        s.x = (current / max) * (scale);
-        p.x = -(scale - s.x) / 2 - 0.53f + 0.525f * p.y;
-        transform.localPosition = p;
+        float v = Mathf.Clamp(current / max, 0,1);
+        s.x = v*100;
+        renderer.color = Remap(v);
+        Vector3 p = transform.localPosition;
+        p.x = 50* (1 - v) + 172.5f;
         transform.localScale = s;
-        p.x += s.x / 2 - 0.185f;
-        p.z += 1;
-        angle.localPosition = p;
+        transform.localPosition = p;
+
+        text.text= ((int)Mathf.Floor(v*100)).ToString() + "%";
+
     }
 }
 }
