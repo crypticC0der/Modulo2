@@ -17,6 +17,7 @@ public class uiBar : MonoBehaviour, Bar {
     public TextMeshPro text;
     public Color[] colors;
     public float[] intervals;
+    float startx;
     public void Reset() {
         transition = 0;
         current = 1;
@@ -32,6 +33,7 @@ public class uiBar : MonoBehaviour, Bar {
 
     public void Start() {
         renderer = GetComponent<SpriteRenderer>();
+        startx=transform.localPosition.x;
         Reset();
     }
 
@@ -70,7 +72,7 @@ public class uiBar : MonoBehaviour, Bar {
         s.x = v*100;
         renderer.color = Remap(v);
         Vector3 p = transform.localPosition;
-        p.x = 50* (1 - v) + 172.5f;
+        p.x = 50* (1 - v) + startx;
         transform.localScale = s;
         transform.localPosition = p;
 

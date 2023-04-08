@@ -87,7 +87,9 @@ public class Component{
 		GameObject alter = new GameObject(name+ " Alter");
 		alter.transform.position=p;
 		SpriteRenderer sr = alter.AddComponent<SpriteRenderer>();
-		sr.sprite = ItemTemplate.GetGraphic(name+"Converter");
+		SpriteSize ss = ItemTemplate.GetSpriteSize(name+"Converter");
+		sr.sprite = ss.sprite;
+		alter.transform.localScale=ss.size;
 
 		World.UpdateState(location ,NodeState.ground,ChangeStateMethod.On);
 		Collider2D col = alter.AddComponent<PolygonCollider2D>();

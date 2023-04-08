@@ -152,20 +152,20 @@ public class ItemTemplate {
     }
 
     public Sprite GetGraphic() {
-        Sprite s = Resources.Load<Sprite>("cardSprites/" + graphicPath);
-        if (s == null) {
-            s = Resources.Load<Sprite>("assets/" + graphicPath);
-        }
-        return s;
+        return GetGraphic(graphicPath);
     }
 
-    public SpriteSize GetSpriteSize() {
+    public static SpriteSize GetSpriteSize(string graphicPath,float scale=1) {
         SpriteSize r;
-        r.sprite = GetGraphic();
+        r.sprite = GetGraphic(graphicPath);
         Vector2 v = r.sprite.bounds.size;
         r.size = new Vector3(scale / v.x, scale / v.y, 1);
         r.size.y *= 2f / Mathf.Sqrt(3);
         return r;
+    }
+
+    public SpriteSize GetSpriteSize() {
+        return GetSpriteSize(graphicPath,scale);
     }
 
     // redo
