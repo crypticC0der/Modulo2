@@ -77,7 +77,7 @@ public class Combatant : Damageable {
             Debug.Log(attackList.Count);
             GameObject target = new GameObject();
             SpriteRenderer r = target.AddComponent<SpriteRenderer>();
-            r.sprite = Item.GetGraphic("target");
+            r.sprite = ItemTemplate.GetGraphic("target");
             target.transform.position = attackList[0].center;
 
             void nextClick(Vector3 worldPoint) {

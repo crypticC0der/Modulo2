@@ -116,7 +116,7 @@ public class Damageable : MonoBehaviour,Clickable,HasMask {
     public static string[] EntityNames =
         new string[7] { "Module", "Defence", "Turret", "Orb",
                         "Player", "Enemy",   "Other" };
-    public float health;
+    public float health=0;
     public float maxHealth = 10;
     public float regen = 0;       // rate of regen
     public bool regening = false; // means it unconditionally regens
@@ -145,6 +145,7 @@ public class Damageable : MonoBehaviour,Clickable,HasMask {
 
     public virtual void LeftClick(ClickEventHandler e){}
     public virtual void RightClick(ClickEventHandler e){}
+    public static implicit operator bool(Damageable d) => d!=null && d.health!=0;
 
     protected virtual void Start() {
         switch (type) {
@@ -312,6 +313,7 @@ public class Damageable : MonoBehaviour,Clickable,HasMask {
         //         ((EnemyFsm)d.sender).LevelUp();
         //     }
         // }
+        if(health<=0){return;}
         timeSinceDmg = 0;
         health -= d.dmg;
         if (health <= 0) {

@@ -73,7 +73,7 @@ public class Turret : Combatant {
         Effects.Explode(transform.position, 1, null, layerMask(false));
     }
 
-    public new void Start() { base.Start();
+    public new void Awake() { base.Start();
         // this.AddProc<PushOut>();
         this.toApply.Add(new Slowed());
     }

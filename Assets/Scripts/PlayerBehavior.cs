@@ -95,22 +95,28 @@ public class PlayerBehavior : Damageable,PicksComponent {
         controller.Render();
     }
 
+    static bool Placeable(Vector3 p) =>
+        //is empty node
+        !World.CheckState(HexCoord.NearestHex(p), NodeState.wall | NodeState.ground) &&
+        //nothing within the hex
+        !Physics2D.OverlapCircle(p, 0.3f, ((1 << 3))) &&
+        //no moving entities nearby
+        !Physics2D.OverlapCircle(p, 1f, ((1 << 6) + (1 << 0)) );
+
+
     public static void Place() {
         Vector3 p = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         // check if space is free
-        if (!Physics2D.OverlapCircle(p, 0.3f, ((1 << 3)))) {
-            // check if targets arent near
-            if (!Physics2D.OverlapCircle(p, 1f, ((1 << 6) + (1 << 0)))) {
-                p.z = 0;
-                HexCoord hex = HexCoord.NearestHex(p);
-                GameObject o = holding.ToGameObject(hex.position());
-                if (holding.type == ItemTypes.Orb) {
-                    World.orbTransform = o.transform;
-                    PlayerBehavior.me.priority = Priority.Combatant;
-                    World.SetOrb();
-                }
-                holding = null;
+        if(Placeable(p)){
+            p.z = 0;
+            HexCoord hex = HexCoord.NearestHex(p);
+            GameObject o = holding.ToGameObject(hex.position());
+            if (holding.type == ItemTypes.Orb) {
+                World.orbTransform = o.transform;
+                PlayerBehavior.me.priority = Priority.Combatant;
+                World.SetOrb();
             }
+            holding = null;
         }
     }
 

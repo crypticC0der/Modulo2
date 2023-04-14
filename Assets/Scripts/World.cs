@@ -4,7 +4,7 @@ using UnityEngine;
 using Unity.Jobs;
 using MeshGen;
 using static MeshGen.MeshGens;
-using Utils;
+using MUtils;
 using System;
 
 namespace Modulo {
@@ -341,6 +341,13 @@ public static class World {
         }
     }
 
+    public static bool CheckState(HexCoord hc,NodeState ns) =>
+        CheckState(HexCoordToNode(hc),ns);
+
+    public static bool CheckState(Node n,NodeState ns) =>
+        n.HasState(ns);
+
+
     public static void UpdateState(HexCoord hc, NodeState ns,
                                    ChangeStateMethod mode) {
         HexCoordToNode(hc).ChangeState(ns, mode, hc);
@@ -379,6 +386,8 @@ public static class World {
         //     o = EnemyGeneration.ObjGen((Shapes.circle), MatColour.white);
         //     o.transform.position = new Vector3(2 * i - 11, -5);
         // }
+        Component.SpawnComponent(Component.Id.Grey, 11111,
+                                      new Vector3(5,5));
         // g.GetComponent<Damageable>().Draw(f);
     }
 }
