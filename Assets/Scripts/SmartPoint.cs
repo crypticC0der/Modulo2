@@ -41,6 +41,12 @@ public class MovingPoint{
 		v=dp;
 	}
 
+	public MovingPoint(float speed,DynamicPoint dp,Vector3 v){
+		this.speed=speed;
+		this.dp=dp;
+		this.v=v;
+	}
+
 	public void Step(){
 		Vector3 d = dp-v;
 		if(d.magnitude<speed*Time.deltaTime){

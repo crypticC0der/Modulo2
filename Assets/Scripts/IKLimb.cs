@@ -1,25 +1,52 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 namespace MUtils{
+[System.Serializable]
 public class IKLimb{
-    const int segMultiplier = 6;
+	public enum Status{
+		Normal,Dying,Spawning,Dead
+	}
 
+    const int segMultiplier = 6;
 	public MovingPoint end;
 	public DynamicPoint start;
-	float reach;
+	public Status state=Status.Spawning;
+	public float reach;
+	public float reachModifier=0;
     int segments;
     LineRenderer r;
     Vector3[] points;
 
+	const float animTime=0.7f;
+
+
 	public void Animate(){
+		if(state==Status.Spawning){
+			reachModifier +=Time.deltaTime/animTime;
+			if(reachModifier>1){
+				reachModifier=1;
+				state=Status.Normal;
+			}
+		}
+
+		if(state==Status.Dying){
+			reachModifier -=Time.deltaTime/animTime;
+			if(reachModifier<0){
+				reachModifier=0;
+				state=Status.Dead;
+				GameObject.Destroy(r.gameObject);
+			}
+		}
+
 		end.Step();
 		ManageSegments();
 		r.SetPositions(points);
 	}
 
     void ManageSegments() {
-		float segLen = reach/segments;
+		float segLen = reachModifier * reach/segments;
 
 		//back
 		points[segments]=end;

@@ -1,5 +1,7 @@
 using UnityEngine;
+using System.Collections.Generic;
 using MUtils;
+
 namespace Modulo{
 	public abstract class Alter : MonoBehaviour,Clickable{
 		[SerializeField] protected float effectRange {private set;get;} = 3;
@@ -175,6 +177,21 @@ namespace Modulo{
 	}
 
 	public class SharpeningAlter : Alter, HasMask{
+		struct GameLimb {
+			public GameObject obj;
+			public IKLimb limb;
+		};
+
+
+		const float w1=0.1f;
+		const float w2=0.03f;
+		const float s=5f;
+		static Color c1 = MeshGen.MeshGens.ColorFromHex(0x802020ff);
+		static Color c2 = MeshGen.MeshGens.ColorFromHex(0x501010ff);
+		List<GameLimb> activeLimbs = new List<GameLimb>();
+		[SerializeReference]
+		List<IKLimb> deadLimbs = new List<IKLimb>();
+
 		private const float dps=1;
 		private bool runEffect=false;
 		private const bool healthSafety=true;
@@ -184,33 +201,127 @@ namespace Modulo{
 		protected override float Speed() => spd;
 		public int simpleLayerMask()=>(this as HasMask).slm();
 		protected override void SetUp(){}
-		protected override void CleanUp(){}
 
 		public void Start(){
 			toProduce=Component.Id.Pink;
 		}
 
-		protected override void Effect(){
+
+		void KillLimb(int i){
+			activeLimbs[i].limb.state= IKLimb.Status.Dying;
+			deadLimbs.Add(activeLimbs[i].limb);
+			activeLimbs.RemoveAt(i);
+		}
+
+		protected override void AnimStep(){
+			for(int i=0;i<deadLimbs.Count;){
+				if(deadLimbs[i].state==IKLimb.Status.Dead){
+					deadLimbs.RemoveAt(i);
+				} else {
+					deadLimbs[i].Animate();
+					i++;
+				}
+			}
+			for(int i=0;i<activeLimbs.Count;){
+				bool ded=false;
+				activeLimbs[i].limb.Animate();
+				if(activeLimbs[i].obj != null){
+					Vector3 d = activeLimbs[i].limb.end.GetPoint()
+						-transform.position;
+					if(d.magnitude > 1.5* effectRange){
+						KillLimb(i);
+						ded=true;
+					}
+				}else{
+					KillLimb(i);
+					ded=true;
+				}
+				if(!ded){
+					i++;
+				}
+			}
+			base.AnimStep();
+		}
+
+		protected override void CleanUp(){
+			while(activeLimbs.Count>0){
+				KillLimb(activeLimbs.Count-1);
+			}
+		}
+
+		protected override void AnimCleanStep(){
+			for(int i=0;i<deadLimbs.Count;i++){
+				deadLimbs[i].Animate();
+				if(deadLimbs[i].state==IKLimb.Status.Dead){
+					deadLimbs.RemoveAt(i);
+				}
+			}
+		}
+
+		void updateLimbs(){
 			Collider2D[] cols = Physics2D.OverlapCircleAll(
 				transform.position,
 				effectRange, this.simpleLayerMask());
+			foreach(Collider2D c in cols){
+				bool match = false;
+				foreach(GameLimb gl in activeLimbs){
+					if(gl.obj == c.gameObject){
+						match=true;
+						break;
+					}
+				}
+				if(!match){
+					GameLimb newLimb;
+					MovingPoint mp = new MovingPoint(s,
+										new DynamicPoint(c.gameObject.transform),
+										transform.position);
+					newLimb.obj = c.gameObject;
+					if(deadLimbs.Count>0){
+						newLimb.limb = deadLimbs[deadLimbs.Count-1];
+						deadLimbs.RemoveAt(deadLimbs.Count-1);
+						newLimb.limb.end = mp;
+					}else{
+						Vector3 p = transform.position;
+						p.z--;
+						newLimb.limb = new IKLimb(12,effectRange,
+												new DynamicPoint(p), mp);
+						newLimb.limb.SetWidthGradient(w1,w2);
+						newLimb.limb.SetColourGradient(c1,c2);
+					}
+					activeLimbs.Add(newLimb);
+				}
+			}
+		}
+
+		float t=0;
+		protected override void Effect(){
+			if(t>0.5f){
+				updateLimbs();
+				t=0;
+			}
+			t+=Time.deltaTime;
 			spd=0;
 			float dmg = dps*timerStart;
 			DamageData d =
 				new DamageData {properties = DamageProperties.bypassArmor,
 								dmg=dmg*Time.deltaTime};
-			foreach(Collider2D c in cols){
-				Damageable target = c.GetComponent<Damageable>();
-				if(target){
-					if(!healthSafety){
-						d.dmg = Mathf.Min(dmg,target.maxHealth);
-						d.dmg*=Time.deltaTime;
-						spd+=d.dmg/dmg;
-					}else{
-						spd++;
+
+			foreach(GameLimb gl in activeLimbs){
+				Vector3 dist =gl.obj.transform.position-
+					gl.limb.end.GetPoint();
+				if(dist.magnitude<0.1f){
+					Damageable target = gl.obj.GetComponent<Damageable>();
+					if(target){
+						if(!healthSafety){
+							d.dmg = Mathf.Min(dmg,target.maxHealth);
+							d.dmg*=Time.deltaTime;
+							spd+=d.dmg/dmg;
+						}else{
+							spd++;
+						}
+						d.direction = target.transform.position-transform.position;
+						target.TakeDamage(d);
 					}
-					d.direction = target.transform.position-transform.position;
-					target.TakeDamage(d);
 				}
 			}
 		}
