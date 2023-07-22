@@ -10,8 +10,6 @@ using System;
 namespace Modulo {
 
 public static class World {
-    public static float hexSize = 1 / Mathf.Sqrt(3);
-    public static Vector2 hexVec = new Vector2(1f / 2, Mathf.Sqrt(3) / 2);
     public static Dictionary<HexCoord, Node> nodes;
     public const int optimizationCubeSize = 4;
     public static Node orbPoint;
@@ -372,6 +370,7 @@ public static class World {
 
         Component.CreateAlter(Component.Id.Pink,new HexCoord(5,0));
         Component.CreateAlter(Component.Id.Yellow,new HexCoord(-5,0));
+        Cauldron.SpawnCauldron(new HexCoord(0,0));
 
         Item it = ItemRatio.table[0].item.FromTemplate(1, 1);
         GameObject g = it.ToGameObject(

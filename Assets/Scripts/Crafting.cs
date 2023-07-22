@@ -3,13 +3,40 @@ using System.Collections.Generic;
 using MUtils;
 
 namespace Modulo{
+	public class ComponentInserter{
+		public delegate void OnInsert();
+
+		OnInsert hook;
+		public int contains{get; private set;}
+		Component.Id component;
+		Transform t;
+		public void Insert(){
+			int inc = contains+1;
+			if(PlayerBehavior.me.SpendComponent(component,inc,
+												t.position)){
+				contains += inc;
+				hook();
+			}
+		}
+
+		public void Reset() =>contains=0;
+		public ComponentInserter(Component.Id component,Transform perent,
+								 OnInsert hook){
+			this.hook=hook;
+			this.component=component;
+			this.t=perent;
+		}
+
+	}
+
 	public abstract class Alter : MonoBehaviour,Clickable{
 		[SerializeField] protected float effectRange {private set;get;} = 3;
 		[SerializeField] protected float timerStart=0;
 		[SerializeField] protected Component.Id toProduce;
 		[SerializeField] private float timer=0;
-		[SerializeField] private int contains=0;
 		[SerializeField] private bool running=false;
+		private ComponentInserter ci;
+		private HexBorder hb;
 
 		//will be run n times per frame
 		protected abstract float Speed();
@@ -20,25 +47,32 @@ namespace Modulo{
 		protected virtual void AnimStep(){
 			if(Condition()){
 				Rotate();
+				hb.updateLR(timer/timerStart);
 			}
 		}
 		protected virtual void AnimCleanStep(){}
 		//run when state changed
-		protected abstract void CleanUp();
-		protected abstract void SetUp();
+		protected virtual void CleanUp(){
+			hb.Destroy();
+		}
+
+		protected virtual void SetUp(){
+			Component.ExplodeComponents(Component.Id.Grey,
+										ci.contains,
+										transform.position,
+										effectRange);
+			hb = new HexBorder(Component.ComponentColour(Component.Id.Grey));
+			hb.setParent(transform);
+			hb.updateLR(1);
+		}
+
+		public virtual void Start(){
+			ci = new ComponentInserter(Component.Id.Grey,transform,() => timerStart+=1);
+		}
 
 		public void LeftClick(ClickEventHandler e){
 			if(running){return;}
-
-			int inc = contains+1;
-			if(PlayerBehavior.me.componentCount[0]>inc){
-				PlayerBehavior.me.componentCount[0]-=inc;
-				Component.SendComponents(Component.Id.Grey,inc,this);
-				Component.UpdateComponentUI(Component.Id.Grey,
-										PlayerBehavior.me.componentCount[0]);
-				contains += inc;
-				timerStart+=1;
-			}
+			ci.Insert();
 		}
 
 		public virtual void RightClick(ClickEventHandler e){
@@ -63,9 +97,9 @@ namespace Modulo{
 					Effect();
 					timer-=Time.deltaTime*Speed();
 				}else if(timer<=0){
-					Component.SpawnComponent(toProduce,contains,
+					Component.SpawnComponent(toProduce,ci.contains,
 											 transform.position);
-					contains=0;
+					ci.Reset();
 					timer=0;
 					timerStart=0;
 					running=false;
@@ -85,8 +119,9 @@ namespace Modulo{
 		SpriteRenderer chainAlter;
 		SpriteRenderer chainPlayer;
 
-		public void Start(){
+		public override void Start(){
 			toProduce=Component.Id.Yellow;
+			base.Start();
 		}
 
 		protected override void Effect(){}
@@ -151,9 +186,9 @@ namespace Modulo{
 		protected override void SetUp(){
 			chainAlter = GenChain();
 			chainPlayer = GenChain();
+			base.SetUp();
 		}
 
-		protected override void CleanUp(){}
 		protected override void AnimCleanStep(){
 			if(chainAlter == null){return;}
 
@@ -199,11 +234,11 @@ namespace Modulo{
 
 		protected override bool Condition() => true;
 		protected override float Speed() => spd;
-		public int simpleLayerMask()=>(this as HasMask).slm();
-		protected override void SetUp(){}
+		public int simpleLayerMask() =>(this as HasMask).slm();
 
 		public void Start(){
 			toProduce=Component.Id.Pink;
+			base.Start();
 		}
 
 
@@ -247,6 +282,7 @@ namespace Modulo{
 			while(activeLimbs.Count>0){
 				KillLimb(activeLimbs.Count-1);
 			}
+			base.CleanUp();
 		}
 
 		protected override void AnimCleanStep(){
@@ -326,4 +362,104 @@ namespace Modulo{
 			}
 		}
 	}
+
+	public class Cauldron : MonoBehaviour,Clickable{
+		delegate bool canRotate();
+
+		public void LeftClick(ClickEventHandler e)  => inserters[0].Insert();
+		public void RightClick(ClickEventHandler e) => inserters[1].Insert();
+
+		ComponentInserter[] inserters;
+		HexBorder[] borders;
+		float timer=5;
+		public void Start(){
+			AddGear(1*Mathf.PI/3,() => timer<3,
+					Component.ComponentColour(Component.Id.Yellow));
+			AddGear(3*Mathf.PI/3,() => timer<3,
+					Component.ComponentColour(Component.Id.Grey));
+			AddGear(5*Mathf.PI/3,() => timer<3,
+					Component.ComponentColour(Component.Id.Pink));
+
+			ComponentInserter.OnInsert hook = ()=>timer=5;
+			inserters = new ComponentInserter[2]{
+				new ComponentInserter(Component.Id.Pink,transform,hook),
+				new ComponentInserter(Component.Id.Yellow,transform,hook)
+			};
+			borders = new HexBorder[2]{
+				new HexBorder(Component.ComponentColour(Component.Id.Pink)),
+				new HexBorder(Component.ComponentColour(Component.Id.Yellow))
+			};
+			borders[0].setParent(transform);
+			borders[1].setParent(transform);
+			borders[0].clockwise=false;
+		}
+
+		class Rotate : MonoBehaviour{
+			public canRotate condition{set; private get;}
+			const float spd=180;
+			public void FixedUpdate(){
+				if(condition()){
+					transform.eulerAngles += 180*Vector3.forward*Time.deltaTime;
+				}
+			}
+		}
+
+		void Craft(){
+			Debug.Log("craft, joe bide");
+			inserters[0].Reset();
+			inserters[1].Reset();
+			timer=5;
+		}
+
+		public void Update(){
+			if(inserters[0].contains+inserters[1].contains<=0){return;}
+			if(timer>0){
+				timer-=Time.deltaTime;
+			}else{
+				Craft();
+			}
+			Animate();
+		}
+
+		void Animate(){
+			if(inserters[0].contains+inserters[1].contains<=0){return;}
+			float v = Mathf.Min(timer/3,1) /
+					   (inserters[0].contains+inserters[1].contains);
+
+			borders[0].updateLR(v*inserters[0].contains);
+			borders[1].updateLR(v*inserters[1].contains);
+		}
+
+		const float Radius=0.35f;
+		void AddGear(float r,canRotate condition,Color c){
+			GameObject gear = new GameObject("gear");
+			gear.transform.localScale*=1.1f;
+			gear.transform.SetParent(gameObject.transform);
+			gear.transform.localPosition = Radius *
+				new Vector3(Mathf.Sin(r),Mathf.Cos(r),-1);
+			SpriteRenderer sr = gear.AddComponent<SpriteRenderer>();
+			sr.sprite = ItemTemplate.GetGraphic("gear");
+			sr.color=c;
+			sr.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+			gear.AddComponent<Rotate>().condition=condition;
+		}
+
+		public static GameObject SpawnCauldron(HexCoord hc){
+			GameObject cauldron = new GameObject("cauldron");
+			cauldron.AddComponent<Cauldron>();
+			cauldron.transform.position = hc.position();
+			SpriteRenderer sr = cauldron.AddComponent<SpriteRenderer>();
+			SpriteSize spriteSize = ItemTemplate.GetSpriteSize("base");
+			sr.sprite = spriteSize.sprite;
+			cauldron.transform.localScale = spriteSize.size;
+			SpriteMask sm = cauldron.AddComponent<SpriteMask>();
+			sm.sprite=spriteSize.sprite;
+			cauldron.AddComponent<PolygonCollider2D>();
+			cauldron.AddComponent<Rigidbody2D>().bodyType=RigidbodyType2D.Static;
+			return cauldron;
+		}
+
+
+	}
+
 }

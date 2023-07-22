@@ -13,7 +13,7 @@ public class Component{
 
 	static Component[] components =
         new Component[] {
-            new Component("grey",0x808080ff,Component.Id.Grey ),
+            new Component("grey",0x636363ff,Component.Id.Grey ),
             new Component("blue",0x150e79ff,Component.Id.Blue ),
             new Component("pink",0xff80ccff,Component.Id.Pink ),
             new Component("yellow",0xe7ff00ff,Component.Id.Yellow )
@@ -54,7 +54,7 @@ public class Component{
     }
 
     public static void SendComponents(Component.Id id, int amount,
-                                      Alter reciver) {
+                                      Vector3 to) {
         for (int e = 3; e >= 0; e--) {
             int p = (int)Mathf.Pow(10, e);
             while (p <= amount) {
@@ -63,7 +63,25 @@ public class Component{
 				pos.y+=Random.Range(-spawnRange, spawnRange)*(e+1)/2;
 
                 amount -= p;
-                components[(int)id].DummyComponent(p,pos, (e + 1) / 4f,reciver);
+                components[(int)id].DummyComponent(p,pos, (e + 1) / 4f,to);
+            }
+        }
+    }
+
+    public static void ExplodeComponents(Component.Id id, int amount,
+                                      Vector3 around,float r) {
+        for (int e = 3; e >= 0; e--) {
+            int p = (int)Mathf.Pow(10, e);
+            while ((p*2 < amount && e>0) || (p<=amount && e==0)) {
+				Vector3 pos = around;
+				pos += Attack.RandomInCircle(r);
+
+                amount -= p;
+                GameObject c  =
+					components[(int)id].SimpleComponent(p,around, (e + 1) / 4f);
+				ComponentSend cs = c.AddComponent<ComponentSend>();
+				cs.to=pos;
+				cs.fade=true;
             }
         }
     }
@@ -80,9 +98,9 @@ public class Component{
 	}
 
 	public GameObject DummyComponent(int amount, Vector3 position,
-									 float size, Alter reciver) {
+									 float size, Vector3 to) {
 		GameObject o = SimpleComponent(amount,position,size);
-		o.AddComponent<ComponentSend>().to=reciver.transform.position;
+		o.AddComponent<ComponentSend>().to=to;
 		return o;
 	}
 
@@ -125,7 +143,9 @@ public class Component{
 		gear.transform.SetParent(alter.transform);
 		gear.transform.localPosition=new Vector3(0,0,-1);
 		Sprite gearSprite = ItemTemplate.GetGraphic("gear");
-		gear.AddComponent<SpriteRenderer>().sprite = gearSprite;
+		SpriteRenderer gsr = gear.AddComponent<SpriteRenderer>();
+		gsr.sprite = gearSprite;
+		gsr.color = ComponentColour(Id.Grey);
 
 		World.UpdateState(location ,NodeState.ground,ChangeStateMethod.On);
 		Collider2D col = alter.AddComponent<PolygonCollider2D>();
@@ -175,8 +195,22 @@ public class ComponentSend : MonoBehaviour{
 	const float speed=5;
 	public Vector3 to;
 	public ComponentData data;
+	public bool fade =false;
+	SpriteRenderer sr;
+
+	void Start(){
+		if(fade){
+			sr = gameObject.GetComponent<SpriteRenderer>();
+		}
+	}
+
 	void FixedUpdate(){
 		Vector3 d = to-transform.position;
+		if(d.magnitude<.9f && fade){
+			Color c = sr.color;
+			c.a = (d.magnitude-0.3f)/(.9f-.3f);
+			sr.color=c;
+		}
 		if(d.magnitude<0.3f){
 			if(data!=null){
 				//send to recive

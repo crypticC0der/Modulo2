@@ -18,6 +18,16 @@ public class PlayerBehavior : Damageable,PicksComponent {
     public static Item holding;
     public static UIControl controller;
 
+    public bool SpendComponent(Component.Id cid,int amount,Vector3 to){
+        if(componentCount[(int)cid]>amount){
+            componentCount[(int)cid]-=amount;
+            Component.SendComponents(cid,amount,to);
+            Component.UpdateComponentUI(cid, componentCount[(int)cid]);
+            return true;
+        }
+        return false;
+    }
+
     public void CollectComponent(ComponentData data) {
         componentCount[data.id] += data.amount;
         Component.UpdateComponentUI((Component.Id)data.id,
