@@ -9,30 +9,44 @@ public class ClickEventHandler : MonoBehaviour {
         new Queue<ClickTodo>()
     };
 
+    public void HandleClick(int mode,Vector3 at){
+        bool clicked=true;
+        switch (mode) {
+            case 0: clicked=Input.GetMouseButtonDown(0); break;
+            case 1: clicked=Input.GetMouseButtonDown(1); break;
+            case 2: clicked=Input.GetMouseButton(0); break;
+            case 3: clicked=Input.GetMouseButton(1); break;
+        }
+
+
+        if (clicked) {
+            if (todoList[mode].Count != 0) {
+                todoList[mode].Dequeue()(at);
+            } else {
+                Collider2D[] hits = Physics2D.OverlapCircleAll(at, 0.5f);
+                foreach(Collider2D hit in hits) {
+                    Debug.Log(hit.name);
+                    Clickable d = hit.GetComponent<Clickable>();
+                    if (d!=null) {
+                        switch (mode) {
+                            case 0: d.LeftClick(this); break;
+                            case 1: d.RightClick(this); break;
+                            case 2: d.LeftClickHold(this); break;
+                            case 3: d.LeftClickHold(this); break;
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
     public void Update() {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Collider2D[] hits;
         Vector3 worldPoint =
             Camera.main.ScreenToWorldPoint(Input.mousePosition);
         for(int i=0;i<2;i++){
-            if (Input.GetMouseButtonDown(i)) {
-                if (todoList[i].Count != 0) {
-                    todoList[i].Dequeue()(worldPoint);
-                } else {
-                    hits = Physics2D.OverlapCircleAll(worldPoint, 0.5f);
-                    foreach(Collider2D hit in hits) {
-                        Debug.Log(hit.name);
-                        Clickable d = hit.GetComponent<Clickable>();
-                        if (d!=null) {
-                            if(i==0){
-                                d.LeftClick(this);
-                            }else{
-                                d.RightClick(this);
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -60,6 +74,8 @@ public class ClickEventHandler : MonoBehaviour {
 public interface Clickable{
     public void LeftClick(ClickEventHandler e);
     public void RightClick(ClickEventHandler e);
+    public void LeftClickHold(ClickEventHandler e);
+    public void RightClickHold(ClickEventHandler e);
 }
 
 }

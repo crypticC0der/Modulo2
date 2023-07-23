@@ -19,6 +19,15 @@ namespace Modulo{
 			}
 		}
 
+		public void InsertCont(){
+			int inc = contains+1;
+			if(PlayerBehavior.me.SpendComponent(component,inc,
+												t.position)){
+				contains += inc;
+				hook();
+			}
+		}
+
 		public void Reset() =>contains=0;
 		public ComponentInserter(Component.Id component,Transform perent,
 								 OnInsert hook){
@@ -69,6 +78,10 @@ namespace Modulo{
 		public virtual void Start(){
 			ci = new ComponentInserter(Component.Id.Grey,transform,() => timerStart+=1);
 		}
+
+
+		public void LeftClickHold(ClickEventHandler e){}
+		public void RightClickHold(ClickEventHandler e){}
 
 		public void LeftClick(ClickEventHandler e){
 			if(running){return;}
@@ -368,6 +381,8 @@ namespace Modulo{
 
 		public void LeftClick(ClickEventHandler e)  => inserters[0].Insert();
 		public void RightClick(ClickEventHandler e) => inserters[1].Insert();
+		public void LeftClickHold(ClickEventHandler e){}
+		public void RightClickHold(ClickEventHandler e){}
 
 		ComponentInserter[] inserters;
 		HexBorder[] borders;
