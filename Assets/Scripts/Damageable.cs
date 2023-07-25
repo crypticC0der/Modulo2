@@ -112,7 +112,7 @@ public interface HasMask{
     }
 }
 
-public class Damageable : MonoBehaviour,Clickable,HasMask {
+public class Damageable : MonoBehaviour,HasMask {
     public static string[] EntityNames =
         new string[7] { "Module", "Defence", "Turret", "Orb",
                         "Player", "Enemy",   "Other" };
@@ -143,10 +143,6 @@ public class Damageable : MonoBehaviour,Clickable,HasMask {
         }
     }
 
-    public virtual void LeftClick(ClickEventHandler e){}
-    public virtual void RightClick(ClickEventHandler e){}
-    public virtual void LeftClickHold(ClickEventHandler e){}
-    public virtual void RightClickHold(ClickEventHandler e){}
     public static implicit operator bool(Damageable d) => d!=null && d.health!=0;
 
     protected virtual void Start() {

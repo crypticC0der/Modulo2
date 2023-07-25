@@ -19,7 +19,7 @@ public enum SpecialProperties {
 /// both a turret and an enemy you use this to create classes that can fight and
 /// have attacks
 /// </summary>
-public class Combatant : Damageable {
+public class Combatant : Damageable,Clickable {
     [SerializeReference]
     public List<Proc> procs = new List<Proc>();
     [SerializeReference]
@@ -62,7 +62,11 @@ public class Combatant : Damageable {
         return mask;
     }
 
-    public new void LeftClick(ClickEventHandler e) {
+    public void RightClick(ClickEventHandler e){}
+    public void LeftClickHold(ClickEventHandler e){}
+    public void RightClickHold(ClickEventHandler e){}
+    public void Hover(ClickEventHandler e){}
+    public void LeftClick(ClickEventHandler e) {
         List<AreaAttack> attackList = new List<AreaAttack>();
         Debug.Log(e);
         foreach (Attack a in attacks) {

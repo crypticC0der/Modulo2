@@ -6,8 +6,26 @@ public class ClickEventHandler : MonoBehaviour {
     public delegate void ClickTodo(Vector3 point);
     public Queue<ClickTodo>[] todoList = new Queue<ClickTodo>[]{
         new Queue<ClickTodo>(),
+        new Queue<ClickTodo>(),
+        new Queue<ClickTodo>(),
         new Queue<ClickTodo>()
     };
+
+    public void SendClick(int mode, Vector3 at){
+        Collider2D[] hits = Physics2D.OverlapCircleAll(at, 0.5f);
+        foreach(Collider2D hit in hits) {
+            Clickable d = hit.GetComponent<Clickable>();
+            if (d!=null) {
+                switch (mode) {
+                    case 0: d.LeftClick(this); break;
+                    case 1: d.RightClick(this); break;
+                    case 2: d.LeftClickHold(this); break;
+                    case 3: d.LeftClickHold(this); break;
+                    case 4: d.Hover(this); break;
+                }
+            }
+        }
+    }
 
     public void HandleClick(int mode,Vector3 at){
         bool clicked=true;
@@ -23,19 +41,7 @@ public class ClickEventHandler : MonoBehaviour {
             if (todoList[mode].Count != 0) {
                 todoList[mode].Dequeue()(at);
             } else {
-                Collider2D[] hits = Physics2D.OverlapCircleAll(at, 0.5f);
-                foreach(Collider2D hit in hits) {
-                    Debug.Log(hit.name);
-                    Clickable d = hit.GetComponent<Clickable>();
-                    if (d!=null) {
-                        switch (mode) {
-                            case 0: d.LeftClick(this); break;
-                            case 1: d.RightClick(this); break;
-                            case 2: d.LeftClickHold(this); break;
-                            case 3: d.LeftClickHold(this); break;
-                        }
-                    }
-                }
+                SendClick(mode,at);
             }
         }
 
@@ -43,11 +49,12 @@ public class ClickEventHandler : MonoBehaviour {
 
     public void Update() {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Collider2D[] hits;
         Vector3 worldPoint =
             Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        for(int i=0;i<2;i++){
+        for(int i=0;i<4;i++){
+            HandleClick(i,worldPoint);
         }
+        SendClick(4,worldPoint);
     }
 
     LineRenderer r;
@@ -76,6 +83,7 @@ public interface Clickable{
     public void RightClick(ClickEventHandler e);
     public void LeftClickHold(ClickEventHandler e);
     public void RightClickHold(ClickEventHandler e);
+    public void Hover(ClickEventHandler e);
 }
 
 }

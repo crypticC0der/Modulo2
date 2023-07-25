@@ -1,37 +1,52 @@
 using UnityEngine;
 using System.Collections.Generic;
 using MUtils;
+using MeshGen;
 
 namespace Modulo{
 	public class ComponentInserter{
 		public delegate void OnInsert();
 
-		OnInsert hook;
+		OnInsert hookStart;
+		OnInsert hookStep;
 		public int contains{get; private set;}
 		Component.Id component;
 		Transform t;
+		float heldFor=0;
+		float missed=0;
+
+		const float timeStep=0.16f;
+		float stepTimer=0;
+
 		public void Insert(){
-			int inc = contains+1;
-			if(PlayerBehavior.me.SpendComponent(component,inc,
-												t.position)){
-				contains += inc;
-				hook();
-			}
+			heldFor=3;
+			missed=0;
+			hookStart();
 		}
 
 		public void InsertCont(){
-			int inc = contains+1;
+			if(stepTimer<timeStep){
+				stepTimer+=Time.deltaTime;
+				return;
+			}
+			float incacc = (Mathf.Pow(2,heldFor+stepTimer) - Mathf.Pow(2,heldFor))/Mathf.Log(2) + missed;
+			int inc=(int)(incacc);
+			missed=incacc-inc;
 			if(PlayerBehavior.me.SpendComponent(component,inc,
 												t.position)){
 				contains += inc;
-				hook();
+				Debug.Log(contains);
+				heldFor+=stepTimer;
+				hookStep();
 			}
+			stepTimer=0;
 		}
 
 		public void Reset() =>contains=0;
 		public ComponentInserter(Component.Id component,Transform perent,
-								 OnInsert hook){
-			this.hook=hook;
+								 OnInsert hook,OnInsert hookStep){
+			this.hookStep=hookStep;
+			this.hookStart=hook;
 			this.component=component;
 			this.t=perent;
 		}
@@ -40,7 +55,7 @@ namespace Modulo{
 
 	public abstract class Alter : MonoBehaviour,Clickable{
 		[SerializeField] protected float effectRange {private set;get;} = 3;
-		[SerializeField] protected float timerStart=0;
+		[SerializeField] protected float timerStart=3;
 		[SerializeField] protected Component.Id toProduce;
 		[SerializeField] private float timer=0;
 		[SerializeField] private bool running=false;
@@ -76,12 +91,17 @@ namespace Modulo{
 		}
 
 		public virtual void Start(){
-			ci = new ComponentInserter(Component.Id.Grey,transform,() => timerStart+=1);
+			ci = new ComponentInserter(Component.Id.Grey,transform,() =>{}, () => timerStart+=Time.deltaTime);
 		}
 
 
-		public void LeftClickHold(ClickEventHandler e){}
+		public void LeftClickHold(ClickEventHandler e){
+			if(running){return;}
+			ci.InsertCont();
+			Debug.Log("a");
+		}
 		public void RightClickHold(ClickEventHandler e){}
+		public void Hover(ClickEventHandler e){}
 
 		public void LeftClick(ClickEventHandler e){
 			if(running){return;}
@@ -114,7 +134,7 @@ namespace Modulo{
 											 transform.position);
 					ci.Reset();
 					timer=0;
-					timerStart=0;
+					timerStart=3;
 					running=false;
 					CleanUp();
 				}
@@ -379,11 +399,18 @@ namespace Modulo{
 	public class Cauldron : MonoBehaviour,Clickable{
 		delegate bool canRotate();
 
-		public void LeftClick(ClickEventHandler e)  => inserters[0].Insert();
-		public void RightClick(ClickEventHandler e) => inserters[1].Insert();
-		public void LeftClickHold(ClickEventHandler e){}
-		public void RightClickHold(ClickEventHandler e){}
+		public void LeftClick(ClickEventHandler e)  => inserters[focus].Insert();
+		public void RightClick(ClickEventHandler e){
+			focus=(focus+1)%inserters.Length;
+			// transform.eulerAngles+=new Vector3(0,0,-120);
+			RotateArrow();
+		}
 
+		public void LeftClickHold(ClickEventHandler e) => inserters[focus].InsertCont();
+		public void RightClickHold(ClickEventHandler e){}
+		public void Hover(ClickEventHandler e){hovered=true;}
+
+		int focus=0;
 		ComponentInserter[] inserters;
 		HexBorder[] borders;
 		float timer=5;
@@ -396,17 +423,34 @@ namespace Modulo{
 					Component.ComponentColour(Component.Id.Pink));
 
 			ComponentInserter.OnInsert hook = ()=>timer=5;
-			inserters = new ComponentInserter[2]{
-				new ComponentInserter(Component.Id.Pink,transform,hook),
-				new ComponentInserter(Component.Id.Yellow,transform,hook)
+			inserters = new ComponentInserter[3]{
+				new ComponentInserter(Component.Id.Pink,transform,hook,hook),
+				new ComponentInserter(Component.Id.Yellow,transform,hook,hook),
+				new ComponentInserter(Component.Id.Grey,transform,hook,hook)
 			};
 			borders = new HexBorder[2]{
 				new HexBorder(Component.ComponentColour(Component.Id.Pink)),
 				new HexBorder(Component.ComponentColour(Component.Id.Yellow))
 			};
-			borders[0].setParent(transform);
-			borders[1].setParent(transform);
+			GameObject perent = new GameObject("cauldron");
+			perent.transform.position=transform.position;
+			transform.localPosition=Vector3.zero;
+			transform.SetParent(perent.transform);
+			borders[0].setParent(perent.transform);
+			borders[1].setParent(perent.transform);
 			borders[0].clockwise=false;
+			arrow =
+				MeshGens.MinObjGen(Shapes.arrow,MatColour.white)
+				.GetComponent<Renderer>();
+			arrow.transform.SetParent(perent.transform);
+			RotateArrow();
+		}
+
+		Renderer arrow;
+		void RotateArrow(){
+			float r = -120f*(focus+1);
+			arrow.transform.localEulerAngles=r*Vector3.forward;
+			arrow.transform.localPosition=-World.AngleToVec(-r*Mathf.PI/180f)*1.2f;
 		}
 
 		class Rotate : MonoBehaviour{
@@ -423,23 +467,33 @@ namespace Modulo{
 			Debug.Log("craft, joe bide");
 			inserters[0].Reset();
 			inserters[1].Reset();
+			inserters[2].Reset();
 			timer=5;
 		}
 
 		public void Update(){
-			if(inserters[0].contains+inserters[1].contains<=0){return;}
+			Animate();
+			int sum = inserters[0].contains+inserters[1].contains+
+				inserters[2].contains;
+			if(sum<=0){return;}
 			if(timer>0){
 				timer-=Time.deltaTime;
 			}else{
 				Craft();
 			}
-			Animate();
 		}
 
+		bool hovered=false;
 		void Animate(){
-			if(inserters[0].contains+inserters[1].contains<=0){return;}
-			float v = Mathf.Min(timer/3,1) /
-					   (inserters[0].contains+inserters[1].contains);
+			if(hovered!=arrow.enabled){
+				arrow.enabled=hovered;
+			}
+			hovered=false;
+			int sum = inserters[0].contains+
+				inserters[1].contains+
+				inserters[2].contains;
+			if(sum<=0){return;}
+			float v = Mathf.Min(timer/3,1) / (sum);
 
 			borders[0].updateLR(v*inserters[0].contains);
 			borders[1].updateLR(v*inserters[1].contains);

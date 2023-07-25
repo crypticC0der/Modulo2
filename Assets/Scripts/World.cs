@@ -93,6 +93,10 @@ public static class World {
         }
     }
 
+    public static Vector2 AngleToVec(float r){
+        return new Vector3(Mathf.Sin(r),Mathf.Cos(r));
+    }
+
     public static float VecToAngle(Vector3 v) {
         float angle = 90;
         if (v.y != 0) {
