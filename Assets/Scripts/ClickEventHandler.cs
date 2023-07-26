@@ -62,7 +62,7 @@ public class ClickEventHandler : MonoBehaviour {
         r = Attack.MinimalRay(Color.red,Color.blue,
                     new Vector3[]{transform.position,new Vector3(0,0,0)});
         r.startWidth=0.1f;
-
+        // Mouse.Get();
     }
 
     public float heuristic;

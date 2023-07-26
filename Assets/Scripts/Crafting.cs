@@ -10,7 +10,7 @@ namespace Modulo{
 		OnInsert hookStart;
 		OnInsert hookStep;
 		public int contains{get; private set;}
-		Component.Id component;
+		public Component.Id component;
 		Transform t;
 		float heldFor=0;
 		float missed=0;
@@ -101,7 +101,9 @@ namespace Modulo{
 			Debug.Log("a");
 		}
 		public void RightClickHold(ClickEventHandler e){}
-		public void Hover(ClickEventHandler e){}
+		public void Hover(ClickEventHandler e){
+			// Mouse.SetColour(Component.Id.Grey);
+		}
 
 		public void LeftClick(ClickEventHandler e){
 			if(running){return;}
@@ -109,7 +111,7 @@ namespace Modulo{
 		}
 
 		public virtual void RightClick(ClickEventHandler e){
-			if(!running){
+			if(!running && ci.contains>0){
 				running=true;
 				timer=timerStart;
 				SetUp();
@@ -408,7 +410,10 @@ namespace Modulo{
 
 		public void LeftClickHold(ClickEventHandler e) => inserters[focus].InsertCont();
 		public void RightClickHold(ClickEventHandler e){}
-		public void Hover(ClickEventHandler e){hovered=true;}
+		public void Hover(ClickEventHandler e){
+			hovered=true;
+			// Mouse.SetColour(inserters[focus].component);
+		}
 
 		int focus=0;
 		ComponentInserter[] inserters;

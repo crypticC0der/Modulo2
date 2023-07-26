@@ -78,7 +78,7 @@ public class Component{
 
                 amount -= p;
                 GameObject c  =
-					components[(int)id].SimpleComponent(p,around, (e + 1) / 4f);
+					components[(int)id].SimpleComponent(around, (e + 1) / 4f);
 				ComponentSend cs = c.AddComponent<ComponentSend>();
 				cs.to=pos;
 				cs.fade=true;
@@ -86,7 +86,7 @@ public class Component{
         }
     }
 
-	public GameObject SimpleComponent(int amount, Vector3 position, float size){
+	public GameObject SimpleComponent(Vector3 position, float size){
 		GameObject o = new GameObject(name+" orb");
 		o.transform.localScale = new Vector3(size, size);
 		o.transform.position = position;
@@ -99,14 +99,14 @@ public class Component{
 
 	public GameObject DummyComponent(int amount, Vector3 position,
 									 float size, Vector3 to) {
-		GameObject o = SimpleComponent(amount,position,size);
+		GameObject o = SimpleComponent(position,size);
 		o.AddComponent<ComponentSend>().to=to;
 		return o;
 	}
 
 	public GameObject CreateComponent(int amount, float size,
 									  Vector3 start, Vector3 to) {
-		GameObject o = SimpleComponent(amount,start,size);
+		GameObject o = SimpleComponent(start,size);
 		ComponentData d = new ComponentData();
 		d.amount= amount;
 		d.id=(int)id;
