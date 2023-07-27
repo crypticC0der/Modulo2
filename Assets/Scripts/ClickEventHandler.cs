@@ -6,24 +6,20 @@ public class ClickEventHandler : MonoBehaviour {
     public delegate void ClickTodo(Vector3 point);
     public Queue<ClickTodo>[] todoList = new Queue<ClickTodo>[]{
         new Queue<ClickTodo>(),
-        new Queue<ClickTodo>(),
-        new Queue<ClickTodo>(),
         new Queue<ClickTodo>()
     };
 
     public void SendClick(int mode, Vector3 at){
+        string m="NoClick";
+        switch (mode) {
+            case 0: m = "LeftClick"; break;
+            case 1: m = "RightClick"; break;
+            case 2: m = "LeftClickHold"; break;
+            case 3: m = "LeftClickHold"; break;
+        }
         Collider2D[] hits = Physics2D.OverlapCircleAll(at, 0.5f);
         foreach(Collider2D hit in hits) {
-            Clickable d = hit.GetComponent<Clickable>();
-            if (d!=null) {
-                switch (mode) {
-                    case 0: d.LeftClick(this); break;
-                    case 1: d.RightClick(this); break;
-                    case 2: d.LeftClickHold(this); break;
-                    case 3: d.LeftClickHold(this); break;
-                    case 4: d.Hover(this); break;
-                }
-            }
+            hit.SendMessage(m,this,SendMessageOptions.DontRequireReceiver);
         }
     }
 
@@ -36,9 +32,8 @@ public class ClickEventHandler : MonoBehaviour {
             case 3: clicked=Input.GetMouseButton(1); break;
         }
 
-
         if (clicked) {
-            if (todoList[mode].Count != 0) {
+            if (mode<2 && todoList[mode].Count != 0) {
                 todoList[mode].Dequeue()(at);
             } else {
                 SendClick(mode,at);
@@ -54,7 +49,6 @@ public class ClickEventHandler : MonoBehaviour {
         for(int i=0;i<4;i++){
             HandleClick(i,worldPoint);
         }
-        SendClick(4,worldPoint);
     }
 
     LineRenderer r;

@@ -4,56 +4,7 @@ using MUtils;
 using MeshGen;
 
 namespace Modulo{
-	public class ComponentInserter{
-		public delegate void OnInsert();
-
-		OnInsert hookStart;
-		OnInsert hookStep;
-		public int contains{get; private set;}
-		public Component.Id component;
-		Transform t;
-		float heldFor=0;
-		float missed=0;
-
-		const float timeStep=0.16f;
-		float stepTimer=0;
-
-		public void Insert(){
-			heldFor=3;
-			missed=0;
-			hookStart();
-		}
-
-		public void InsertCont(){
-			if(stepTimer<timeStep){
-				stepTimer+=Time.deltaTime;
-				return;
-			}
-			float incacc = (Mathf.Pow(2,heldFor+stepTimer) - Mathf.Pow(2,heldFor))/Mathf.Log(2) + missed;
-			int inc=(int)(incacc);
-			missed=incacc-inc;
-			if(PlayerBehavior.me.SpendComponent(component,inc,
-												t.position)){
-				contains += inc;
-				Debug.Log(contains);
-				heldFor+=stepTimer;
-				hookStep();
-			}
-			stepTimer=0;
-		}
-
-		public void Reset() =>contains=0;
-		public ComponentInserter(Component.Id component,Transform perent,
-								 OnInsert hook,OnInsert hookStep){
-			this.hookStep=hookStep;
-			this.hookStart=hook;
-			this.component=component;
-			this.t=perent;
-		}
-
-	}
-
-	public abstract class Alter : MonoBehaviour,Clickable{
+	public abstract class Alter : MonoBehaviour{
 		[SerializeField] protected float effectRange {private set;get;} = 3;
 		[SerializeField] protected float timerStart=3;
 		[SerializeField] protected Component.Id toProduce;
@@ -61,6 +12,8 @@ namespace Modulo{
 		[SerializeField] private bool running=false;
 		private ComponentInserter ci;
 		private HexBorder hb;
+		private AboveText at;
+		public float interactTimer=0;
 
 		//will be run n times per frame
 		protected abstract float Speed();
@@ -69,6 +22,7 @@ namespace Modulo{
 		//run once per frame
 		protected abstract void Effect();
 		protected virtual void AnimStep(){
+
 			if(Condition()){
 				Rotate();
 				hb.updateLR(timer/timerStart);
@@ -91,18 +45,19 @@ namespace Modulo{
 		}
 
 		public virtual void Start(){
-			ci = new ComponentInserter(Component.Id.Grey,transform,() =>{}, () => timerStart+=Time.deltaTime);
-		}
+			at = new AboveText(transform);
+			at.SetColour(Component.ComponentColour(toProduce));
 
+			ComponentInserter.OnInsert hook = ()=>{
+				interactTimer=2;
+				at.SetText(ci.contains);
+			};
+			ci = new ComponentInserter(Component.Id.Grey,transform,() =>{},hook);
+		}
 
 		public void LeftClickHold(ClickEventHandler e){
 			if(running){return;}
 			ci.InsertCont();
-			Debug.Log("a");
-		}
-		public void RightClickHold(ClickEventHandler e){}
-		public void Hover(ClickEventHandler e){
-			// Mouse.SetColour(Component.Id.Grey);
 		}
 
 		public void LeftClick(ClickEventHandler e){
@@ -113,6 +68,7 @@ namespace Modulo{
 		public virtual void RightClick(ClickEventHandler e){
 			if(!running && ci.contains>0){
 				running=true;
+				timerStart=Mathf.Log(ci.contains,2);
 				timer=timerStart;
 				SetUp();
 			}
@@ -143,6 +99,10 @@ namespace Modulo{
 			}else{
 				AnimCleanStep();
 			}
+
+			if(interactTimer<0){at.Hide();}
+			else{at.Show();}
+			interactTimer-=Time.deltaTime;
 		}
 	}
 
@@ -398,19 +358,29 @@ namespace Modulo{
 		}
 	}
 
-	public class Cauldron : MonoBehaviour,Clickable{
+	public class Cauldron : MonoBehaviour{
 		delegate bool canRotate();
 
-		public void LeftClick(ClickEventHandler e)  => inserters[focus].Insert();
+		int InserterSum(){
+			return inserters[0].contains +
+				inserters[1].contains +
+				inserters[2].contains;
+		}
+
+		public void LeftClick(ClickEventHandler e)  {
+			inserters[focus].Insert();
+		}
+
 		public void RightClick(ClickEventHandler e){
 			focus=(focus+1)%inserters.Length;
-			// transform.eulerAngles+=new Vector3(0,0,-120);
 			RotateArrow();
 		}
 
-		public void LeftClickHold(ClickEventHandler e) => inserters[focus].InsertCont();
-		public void RightClickHold(ClickEventHandler e){}
-		public void Hover(ClickEventHandler e){
+		public void LeftClickHold(ClickEventHandler e){
+			inserters[focus].InsertCont();
+		}
+
+		public void OnMouseOver(){
 			hovered=true;
 			// Mouse.SetColour(inserters[focus].component);
 		}
@@ -419,6 +389,7 @@ namespace Modulo{
 		ComponentInserter[] inserters;
 		HexBorder[] borders;
 		float timer=5;
+		AboveText at;
 		public void Start(){
 			AddGear(1*Mathf.PI/3,() => timer<3,
 					Component.ComponentColour(Component.Id.Yellow));
@@ -427,11 +398,14 @@ namespace Modulo{
 			AddGear(5*Mathf.PI/3,() => timer<3,
 					Component.ComponentColour(Component.Id.Pink));
 
-			ComponentInserter.OnInsert hook = ()=>timer=5;
+			ComponentInserter.OnInsert hook = ()=>{
+				timer=5;
+				at.SetText(InserterSum());
+			};
 			inserters = new ComponentInserter[3]{
-				new ComponentInserter(Component.Id.Pink,transform,hook,hook),
-				new ComponentInserter(Component.Id.Yellow,transform,hook,hook),
-				new ComponentInserter(Component.Id.Grey,transform,hook,hook)
+				new ComponentInserter(Component.Id.Pink,transform,() => {},hook),
+				new ComponentInserter(Component.Id.Yellow,transform,() => {},hook),
+				new ComponentInserter(Component.Id.Grey,transform,() => {},hook)
 			};
 			borders = new HexBorder[2]{
 				new HexBorder(Component.ComponentColour(Component.Id.Pink)),
@@ -439,8 +413,8 @@ namespace Modulo{
 			};
 			GameObject perent = new GameObject("cauldron");
 			perent.transform.position=transform.position;
-			transform.localPosition=Vector3.zero;
 			transform.SetParent(perent.transform);
+			transform.localPosition=Vector3.zero;
 			borders[0].setParent(perent.transform);
 			borders[1].setParent(perent.transform);
 			borders[0].clockwise=false;
@@ -449,6 +423,8 @@ namespace Modulo{
 				.GetComponent<Renderer>();
 			arrow.transform.SetParent(perent.transform);
 			RotateArrow();
+			at=new AboveText(transform);
+			at.SetColour(Component.ComponentColour(Component.Id.Grey));
 		}
 
 		Renderer arrow;
@@ -474,13 +450,12 @@ namespace Modulo{
 			inserters[1].Reset();
 			inserters[2].Reset();
 			timer=5;
+			at.SetText(0);
 		}
 
 		public void Update(){
 			Animate();
-			int sum = inserters[0].contains+inserters[1].contains+
-				inserters[2].contains;
-			if(sum<=0){return;}
+			if(InserterSum()<=0){return;}
 			if(timer>0){
 				timer-=Time.deltaTime;
 			}else{
@@ -490,15 +465,15 @@ namespace Modulo{
 
 		bool hovered=false;
 		void Animate(){
+			if(timer<3 || InserterSum()==0){at.Hide();}
+			else{at.Show();}
+
 			if(hovered!=arrow.enabled){
 				arrow.enabled=hovered;
 			}
 			hovered=false;
-			int sum = inserters[0].contains+
-				inserters[1].contains+
-				inserters[2].contains;
-			if(sum<=0){return;}
-			float v = Mathf.Min(timer/3,1) / (sum);
+			if(InserterSum()<=0){return;}
+			float v = Mathf.Min(timer/3,1) / (InserterSum());
 
 			borders[0].updateLR(v*inserters[0].contains);
 			borders[1].updateLR(v*inserters[1].contains);

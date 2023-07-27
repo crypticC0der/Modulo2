@@ -374,7 +374,7 @@ public static class World {
 
         Component.CreateAlter(Component.Id.Pink,new HexCoord(5,0));
         Component.CreateAlter(Component.Id.Yellow,new HexCoord(-5,0));
-        Cauldron.SpawnCauldron(new HexCoord(0,0));
+        Cauldron.SpawnCauldron(new HexCoord(0,5));
 
         Item it = ItemRatio.table[0].item.FromTemplate(1, 1);
         GameObject g = it.ToGameObject(
