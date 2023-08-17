@@ -65,13 +65,8 @@ public class PlayerBehavior : Damageable,PicksComponent {
         base.Start();
         regen *= 4;
         deck = new StackDeck();
-        ItemTemplate itemTemplate =
-            new ItemTemplate("wallBase", 1, new float[] { 0, 0, 0, 0, 0, 0 });
         ItemTemplate orbT = new ItemTemplate(
-            "orb", 5, new float[] { 0, 0, 0, 0, 0 }, "sacred", ItemTypes.Orb);
-        for (int i = 0; i < 5; i++) {
-            AddToDeck(itemTemplate.FromTemplate(1, 1));
-        }
+            "orb", 5, new Vector2(-1,-1), "sacred", ItemTypes.Orb);
         AddToDeck(orbT.FromTemplate(0, 0));
         r = GetComponent<Rigidbody2D>();
 

@@ -14,14 +14,6 @@ public static class ItemHelperFunctions {
     }
 }
 
-public class ItemRatio {
-    public static List<ItemRatio> table = new List<ItemRatio>();
-    public ItemTemplate item;
-    public float[] ratio;
-
-    public void GenerateItems() {}
-}
-
 public class Item : ItemTemplate {
     public float power = 1;     // how many components went into it
     public float stability = 1; // the error in the ratio

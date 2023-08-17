@@ -49,6 +49,7 @@ public class ClickEventHandler : MonoBehaviour {
         for(int i=0;i<4;i++){
             HandleClick(i,worldPoint);
         }
+        MouseChange.Update();
     }
 
     LineRenderer r;

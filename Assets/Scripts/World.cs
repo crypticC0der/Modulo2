@@ -1,3 +1,4 @@
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +25,10 @@ public static class World {
 
     [RuntimeInitializeOnLoadMethod]
     public static void Initialize() {
+        if(SceneManager.GetActiveScene().name == "vornoi"){
+            MeshGens.MinObjGen(Shapes.triangle,MatColour.white);
+            return;
+        }
         nodes = new Dictionary<HexCoord, Node>();
         Neighbors = new List<HexCoord>();
         Neighbors.Add(new HexCoord(0, +1));

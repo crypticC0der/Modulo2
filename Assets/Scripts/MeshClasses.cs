@@ -370,7 +370,7 @@ public static class MeshGens {
         meshes[(int)Shapes.cross].name = "cross";
         meshes[(int)Shapes.circle] = Circle(0.5f, 16);
         meshes[(int)Shapes.circle].name = "circle";
-        meshes[(int)Shapes.triangle] = Circle(0.5f, 3);
+        meshes[(int)Shapes.triangle] = Circle(1f, 3);
         meshes[(int)Shapes.triangle].name = "triangle";
         meshes[(int)Shapes.square] = Circle(0.5f, 4, Mathf.PI / 4);
         meshes[(int)Shapes.square].name = "square";

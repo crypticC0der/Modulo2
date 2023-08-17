@@ -9,7 +9,7 @@ public class TurretTemplate<A> : ItemTemplate
     public List<Module> baseModules = new List<Module>();
 
     public TurretTemplate(string itemName, float itemWeight, Stats basicStats,
-                          float[] itemRatio, string pathToGraphic = null,
+                          Vector2 itemRatio, string pathToGraphic = null,
                           ItemTypes itemType = ItemTypes.Turret,
                           List<Module> basicModules = null, int itemScale = 1)
         : base(itemName, itemWeight, itemRatio, pathToGraphic, itemType,
@@ -35,7 +35,7 @@ public abstract class ModuleTemplate : ItemTemplate {
     public ModuleType t;
 
     public ModuleTemplate(string itemName, float itemWeight, ModuleType type,
-                          float[] itemRatio, string pathToGraphic = null,
+                          Vector2 itemRatio, string pathToGraphic = null,
                           int itemScale = 1)
         : base(itemName, itemWeight, itemRatio, pathToGraphic, ItemTypes.Turret,
                itemScale) {
@@ -54,7 +54,7 @@ public class StatModuleTemplate : ModuleTemplate {
 
     public Stats changes;
     public StatModuleTemplate(string itemName, float itemWeight,
-                              Stats statChanges, float[] itemRatio,
+                              Stats statChanges, Vector2 itemRatio,
                               string pathToGraphic = null, int itemScale = 1)
         : base(itemName, itemWeight, ModuleType.uncommon, itemRatio,
                pathToGraphic, itemScale) {
@@ -74,7 +74,7 @@ public class DebuffModuleTemplate : ModuleTemplate {
 
     public DebuffModuleTemplate() : base() {}
     public DebuffModuleTemplate(string itemName, float itemWeight,
-                                Debuff debuff, float[] itemRatio,
+                                Debuff debuff, Vector2 itemRatio,
                                 string pathToGraphic = null, int itemScale = 1)
         : base(itemName, itemWeight, ModuleType.uncommon, itemRatio,
                pathToGraphic, itemScale) {
@@ -94,7 +94,7 @@ public class ItemTemplate {
     public ItemTypes type;
     public float scale = 1;
 
-    public ItemTemplate(string itemName, float itemWeight, float[] itemRatio,
+    public ItemTemplate(string itemName, float itemWeight, Vector2 itemRatio,
                         string pathToGraphic = null,
                         ItemTypes itemType = ItemTypes.Defence,
                         int itemScale = 1) {
@@ -168,50 +168,9 @@ public class ItemTemplate {
         return GetSpriteSize(graphicPath,scale);
     }
 
-    // redo
-    static readonly int[] IngRatios = { 1, 3, 5, 10, 1, 10 };
-    // TODO iterative process
-    public static Item Closest(float[] ingredients) {
-        const int penalty = 100;
-
-        float s = 0;
-        for (int i = 0; i < 6; i++) {
-            s += ingredients[i];
-        }
-        ItemTemplate r = null;
-        float d = 0;
-        float sum = 0;
-        float stability = 0;
-
-        // aim is to minimise dist
-        // sum is ingredients x ing ratio
-        // distance is sqrt(sum(dist^2 * ratio)) (the manhattan distance if each
-        // ingredient corresponded to a axis on a 6 dimentional plane) stability
-        // is sqrt(sum(dist^2 * ratio ^2)) the distance with extra fun stuff
-        foreach (ItemRatio ir in ItemRatio.table) {
-            float currentDist = 0;
-            float currentSum = 0;
-            float currentStability = 0;
-            for (int i = 0; i < 6; i++) {
-                float dIng = ingredients[i] - ir.ratio[i] * s;
-                if (ingredients[i] == 0 && ir.ratio[i] != 0) {
-                    dIng = Mathf.Max(dIng, penalty);
-                }
-                currentStability +=
-                    dIng * dIng *
-                    IngRatios[i]; // TODO these two lines will need to be
-                                  // balanced iterativley
-                currentSum += ingredients[i] * IngRatios[i];
-                currentDist += dIng * dIng * IngRatios[i] * IngRatios[i];
-            }
-            if (currentDist < d || r == null) {
-                d = currentDist;
-                r = ir.item;
-                sum = currentSum;
-                stability = currentStability;
-            }
-        }
-        return r.FromTemplate(sum, stability);
+    public static Item Closest(Vector2 ratio) {
+        float distance=99999999999999;
+        return null;
     }
 }
 }
